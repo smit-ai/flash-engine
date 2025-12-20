@@ -3,6 +3,7 @@ import 'package:flash/flash.dart';
 import 'package:vector_math/vector_math_64.dart' as v;
 import 'package:forge2d/forge2d.dart' as f2d;
 
+/// Demonstrates both Verlet (FlashRopeWidget) and Forge2D joint systems
 class JointDemoExample extends StatefulWidget {
   const JointDemoExample({super.key});
 
@@ -11,34 +12,24 @@ class JointDemoExample extends StatefulWidget {
 }
 
 class _JointDemoExampleState extends State<JointDemoExample> {
-  // Verlet system
-  late FlashRopeJoint _rope;
-  v.Vector3 _anchorPos = v.Vector3(0, 100, 0);
+  // Verlet anchor position (controlled by gesture)
+  v.Vector3 _verletAnchor = v.Vector3(0, 100, 0);
+
+  // Key to access FlashRopeWidget state
+  final GlobalKey<FlashRopeWidgetState> _ropeKey = GlobalKey();
 
   // Forge2D system
   late FlashPhysicsWorld _physicsWorld;
   late FlashPhysicsBody _pendulumBob;
   final List<FlashPhysicsBody> _chainBodies = [];
-  v.Vector2 _forge2dAnchorPos = v.Vector2(0, 0);
+  v.Vector2 _forge2dAnchor = v.Vector2(0, 0);
 
   String _debugText = 'Drag anchor points to interact';
 
   @override
   void initState() {
     super.initState();
-    _initVerlet();
     _initForge2D();
-  }
-
-  void _initVerlet() {
-    _rope = FlashRopeJoint(
-      anchorA: _anchorPos,
-      segments: 12,
-      totalLength: 180,
-      gravity: v.Vector3(0, -250, 0),
-      damping: 0.98,
-      constraintIterations: 6,
-    );
   }
 
   void _initForge2D() {
@@ -100,19 +91,16 @@ class _JointDemoExampleState extends State<JointDemoExample> {
       appBar: AppBar(title: const Text('Joint System Demo'), backgroundColor: Colors.transparent, elevation: 0),
       extendBodyBehindAppBar: true,
       body: Flash(
-        enableInputCapture: false, // Disable Flash input, use Flutter gestures
+        enableInputCapture: false,
         showDebugOverlay: false,
         child: Builder(
           builder: (context) {
-            final engineWidget = context.dependOnInheritedWidgetOfExactType<InheritedFlashNode>();
-            final engine = engineWidget?.engine;
+            final inherited = context.dependOnInheritedWidgetOfExactType<InheritedFlashNode>();
+            final engine = inherited?.engine;
 
-            // Setup update loop using Flash engine
             if (engine != null) {
               engine.onUpdate = () {
                 final dt = 1 / 60.0;
-                _rope.movePoint(0, _anchorPos);
-                _rope.update(dt);
                 _physicsWorld.update(dt);
                 for (final body in _chainBodies) {
                   body.update(dt);
@@ -128,13 +116,25 @@ class _JointDemoExampleState extends State<JointDemoExample> {
 
                 return Stack(
                   children: [
-                    // Left painting - Verlet
+                    // LEFT: Verlet Rope using FlashRopeWidget
                     Positioned.fill(
                       right: halfWidth,
-                      child: CustomPaint(painter: _VerletPainter(_rope.positions, halfWidth / 2, 250)),
+                      child: FlashRopeWidget(
+                        key: _ropeKey,
+                        anchorPosition: _verletAnchor,
+                        segments: 12,
+                        length: 180,
+                        damping: 0.98,
+                        constraintIterations: 6,
+                        painter: (positions) => FlashRopePainter(
+                          positions: positions,
+                          color: Colors.cyanAccent,
+                          center: Offset(halfWidth / 2, 250),
+                        ),
+                      ),
                     ),
 
-                    // Right painting - Forge2D
+                    // RIGHT: Forge2D Chain
                     Positioned.fill(
                       left: halfWidth,
                       child: CustomPaint(painter: _Forge2DPainter(_chainBodies, _pendulumBob, halfWidth / 2, 120, 3)),
@@ -149,42 +149,43 @@ class _JointDemoExampleState extends State<JointDemoExample> {
                       child: Container(color: Colors.white30),
                     ),
 
-                    // LEFT GESTURE AREA - Verlet
+                    // LEFT GESTURE
                     Positioned.fill(
                       right: halfWidth,
                       child: GestureDetector(
                         onPanUpdate: (d) {
-                          setState(() {
-                            _debugText = 'Verlet: ${d.localPosition.dx.toInt()}, ${d.localPosition.dy.toInt()}';
-                            final x = d.localPosition.dx - halfWidth / 2;
-                            final y = -(d.localPosition.dy - 250);
-                            _anchorPos = v.Vector3(x * 0.7, y * 0.7, 0);
-                          });
+                          final x = d.localPosition.dx - halfWidth / 2;
+                          final y = -(d.localPosition.dy - 250);
+                          _verletAnchor = v.Vector3(x * 0.7, y * 0.7, 0);
+                          _ropeKey.currentState?.moveAnchor(_verletAnchor);
+                          setState(
+                            () => _debugText = 'Verlet: ${d.localPosition.dx.toInt()}, ${d.localPosition.dy.toInt()}',
+                          );
                         },
                       ),
                     ),
 
-                    // RIGHT GESTURE AREA - Forge2D
+                    // RIGHT GESTURE
                     Positioned.fill(
                       left: halfWidth,
                       child: GestureDetector(
                         onPanUpdate: (d) {
-                          setState(() {
-                            _debugText = 'Forge2D: ${d.localPosition.dx.toInt()}, ${d.localPosition.dy.toInt()}';
-                            final x = (d.localPosition.dx - halfWidth / 2) / 3;
-                            final y = (d.localPosition.dy - 120) / 3;
-                            _forge2dAnchorPos = v.Vector2(x, y);
-                            if (_chainBodies.isNotEmpty) {
-                              _chainBodies.first.body.setTransform(_forge2dAnchorPos, 0);
-                            }
-                          });
+                          final x = (d.localPosition.dx - halfWidth / 2) / 3;
+                          final y = (d.localPosition.dy - 120) / 3;
+                          _forge2dAnchor = v.Vector2(x, y);
+                          if (_chainBodies.isNotEmpty) {
+                            _chainBodies.first.body.setTransform(_forge2dAnchor, 0);
+                          }
+                          setState(
+                            () => _debugText = 'Forge2D: ${d.localPosition.dx.toInt()}, ${d.localPosition.dy.toInt()}',
+                          );
                         },
                       ),
                     ),
 
                     // Labels
-                    Positioned(top: 100, left: 20, child: _label('VERLET', 'Standalone', Colors.cyanAccent)),
-                    Positioned(top: 100, right: 20, child: _label('FORGE2D', 'Physics', Colors.orangeAccent)),
+                    Positioned(top: 100, left: 20, child: _label('VERLET', 'FlashRopeWidget', Colors.cyanAccent)),
+                    Positioned(top: 100, right: 20, child: _label('FORGE2D', 'Physics Engine', Colors.orangeAccent)),
 
                     // Debug text
                     Positioned(
@@ -235,52 +236,6 @@ class _JointDemoExampleState extends State<JointDemoExample> {
       ),
     );
   }
-}
-
-class _VerletPainter extends CustomPainter {
-  final List<v.Vector3> positions;
-  final double cx, cy;
-  _VerletPainter(this.positions, this.cx, this.cy);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (positions.length < 2) return;
-
-    final path = Path()..moveTo(cx + positions.first.x, cy - positions.first.y);
-    for (int i = 1; i < positions.length; i++) {
-      path.lineTo(cx + positions[i].x, cy - positions[i].y);
-    }
-
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = Colors.cyanAccent.withValues(alpha: 0.4)
-        ..strokeWidth = 12
-        ..strokeCap = StrokeCap.round
-        ..style = PaintingStyle.stroke
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
-    );
-
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = Colors.cyanAccent
-        ..strokeWidth = 4
-        ..strokeCap = StrokeCap.round
-        ..style = PaintingStyle.stroke,
-    );
-
-    for (int i = 0; i < positions.length; i++) {
-      canvas.drawCircle(
-        Offset(cx + positions[i].x, cy - positions[i].y),
-        i == 0 ? 15 : (i == positions.length - 1 ? 12 : 6),
-        Paint()..color = Colors.white,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
 class _Forge2DPainter extends CustomPainter {

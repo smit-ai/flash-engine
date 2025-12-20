@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flash/flash.dart';
 import 'package:vector_math/vector_math_64.dart' as v;
 
+/// Demonstrates scene management with transitions using engine.sceneManager
 class SceneManagerDemoExample extends StatefulWidget {
   const SceneManagerDemoExample({super.key});
 
@@ -10,8 +11,8 @@ class SceneManagerDemoExample extends StatefulWidget {
 }
 
 class _SceneManagerDemoExampleState extends State<SceneManagerDemoExample> {
-  late FlashSceneManager _sceneManager;
   SceneTransition _selectedTransition = SceneTransition.fade;
+  bool _initialized = false;
 
   final List<SceneTransition> _transitions = [
     SceneTransition.fade,
@@ -23,13 +24,12 @@ class _SceneManagerDemoExampleState extends State<SceneManagerDemoExample> {
     SceneTransition.rotate,
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _sceneManager = FlashSceneManager();
+  void _initScenes(FlashSceneManager sceneManager) {
+    if (_initialized) return;
+    _initialized = true;
 
-    // Register scenes
-    _sceneManager.registerScene(
+    // Register scenes with engine.sceneManager
+    sceneManager.registerScene(
       FlashSceneWrapper(
         name: 'menu',
         onEnter: () => debugPrint('Menu entered'),
@@ -37,7 +37,7 @@ class _SceneManagerDemoExampleState extends State<SceneManagerDemoExample> {
       ),
     );
 
-    _sceneManager.registerScene(
+    sceneManager.registerScene(
       FlashSceneWrapper(
         name: 'game',
         onEnter: () => debugPrint('Game entered'),
@@ -45,7 +45,7 @@ class _SceneManagerDemoExampleState extends State<SceneManagerDemoExample> {
       ),
     );
 
-    _sceneManager.registerScene(
+    sceneManager.registerScene(
       FlashSceneWrapper(
         name: 'settings',
         onEnter: () => debugPrint('Settings entered'),
@@ -54,7 +54,7 @@ class _SceneManagerDemoExampleState extends State<SceneManagerDemoExample> {
     );
 
     // Start at menu
-    _sceneManager.goTo('menu', transition: SceneTransition.none);
+    sceneManager.goTo('menu', transition: SceneTransition.none);
   }
 
   @override
@@ -66,16 +66,20 @@ class _SceneManagerDemoExampleState extends State<SceneManagerDemoExample> {
       body: Flash(
         child: Builder(
           builder: (context) {
-            final engineWidget = context.dependOnInheritedWidgetOfExactType<InheritedFlashNode>();
-            final engine = engineWidget?.engine;
+            final inherited = context.dependOnInheritedWidgetOfExactType<InheritedFlashNode>();
+            final engine = inherited?.engine;
 
-            if (engine != null) {
-              engine.onUpdate = () {
-                final dt = 1 / 60.0;
-                _sceneManager.update(dt);
-                setState(() {});
-              };
+            if (engine == null) {
+              return const Center(
+                child: Text('Engine not found', style: TextStyle(color: Colors.white)),
+              );
             }
+
+            // Initialize scenes using engine.sceneManager (auto-updated by engine)
+            _initScenes(engine.sceneManager);
+
+            // Listen to scene manager changes
+            engine.onUpdate = () => setState(() {});
 
             return Stack(
               children: [
@@ -84,11 +88,11 @@ class _SceneManagerDemoExampleState extends State<SceneManagerDemoExample> {
 
                 // Scene content with transitions
                 FlashSceneTransitionWidget(
-                  sceneManager: _sceneManager,
+                  sceneManager: engine.sceneManager, // Use engine's sceneManager
                   builder: (scene) => _buildSceneContent(scene.name),
                 ),
 
-                // Transition selector
+                // Controls
                 Positioned(
                   bottom: 20,
                   left: 16,
@@ -101,7 +105,7 @@ class _SceneManagerDemoExampleState extends State<SceneManagerDemoExample> {
                       children: [
                         // Current scene indicator
                         Text(
-                          '📍 Current: ${_sceneManager.currentScene?.name ?? "none"}',
+                          '📍 Current: ${engine.sceneManager.currentScene?.name ?? "none"}',
                           style: const TextStyle(color: Colors.greenAccent, fontSize: 14, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 12),
@@ -145,9 +149,9 @@ class _SceneManagerDemoExampleState extends State<SceneManagerDemoExample> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            _buildSceneButton('menu', Icons.home, Colors.blueAccent),
-                            _buildSceneButton('game', Icons.games, Colors.orangeAccent),
-                            _buildSceneButton('settings', Icons.settings, Colors.purpleAccent),
+                            _buildSceneButton(engine.sceneManager, 'menu', Icons.home, Colors.blueAccent),
+                            _buildSceneButton(engine.sceneManager, 'game', Icons.games, Colors.orangeAccent),
+                            _buildSceneButton(engine.sceneManager, 'settings', Icons.settings, Colors.purpleAccent),
                           ],
                         ),
                       ],
@@ -162,12 +166,12 @@ class _SceneManagerDemoExampleState extends State<SceneManagerDemoExample> {
     );
   }
 
-  Widget _buildSceneButton(String sceneName, IconData icon, Color color) {
-    final isActive = _sceneManager.currentScene?.name == sceneName;
+  Widget _buildSceneButton(FlashSceneManager sm, String name, IconData icon, Color color) {
+    final isActive = sm.currentScene?.name == name;
     return GestureDetector(
       onTap: () {
-        if (!isActive && !_sceneManager.isTransitioning) {
-          _sceneManager.goTo(sceneName, transition: _selectedTransition, duration: 0.5);
+        if (!isActive && !sm.isTransitioning) {
+          sm.goTo(name, transition: _selectedTransition, duration: 0.5);
         }
       },
       child: Container(
@@ -182,7 +186,7 @@ class _SceneManagerDemoExampleState extends State<SceneManagerDemoExample> {
             Icon(icon, color: isActive ? Colors.white : color, size: 28),
             const SizedBox(height: 4),
             Text(
-              sceneName.toUpperCase(),
+              name.toUpperCase(),
               style: TextStyle(color: isActive ? Colors.white : color, fontSize: 10, fontWeight: FontWeight.bold),
             ),
           ],
@@ -191,103 +195,43 @@ class _SceneManagerDemoExampleState extends State<SceneManagerDemoExample> {
     );
   }
 
-  Widget _buildSceneContent(String sceneName) {
-    switch (sceneName) {
+  Widget _buildSceneContent(String name) {
+    switch (name) {
       case 'menu':
-        return _buildMenuScene();
+        return _buildScene(Icons.home, 'MENU', 'Welcome to Flash Engine!', Colors.blue);
       case 'game':
-        return _buildGameScene();
+        return _buildScene(Icons.games, 'GAME', 'Your game content here!', Colors.orange);
       case 'settings':
-        return _buildSettingsScene();
+        return _buildScene(Icons.settings, 'SETTINGS', 'Configure your preferences', Colors.purple);
       default:
         return const SizedBox.shrink();
     }
   }
 
-  Widget _buildMenuScene() {
+  Widget _buildScene(IconData icon, String title, String subtitle, MaterialColor color) {
     return Center(
       child: Container(
         padding: const EdgeInsets.all(40),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blue.shade900, Colors.blue.shade700],
+            colors: [color.shade900, color.shade600],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(24),
-          boxShadow: [BoxShadow(color: Colors.blueAccent.withValues(alpha: 0.4), blurRadius: 30, spreadRadius: 5)],
+          boxShadow: [BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 30, spreadRadius: 5)],
         ),
-        child: const Column(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.home, color: Colors.white, size: 60),
-            SizedBox(height: 16),
+            Icon(icon, color: Colors.white, size: 60),
+            const SizedBox(height: 16),
             Text(
-              'MENU',
-              style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+              title,
+              style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8),
-            Text('Welcome to Flash Engine!', style: TextStyle(color: Colors.white70, fontSize: 14)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGameScene() {
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.all(40),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.orange.shade900, Colors.orange.shade600],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [BoxShadow(color: Colors.orangeAccent.withValues(alpha: 0.4), blurRadius: 30, spreadRadius: 5)],
-        ),
-        child: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.games, color: Colors.white, size: 60),
-            SizedBox(height: 16),
-            Text(
-              'GAME',
-              style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text('Your game content here!', style: TextStyle(color: Colors.white70, fontSize: 14)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSettingsScene() {
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.all(40),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.purple.shade900, Colors.purple.shade600],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [BoxShadow(color: Colors.purpleAccent.withValues(alpha: 0.4), blurRadius: 30, spreadRadius: 5)],
-        ),
-        child: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.settings, color: Colors.white, size: 60),
-            SizedBox(height: 16),
-            Text(
-              'SETTINGS',
-              style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text('Configure your preferences', style: TextStyle(color: Colors.white70, fontSize: 14)),
+            const SizedBox(height: 8),
+            Text(subtitle, style: const TextStyle(color: Colors.white70, fontSize: 14)),
           ],
         ),
       ),
