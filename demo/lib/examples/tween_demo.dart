@@ -28,6 +28,7 @@ class _TweenDemoExampleState extends State<TweenDemoExample> {
     'easeOutBounce': FlashEasing.easeOutBounce,
   };
 
+  double _activeWallX = 150.0;
   v.Vector3 _boxPosition = v.Vector3(-150, 0, 0);
   v.Vector3 _boxScale = v.Vector3(1, 1, 1);
   double _boxRotation = 0;
@@ -35,7 +36,7 @@ class _TweenDemoExampleState extends State<TweenDemoExample> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1a1a2e),
+      backgroundColor: const Color(0xFF0A0A12),
       appBar: AppBar(title: const Text('Tween Animation Demo'), backgroundColor: Colors.transparent, elevation: 0),
       extendBodyBehindAppBar: true,
       body: Flash(
@@ -60,7 +61,20 @@ class _TweenDemoExampleState extends State<TweenDemoExample> {
             return Stack(
               children: [
                 // Camera
-                FlashCamera(position: v.Vector3(0, 0, 500), fov: 60),
+                FlashCamera(position: v.Vector3(0, 0, 800), fov: 60),
+
+                // Responsive range calculator
+                ListenableBuilder(
+                  listenable: engine ?? ChangeNotifier(),
+                  builder: (context, _) {
+                    final camera = engine?.activeCamera;
+                    if (camera != null && engine != null) {
+                      final bounds = camera.getWorldBounds(camera.transform.position.z.abs(), engine.viewportSize);
+                      _activeWallX = bounds.x - 60; // Leave margin for box size
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
 
                 // Animated box
                 FlashCube(
@@ -70,6 +84,8 @@ class _TweenDemoExampleState extends State<TweenDemoExample> {
                   size: 60,
                   color: Colors.cyanAccent,
                 ),
+                // ...
+                // (Rest of the controls remain the same, I will just update the animation methods below)
 
                 // Controls
                 Positioned(
@@ -163,7 +179,7 @@ class _TweenDemoExampleState extends State<TweenDemoExample> {
   }
 
   void _animateMove() {
-    final targetX = _boxPosition.x < 0 ? 150.0 : -150.0;
+    final targetX = _boxPosition.x < 0 ? _activeWallX : -_activeWallX;
     final tween = FlashVector3Tween(
       from: _boxPosition.clone(),
       to: v.Vector3(targetX, 0, 0),
@@ -204,7 +220,7 @@ class _TweenDemoExampleState extends State<TweenDemoExample> {
     // Move
     final moveTween = FlashVector3Tween(
       from: _boxPosition.clone(),
-      to: v.Vector3(_boxPosition.x < 0 ? 150 : -150, 50, 0),
+      to: v.Vector3(_boxPosition.x < 0 ? _activeWallX : -_activeWallX, 50, 0),
       duration: 1.5,
       easing: _easings[_selectedEasing]!,
       yoyo: true,
