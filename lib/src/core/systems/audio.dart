@@ -102,19 +102,12 @@ class FlashAudioSystem {
     // But _activeSystems is static, so if it bumped up, we shouldn't deinit.
     if (_activeSystems > 0) return;
 
-    // Final check: if dynamic activation happened during wait?
-    // But _activeSystems is static, so if it bumped up, we shouldn't deinit.
-    if (_activeSystems > 0) return;
-
     try {
       if (_soloud != null && _soloud!.isInitialized) {
-        // Stopping all sounds prevents voice callbacks from firing after Isolate death
-        // which causes the crash on Hot Restart.
-        _soloud!.stopAll();
-
-        // We do NOT deinit, because SoLoud C++ engine doesn't handle Hot Restart
-        // gracefully (callbacks race with Isolates). Keeping it alive is safer.
-        // _soloud!.deinit();
+        // We MUST deinit to stop C++ threads from calling back into dead Dart Isolate.
+        // Previous issues with 'loadedFileCompleters' should be resolved by
+        // the fix in framework.dart (preventing load spam) and caching.
+        _soloud!.deinit();
       }
     } catch (e) {
       print('Error during audio deinit: $e');
