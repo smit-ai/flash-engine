@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'src/core/systems/engine.dart';
 import 'src/core/rendering/painter.dart';
 import 'src/core/systems/physics.dart'; // For FlashPhysicsWorld
@@ -57,46 +58,65 @@ class _FlashState extends State<Flash> {
     return InheritedFlashNode(
       node: engine.scene,
       engine: engine,
-      child: Stack(
-        children: [
-          SizedBox.expand(
-            child: RepaintBoundary(
-              child: CustomPaint(
-                painter: FlashPainter(scene: engine.scene, camera: engine.activeCamera, repaint: engine),
-                child: widget.child,
+      child: Focus(
+        autofocus: true,
+        onKeyEvent: (node, event) {
+          engine.input.handleKeyEvent(event);
+          return KeyEventResult.handled;
+        },
+        child: Listener(
+          onPointerDown: engine.input.onPointerDown,
+          onPointerUp: engine.input.onPointerUp,
+          onPointerMove: engine.input.onPointerMove,
+          onPointerHover: engine.input.onPointerHover,
+          onPointerCancel: engine.input.onPointerCancel,
+          onPointerSignal: (event) {
+            if (event is PointerScrollEvent) {
+              engine.input.onPointerScroll(event);
+            }
+          },
+          child: Stack(
+            children: [
+              SizedBox.expand(
+                child: RepaintBoundary(
+                  child: CustomPaint(
+                    painter: FlashPainter(scene: engine.scene, camera: engine.activeCamera, repaint: engine),
+                    child: widget.child,
+                  ),
+                ),
               ),
-            ),
+              // Throttled Debug Overlay
+              if (widget.showDebugOverlay)
+                Positioned(
+                  right: 20,
+                  top: 40,
+                  child: ValueListenableBuilder<String>(
+                    valueListenable: _debugInfo,
+                    builder: (context, info, _) {
+                      if (info.isEmpty) return const SizedBox.shrink();
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.7),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.3)),
+                        ),
+                        child: Text(
+                          info,
+                          style: const TextStyle(
+                            color: Colors.cyanAccent,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'monospace',
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+            ],
           ),
-          // Throttled Debug Overlay
-          if (widget.showDebugOverlay)
-            Positioned(
-              right: 20,
-              top: 40,
-              child: ValueListenableBuilder<String>(
-                valueListenable: _debugInfo,
-                builder: (context, info, _) {
-                  if (info.isEmpty) return const SizedBox.shrink();
-                  return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.7),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.3)),
-                    ),
-                    child: Text(
-                      info,
-                      style: const TextStyle(
-                        color: Colors.cyanAccent,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'monospace',
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-        ],
+        ),
       ),
     );
   }

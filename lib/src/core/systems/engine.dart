@@ -4,10 +4,12 @@ import '../graph/scene.dart';
 import '../rendering/camera.dart';
 import '../systems/physics.dart';
 import 'audio.dart';
+import 'input.dart';
 
 class FlashEngine extends ChangeNotifier {
   final FlashScene scene = FlashScene();
   final FlashAudioSystem audio = FlashAudioSystem();
+  final FlashInputSystem input = FlashInputSystem();
   FlashCamera? activeCamera;
   FlashPhysicsWorld? physicsWorld;
   FlashCamera? _defaultCamera; // Cached default camera to avoid per-frame allocation
@@ -47,6 +49,9 @@ class FlashEngine extends ChangeNotifier {
   }
 
   void _tick(Duration elapsed) {
+    // Clear "justPressed/justReleased" states from previous frame
+    input.beginFrame();
+
     final currentTime = elapsed.inMicroseconds / Duration.microsecondsPerSecond;
     final dt = currentTime - _lastTime;
     _lastTime = currentTime;

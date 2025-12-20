@@ -16,7 +16,7 @@ class _DepthDioramaExampleState extends State<DepthDioramaExample> with SingleTi
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 10))..repeat();
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 20))..repeat();
   }
 
   @override
@@ -28,55 +28,108 @@ class _DepthDioramaExampleState extends State<DepthDioramaExample> with SingleTi
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('2.5D Diorama (Declarative)'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      backgroundColor: const Color(0xFF0d1b2a),
+      appBar: AppBar(title: const Text('2.5D Diorama Scene'), backgroundColor: Colors.transparent, elevation: 0),
       extendBodyBehindAppBar: true,
       body: Flash(
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
             final t = _controller.value * 2 * pi;
+
             return Stack(
               children: [
-                // Background Layer
-                for (int i = 0; i < 5; i++)
+                // Camera
+                FlashCameraWidget(position: v.Vector3(0, 0, 800), fov: 60),
+
+                // Lighting - Key light
+                FlashLightWidget(position: v.Vector3(300, 400, 600), color: Colors.white, intensity: 1.2),
+
+                // Lighting - Fill light
+                FlashLightWidget(position: v.Vector3(-300, 200, 400), color: Colors.blueAccent, intensity: 0.6),
+
+                // --- Sky/Background Layer (Z: -800 to -500) ---
+                // Stars
+                for (int i = 0; i < 30; i++)
+                  FlashBox(
+                    position: v.Vector3(
+                      (Random(i).nextDouble() - 0.5) * 2000,
+                      (Random(i + 100).nextDouble() - 0.5) * 1000,
+                      -800 + Random(i + 200).nextDouble() * 200,
+                    ),
+                    width: 3,
+                    height: 3,
+                    color: Colors.white.withOpacity(0.8),
+                  ),
+
+                // --- Far Background Layer (Z: -400 to -200) ---
+                // Distant mountains (triangles)
+                for (int i = 0; i < 6; i++)
                   FlashTriangle(
-                    position: v.Vector3((i - 2) * 400, -150, -500),
+                    position: v.Vector3((i - 2.5) * 350, -100, -350),
                     size: 400,
                     color: const Color(0xFF1a3c5a),
                   ),
 
-                // Midground Layer
-                for (int i = 0; i < 8; i++)
-                  FlashTriangle(
-                    position: v.Vector3((i - 3.5) * 200, -200, 0),
-                    size: 250,
-                    color: const Color(0xFF2d5a27),
-                  ),
+                // --- Mid Background Layer (Z: -150 to 0) ---
+                // Trees (darker green)
+                for (int i = 0; i < 10; i++)
+                  _buildTree(v.Vector3((i - 4.5) * 180, -150, -100 - i * 5.0), const Color(0xFF2d5a27), 120),
 
-                // Player Orbiting
-                FlashCircle(
-                  position: v.Vector3(sin(t) * 400, 0, cos(t * 0.7) * 700),
-                  radius: 30,
+                // --- Mid-Foreground Layer (Z: 50 to 300) ---
+                // Animated character orbiting
+                FlashSphere(
+                  position: v.Vector3(sin(t) * 350, cos(t * 0.8) * 100 - 50, cos(t * 0.7) * 250 + 150),
+                  radius: 25,
                   color: Colors.cyanAccent,
-                  rotation: v.Vector3(0, 0, t),
                 ),
 
-                // Foreground Layer
+                // Floating cubes
+                for (int i = 0; i < 5; i++)
+                  FlashBox(
+                    position: v.Vector3(sin(t + i) * 300, cos(t * 0.5 + i) * 80, 100 + i * 40.0),
+                    width: 30,
+                    height: 30,
+                    color: Color.lerp(Colors.purple, Colors.orange, i / 4)!,
+                    rotation: v.Vector3(t + i, t * 0.7, t * 0.5),
+                  ),
+
+                // --- Foreground Layer (Z: 350 to 600) ---
+                // Trees (lighter, closer)
+                for (int i = 0; i < 8; i++)
+                  _buildTree(v.Vector3((i - 3.5) * 200, -200, 400 + i * 20.0), const Color(0xFF3a6b35), 180),
+
+                // Ground rocks
                 for (int i = 0; i < 12; i++)
-                  FlashTriangle(
-                    position: v.Vector3((i - 5.5) * 150, -250, 500),
-                    size: 150,
+                  FlashBox(
+                    position: v.Vector3((i - 5.5) * 130, -230, 500 + (Random(i + 500).nextDouble() - 0.5) * 100),
+                    width: 40 + Random(i + 600).nextDouble() * 30,
+                    height: 30 + Random(i + 700).nextDouble() * 20,
                     color: const Color(0xFF4a4a4a),
+                    rotation: v.Vector3(0, 0, Random(i + 800).nextDouble() * 0.5),
                   ),
               ],
             );
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildTree(v.Vector3 position, Color color, double height) {
+    return FlashNodes(
+      position: position,
+      children: [
+        // Trunk
+        FlashBox(
+          position: v.Vector3(0, -height * 0.3, 0),
+          width: height * 0.15,
+          height: height * 0.6,
+          color: const Color(0xFF3d2817),
+        ),
+        // Foliage (triangle)
+        FlashTriangle(position: v.Vector3(0, height * 0.2, 0), size: height * 0.8, color: color),
+      ],
     );
   }
 }

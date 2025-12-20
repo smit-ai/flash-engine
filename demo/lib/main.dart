@@ -9,6 +9,7 @@ import 'examples/godot_demo.dart';
 import 'examples/three_d_demo.dart';
 import 'examples/lighting_demo.dart';
 import 'examples/audio_demo.dart';
+import 'examples/input_demo.dart';
 
 void main() {
   runApp(const FlashDemoApp());
@@ -142,6 +143,14 @@ class ExampleMenu extends StatelessWidget {
                         description: 'Spatial audio source with SoLoud integration.',
                         icon: Icons.surround_sound_rounded,
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AudioDemo())),
+                      ),
+                      const SizedBox(height: 20),
+                      _ExampleCard(
+                        title: 'Input System',
+                        description: 'Keyboard, mouse, and touch gesture handling.',
+                        icon: Icons.gamepad_rounded,
+                        onTap: () =>
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const InputDemoExample())),
                       ),
                     ],
                   ),
