@@ -11,6 +11,9 @@ import 'examples/lighting_demo.dart';
 import 'examples/audio_demo.dart';
 import 'examples/input_demo.dart';
 import 'examples/particle_demo.dart';
+import 'examples/tween_demo.dart';
+import 'examples/joint_demo.dart';
+import 'examples/scene_demo.dart';
 
 void main() {
   runApp(const FlashDemoApp());
@@ -160,6 +163,30 @@ class ExampleMenu extends StatelessWidget {
                         icon: Icons.auto_awesome,
                         onTap: () =>
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const ParticleDemoExample())),
+                      ),
+                      const SizedBox(height: 20),
+                      _ExampleCard(
+                        title: 'Tween Animation',
+                        description: 'Smooth property animations with easing functions.',
+                        icon: Icons.animation,
+                        onTap: () =>
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const TweenDemoExample())),
+                      ),
+                      const SizedBox(height: 20),
+                      _ExampleCard(
+                        title: 'Joint System',
+                        description: 'Rope and spring physics with Verlet integration.',
+                        icon: Icons.link,
+                        onTap: () =>
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const JointDemoExample())),
+                      ),
+                      const SizedBox(height: 20),
+                      _ExampleCard(
+                        title: 'Scene Manager',
+                        description: 'Scene transitions: fade, slide, scale, rotate.',
+                        icon: Icons.layers,
+                        onTap: () =>
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const SceneManagerDemoExample())),
                       ),
                     ],
                   ),
