@@ -21,6 +21,7 @@ export 'physics/flash_rigid_body.dart';
 export 'physics/flash_static_body.dart';
 export 'physics/flash_area.dart';
 export 'physics/flash_physics_node.dart';
+export 'physics/flash_joint_widget.dart';
 
 // Export Audio
 export 'audio/flash_audio_player.dart';
@@ -30,3 +31,7 @@ export 'camera/flash_camera_widget.dart';
 
 // Export Effects
 export 'effects/flash_particle_widget.dart';
+export 'effects/flash_rope_widget.dart';
+
+// Export Animation
+export 'animation/flash_tween_builder.dart';

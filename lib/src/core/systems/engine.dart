@@ -5,15 +5,20 @@ import '../rendering/camera.dart';
 import '../systems/physics.dart';
 import 'audio.dart';
 import 'input.dart';
+import 'scene_manager.dart';
+import 'tween.dart';
 
 class FlashEngine extends ChangeNotifier {
   final FlashScene scene = FlashScene();
   final FlashAudioSystem audio = FlashAudioSystem();
   final FlashInputSystem input = FlashInputSystem();
+  final FlashSceneManager sceneManager = FlashSceneManager();
+  final FlashTweenManager tweenManager = FlashTweenManager();
+
   FlashCamera? activeCamera;
   FlashPhysicsWorld? physicsWorld;
-  FlashCamera? _defaultCamera; // Cached default camera to avoid per-frame allocation
-  final Set<FlashCamera> _activeCameras = {}; // Track all cameras in scene
+  FlashCamera? _defaultCamera;
+  final Set<FlashCamera> _activeCameras = {};
 
   late final Ticker _ticker;
 
@@ -67,6 +72,8 @@ class FlashEngine extends ChangeNotifier {
 
     scene.update(dt);
     physicsWorld?.update(dt);
+    sceneManager.update(dt);
+    tweenManager.update(dt);
 
     // Use first visible registered camera (O(1) instead of O(n) tree traversal)
     activeCamera = _activeCameras.firstWhere(
