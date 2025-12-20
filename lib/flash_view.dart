@@ -85,6 +85,7 @@ class _FlashState extends State<Flash> {
 
         // Core content with painting
         Widget content = Stack(
+          clipBehavior: Clip.hardEdge,
           children: [
             SizedBox.expand(
               child: RepaintBoundary(
