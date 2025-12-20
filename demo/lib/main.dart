@@ -10,6 +10,7 @@ import 'examples/three_d_demo.dart';
 import 'examples/lighting_demo.dart';
 import 'examples/audio_demo.dart';
 import 'examples/input_demo.dart';
+import 'examples/particle_demo.dart';
 
 void main() {
   runApp(const FlashDemoApp());
@@ -151,6 +152,14 @@ class ExampleMenu extends StatelessWidget {
                         icon: Icons.gamepad_rounded,
                         onTap: () =>
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const InputDemoExample())),
+                      ),
+                      const SizedBox(height: 20),
+                      _ExampleCard(
+                        title: 'Particle Effects',
+                        description: 'Fire, smoke, sparkle, snow, and explosion effects.',
+                        icon: Icons.auto_awesome,
+                        onTap: () =>
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const ParticleDemoExample())),
                       ),
                     ],
                   ),

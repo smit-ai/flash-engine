@@ -18,7 +18,6 @@ class _InputDemoExampleState extends State<InputDemoExample> {
   String _lastGesture = 'None';
   int _touchCount = 0;
   double _pinchScale = 1.0;
-  Offset _pointerPos = Offset.zero;
 
   // Virtual joystick
   Offset _joystickOffset = Offset.zero;
@@ -75,7 +74,6 @@ class _InputDemoExampleState extends State<InputDemoExample> {
               setState(() {
                 _touchCount = input.touchCount;
                 _pinchScale = input.pinchScale;
-                _pointerPos = input.pointerPosition;
 
                 if (input.isDoubleTap) {
                   _lastGesture = '👆👆 Double Tap!';

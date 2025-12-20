@@ -2,6 +2,7 @@ export 'systems/engine.dart';
 export 'systems/physics.dart';
 export 'systems/audio.dart';
 export 'systems/input.dart';
+export 'systems/particle.dart';
 export 'graph/audio_node.dart';
 export 'graph/node.dart';
 export 'graph/scene.dart';

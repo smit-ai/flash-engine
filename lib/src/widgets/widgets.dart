@@ -27,3 +27,6 @@ export 'audio/flash_audio_player.dart';
 
 // Export Camera
 export 'camera/flash_camera_widget.dart';
+
+// Export Effects
+export 'effects/flash_particle_widget.dart';

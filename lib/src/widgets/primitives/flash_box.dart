@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../core/graph/node.dart';
-import '../../core/rendering/light.dart'; // For lighting
 import '../framework.dart';
 
 class FlashBox extends FlashNodeWidget {
