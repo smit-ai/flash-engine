@@ -4,8 +4,6 @@ import 'examples/solar_system.dart';
 import 'examples/particle_field.dart';
 import 'examples/physics_demo.dart';
 import 'examples/depth_diorama.dart';
-import 'examples/declarative_demo.dart';
-import 'examples/godot_demo.dart';
 import 'examples/three_d_demo.dart';
 import 'examples/lighting_demo.dart';
 import 'examples/audio_demo.dart';
@@ -44,180 +42,161 @@ class ExampleMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<_ExampleData> examples = [
+      _ExampleData(
+        title: 'Basic Scene',
+        description: '3D shapes & Z-sorting.',
+        icon: Icons.grid_view_rounded,
+        builder: (_) => const BasicSceneExample(),
+      ),
+      _ExampleData(
+        title: 'Solar System',
+        description: 'Hierarchical nodes.',
+        icon: Icons.brightness_high_rounded,
+        builder: (_) => const SolarSystemExample(),
+      ),
+      _ExampleData(
+        title: 'Particle Field',
+        description: '200 particle stress test.',
+        icon: Icons.bubble_chart_rounded,
+        builder: (_) => const ParticleFieldExample(),
+      ),
+      _ExampleData(
+        title: 'Physics World',
+        description: 'Forge2D dynamics.',
+        icon: Icons.architecture_rounded,
+        builder: (_) => const PhysicsDemoExample(),
+      ),
+      _ExampleData(
+        title: '2.5D Diorama',
+        description: 'Parallax & Z-sorting.',
+        icon: Icons.layers_rounded,
+        builder: (_) => const DepthDioramaExample(),
+      ),
+      _ExampleData(
+        title: '3D Primitives',
+        description: 'Cubes & primitive nodes.',
+        icon: Icons.view_in_ar_rounded,
+        builder: (_) => const ThreeDDemo(),
+      ),
+      _ExampleData(
+        title: 'Dynamic Light',
+        description: 'Point light system.',
+        icon: Icons.lightbulb_outline_rounded,
+        builder: (_) => const LightingDemo(),
+      ),
+      _ExampleData(
+        title: '3D Audio',
+        description: 'Spatial SoLoud audio.',
+        icon: Icons.surround_sound_rounded,
+        builder: (_) => const AudioDemo(),
+      ),
+      _ExampleData(
+        title: 'Input System',
+        description: 'Gestures & keyboard.',
+        icon: Icons.gamepad_rounded,
+        builder: (_) => const InputDemoExample(),
+      ),
+      _ExampleData(
+        title: 'Particles',
+        description: 'Fire, smoke, explosions.',
+        icon: Icons.auto_awesome,
+        builder: (_) => const ParticleDemoExample(),
+      ),
+      _ExampleData(
+        title: 'Tweening',
+        description: 'Property animations.',
+        icon: Icons.animation,
+        builder: (_) => const TweenDemoExample(),
+      ),
+      _ExampleData(
+        title: 'Joint System',
+        description: 'Verlet ropes & springs.',
+        icon: Icons.link,
+        builder: (_) => const JointDemoExample(),
+      ),
+      _ExampleData(
+        title: 'Scene Manager',
+        description: 'Transitions & effects.',
+        icon: Icons.layers,
+        builder: (_) => const SceneManagerDemoExample(),
+      ),
+      _ExampleData(
+        title: 'State & Events',
+        description: 'FSM & event bus.',
+        icon: Icons.account_tree_rounded,
+        builder: (_) => const StateMachineDemoExample(),
+      ),
+      _ExampleData(
+        title: 'Collisions',
+        description: 'Layer filtering.',
+        icon: Icons.filter_center_focus_rounded,
+        builder: (_) => const CollisionLayersDemoExample(),
+      ),
+      _ExampleData(
+        title: 'Lines & Trails',
+        description: 'Path rendering.',
+        icon: Icons.gesture_rounded,
+        builder: (_) => const RenderingDemoExample(),
+      ),
+    ];
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF1a1a2e), Color(0xFF16213e), Color(0xFF0f3460)],
+            colors: [Color(0xFF0A0A12), Color(0xFF16213e), Color(0xFF0f3460)],
           ),
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 60),
-                Text(
-                  'Flash Engine',
-                  style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                Text(
-                  'Explore 2D/2.5D Rendering Examples',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.cyanAccent),
-                ),
-                const SizedBox(height: 60),
-                Expanded(
-                  child: ListView(
+                const SizedBox(height: 40),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _ExampleCard(
-                        title: 'Basic Scene',
-                        description: 'Simple 3D shapes with random rotations and Z-sorting.',
-                        icon: Icons.grid_view_rounded,
-                        onTap: () =>
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const BasicSceneExample())),
-                      ),
-                      const SizedBox(height: 20),
-                      _ExampleCard(
-                        title: 'Solar System',
-                        description: 'Hierarchical node transformations (Sun > Earth > Moon).',
-                        icon: Icons.brightness_high_rounded,
-                        onTap: () =>
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const SolarSystemExample())),
-                      ),
-                      const SizedBox(height: 20),
-                      _ExampleCard(
-                        title: 'Particle Field',
-                        description: 'Stress test with 200 independently moving particles.',
-                        icon: Icons.bubble_chart_rounded,
-                        onTap: () =>
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const ParticleFieldExample())),
-                      ),
-                      const SizedBox(height: 20),
-                      _ExampleCard(
-                        title: 'Physics World',
-                        description: 'Rigid body dynamics with gravity and collisions (Forge2D).',
-                        icon: Icons.architecture_rounded,
-                        onTap: () =>
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const PhysicsDemoExample())),
-                      ),
-                      const SizedBox(height: 20),
-                      _ExampleCard(
-                        title: '2.5D Diorama',
-                        description: 'Multi-layer Z-sorting and parallax effects.',
-                        icon: Icons.layers_rounded,
-                        onTap: () =>
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const DepthDioramaExample())),
-                      ),
-                      const SizedBox(height: 20),
-                      _ExampleCard(
-                        title: 'Declarative API',
-                        description: 'Build scenes with simple Widgets and Stacks.',
-                        icon: Icons.code_rounded,
-                        onTap: () =>
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const DeclarativeDemoExample())),
-                      ),
-                      const SizedBox(height: 20),
-                      _ExampleCard(
-                        title: 'Godot-like Nodes',
-                        description: 'Sprites, Labels, and RigidBody components.',
-                        icon: Icons.rocket_launch_rounded,
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GodotDemo())),
-                      ),
-                      const SizedBox(height: 20),
-                      _ExampleCard(
-                        title: '3D Primitives',
-                        description: 'Complex 3D objects like Cubes built with declarative nodes.',
-                        icon: Icons.view_in_ar_rounded,
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ThreeDDemo())),
-                      ),
-                      const SizedBox(height: 20),
-                      _ExampleCard(
-                        title: 'Dynamic Lighting',
-                        description: 'Point light system affecting 3D cubes and spheres.',
-                        icon: Icons.lightbulb_outline_rounded,
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LightingDemo())),
-                      ),
-                      const SizedBox(height: 20),
-                      _ExampleCard(
-                        title: '3D Audio',
-                        description: 'Spatial audio source with SoLoud integration.',
-                        icon: Icons.surround_sound_rounded,
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AudioDemo())),
-                      ),
-                      const SizedBox(height: 20),
-                      _ExampleCard(
-                        title: 'Input System',
-                        description: 'Keyboard, mouse, and touch gesture handling.',
-                        icon: Icons.gamepad_rounded,
-                        onTap: () =>
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const InputDemoExample())),
-                      ),
-                      const SizedBox(height: 20),
-                      _ExampleCard(
-                        title: 'Particle Effects',
-                        description: 'Fire, smoke, sparkle, snow, and explosion effects.',
-                        icon: Icons.auto_awesome,
-                        onTap: () =>
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const ParticleDemoExample())),
-                      ),
-                      const SizedBox(height: 20),
-                      _ExampleCard(
-                        title: 'Tween Animation',
-                        description: 'Smooth property animations with easing functions.',
-                        icon: Icons.animation,
-                        onTap: () =>
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const TweenDemoExample())),
-                      ),
-                      const SizedBox(height: 20),
-                      _ExampleCard(
-                        title: 'Joint System',
-                        description: 'Rope and spring physics with Verlet integration.',
-                        icon: Icons.link,
-                        onTap: () =>
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const JointDemoExample())),
-                      ),
-                      const SizedBox(height: 20),
-                      _ExampleCard(
-                        title: 'Scene Manager',
-                        description: 'Scene transitions: fade, slide, scale, rotate.',
-                        icon: Icons.layers,
-                        onTap: () =>
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const SceneManagerDemoExample())),
-                      ),
-                      const SizedBox(height: 20),
-                      _ExampleCard(
-                        title: 'State & Events',
-                        description: 'State machine transitions and global event bus.',
-                        icon: Icons.account_tree_rounded,
-                        onTap: () =>
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const StateMachineDemoExample())),
-                      ),
-                      const SizedBox(height: 20),
-                      _ExampleCard(
-                        title: 'Collision Layers',
-                        description: 'Filtering interactions between different object groups.',
-                        icon: Icons.filter_center_focus_rounded,
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const CollisionLayersDemoExample()),
+                      Text(
+                        'Flash Engine',
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
                         ),
                       ),
-                      const SizedBox(height: 20),
-                      _ExampleCard(
-                        title: 'Lines & Trails',
-                        description: 'Path rendering with LineRenderer and TrailRenderer.',
-                        icon: Icons.gesture_rounded,
-                        onTap: () =>
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const RenderingDemoExample())),
+                      Text(
+                        'Explore 2D/2.5D Rendering',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.cyanAccent),
                       ),
                     ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Expanded(
+                  child: GridView.builder(
+                    padding: const EdgeInsets.only(bottom: 40),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 1,
+                      mainAxisSpacing: 1,
+                      childAspectRatio: 1.05,
+                    ),
+                    itemCount: examples.length,
+                    itemBuilder: (context, index) {
+                      final item = examples[index];
+                      return _ExampleCard(
+                        title: item.title,
+                        description: item.description,
+                        icon: item.icon,
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: item.builder)),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -227,6 +206,15 @@ class ExampleMenu extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ExampleData {
+  final String title;
+  final String description;
+  final IconData icon;
+  final WidgetBuilder builder;
+
+  _ExampleData({required this.title, required this.description, required this.icon, required this.builder});
 }
 
 class _ExampleCard extends StatelessWidget {
@@ -240,42 +228,44 @@ class _ExampleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 8,
+      elevation: 4,
       shadowColor: Colors.black45,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.05)),
-          child: Row(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: Colors.cyan.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: Colors.cyanAccent, size: 32),
+                child: Icon(icon, color: Colors.cyanAccent, size: 24),
               ),
-              const SizedBox(width: 20),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 11),
+              ),
+              const SizedBox(height: 2),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(description, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70)),
-                  ],
+                child: Text(
+                  description,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Colors.white60, fontSize: 9),
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: Colors.white38),
             ],
           ),
         ),

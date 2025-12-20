@@ -15,6 +15,9 @@ class FlashPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (size.width == 0 || size.height == 0) return;
 
+    // Clip content to viewport bounds to prevent bleeding during transitions
+    canvas.clipRect(Offset.zero & size);
+
     // Viewport Matrix: Map NDC [-1, 1] to Screen [0, width], [0, height]
     final viewportMatrix = Matrix4.identity()
       ..translate(size.width / 2, size.height / 2)
