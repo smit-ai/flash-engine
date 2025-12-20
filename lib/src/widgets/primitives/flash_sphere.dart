@@ -51,7 +51,7 @@ class _SphereNode extends FlashNode {
 
     if (lights.isNotEmpty) {
       final worldPos = worldPosition;
-      FlashLight? bestLight;
+      FlashLightNode? bestLight;
       double bestIntensity = -1;
 
       for (final light in lights) {

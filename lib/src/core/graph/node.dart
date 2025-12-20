@@ -11,8 +11,8 @@ class FlashNode {
   bool visible = true;
 
   /// Current lighting for this node (available during draw)
-  List<FlashLight> _currentLights = [];
-  List<FlashLight> get lights => _currentLights;
+  List<FlashLightNode> _currentLights = [];
+  List<FlashLightNode> get lights => _currentLights;
 
   bool _worldDirty = true;
   final Matrix4 _cachedWorldMatrix = Matrix4.identity();
@@ -76,7 +76,7 @@ class FlashNode {
   }
 
   /// Render only this node using its pre-calculated world matrix
-  void renderSelf(Canvas canvas, Matrix4 viewportProjectionMatrix, List<FlashLight> activeLights) {
+  void renderSelf(Canvas canvas, Matrix4 viewportProjectionMatrix, List<FlashLightNode> activeLights) {
     if (!visible) return;
 
     _currentLights = activeLights;

@@ -4,19 +4,19 @@ import '../../core/systems/particle.dart';
 import '../framework.dart';
 
 /// Declarative widget for particle effects
-class FlashParticleWidget extends FlashNodeWidget {
+class FlashParticles extends FlashNodeWidget {
   final ParticleEmitterConfig? config;
   final bool emitting;
   final v.Vector3? initialPosition;
 
   // Can't be const because ParticleEmitterConfig constructor isn't const
-  const FlashParticleWidget({super.key, this.config, this.emitting = true, this.initialPosition, super.child});
+  const FlashParticles({super.key, this.config, this.emitting = true, this.initialPosition, super.child});
 
   @override
-  State<FlashParticleWidget> createState() => _FlashParticleWidgetState();
+  State<FlashParticles> createState() => _FlashParticlesState();
 }
 
-class _FlashParticleWidgetState extends FlashNodeWidgetState<FlashParticleWidget, FlashParticleEmitter> {
+class _FlashParticlesState extends FlashNodeWidgetState<FlashParticles, FlashParticleEmitter> {
   @override
   FlashParticleEmitter createNode() {
     final emitter = FlashParticleEmitter(config: widget.config ?? ParticleEmitterConfig(), emitting: widget.emitting);
@@ -27,7 +27,7 @@ class _FlashParticleWidgetState extends FlashNodeWidgetState<FlashParticleWidget
   }
 
   @override
-  void applyProperties([FlashParticleWidget? oldWidget]) {
+  void applyProperties([FlashParticles? oldWidget]) {
     super.applyProperties(oldWidget);
     if (widget.config != null) {
       node.config = widget.config!;
@@ -45,7 +45,7 @@ class FlashFire extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FlashParticleWidget(
+    return FlashParticles(
       initialPosition: position,
       config: ParticleEmitterConfig(
         emissionRate: 80 * scale,
@@ -73,7 +73,7 @@ class FlashSmoke extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FlashParticleWidget(
+    return FlashParticles(
       initialPosition: position,
       config: ParticleEmitterConfig(
         emissionRate: 30 * scale,
@@ -101,7 +101,7 @@ class FlashSparkle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FlashParticleWidget(
+    return FlashParticles(
       initialPosition: position,
       config: ParticleEmitterConfig(
         emissionRate: 100 * scale,

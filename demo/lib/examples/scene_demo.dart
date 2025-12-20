@@ -84,7 +84,7 @@ class _SceneManagerDemoExampleState extends State<SceneManagerDemoExample> {
             return Stack(
               children: [
                 // Camera
-                FlashCameraWidget(position: v.Vector3(0, 0, 500), fov: 60),
+                FlashCamera(position: v.Vector3(0, 0, 500), fov: 60),
 
                 // Scene content with transitions
                 FlashSceneTransitionWidget(

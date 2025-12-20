@@ -5,16 +5,16 @@ import '../../core/systems/physics.dart';
 import '../framework.dart';
 
 /// Declarative widget to initialize a physics world in the Flash engine.
-class FlashPhysicsWorldWidget extends StatefulWidget {
+class FlashPhysicsWorld extends StatefulWidget {
   final v.Vector2? gravity;
 
-  const FlashPhysicsWorldWidget({super.key, this.gravity});
+  const FlashPhysicsWorld({super.key, this.gravity});
 
   @override
-  State<FlashPhysicsWorldWidget> createState() => _FlashPhysicsWorldWidgetState();
+  State<FlashPhysicsWorld> createState() => _FlashPhysicsWorldState();
 }
 
-class _FlashPhysicsWorldWidgetState extends State<FlashPhysicsWorldWidget> {
+class _FlashPhysicsWorldState extends State<FlashPhysicsWorld> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -22,7 +22,7 @@ class _FlashPhysicsWorldWidgetState extends State<FlashPhysicsWorldWidget> {
     final engine = (element?.widget as InheritedFlashNode?)?.engine;
 
     if (engine != null && engine.physicsWorld == null) {
-      engine.physicsWorld = FlashPhysicsWorld(gravity: widget.gravity);
+      engine.physicsWorld = FlashPhysicsSystem(gravity: widget.gravity);
     }
   }
 

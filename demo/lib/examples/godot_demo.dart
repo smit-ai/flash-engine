@@ -13,12 +13,12 @@ class GodotDemo extends StatefulWidget {
 
 class _GodotDemoState extends State<GodotDemo> {
   ui.Image? _spriteImage;
-  late final FlashPhysicsWorld _physicsWorld;
+  late final FlashPhysicsSystem _physicsWorld;
 
   @override
   void initState() {
     super.initState();
-    _physicsWorld = FlashPhysicsWorld(gravity: v.Vector2(0, -500.0));
+    _physicsWorld = FlashPhysicsSystem(gravity: v.Vector2(0, -500.0));
     _loadSprite();
   }
 

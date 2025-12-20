@@ -43,10 +43,10 @@ class _ParticleDemoExampleState extends State<ParticleDemoExample> {
         child: Stack(
           children: [
             // Camera
-            FlashCameraWidget(position: v.Vector3(0, 0, 500), fov: 60),
+            FlashCamera(position: v.Vector3(0, 0, 500), fov: 60),
 
             // Particle Emitter at center
-            FlashParticleWidget(
+            FlashParticles(
               key: ValueKey(_selectedPreset), // Force rebuild on change
               initialPosition: v.Vector3(0, -50, 0),
               config: _presets[_selectedPreset],

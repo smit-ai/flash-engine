@@ -3,12 +3,12 @@ import '../../core/rendering/camera.dart';
 import '../../core/systems/engine.dart';
 import '../framework.dart';
 
-class FlashCameraWidget extends FlashNodeWidget {
+class FlashCamera extends FlashNodeWidget {
   final double fov;
   final double near;
   final double far;
 
-  const FlashCameraWidget({
+  const FlashCamera({
     super.key,
     super.position,
     super.rotation,
@@ -21,14 +21,14 @@ class FlashCameraWidget extends FlashNodeWidget {
   });
 
   @override
-  State<FlashCameraWidget> createState() => _FlashCameraWidgetState();
+  State<FlashCamera> createState() => _FlashCameraState();
 }
 
-class _FlashCameraWidgetState extends FlashNodeWidgetState<FlashCameraWidget, FlashCamera> {
+class _FlashCameraState extends FlashNodeWidgetState<FlashCamera, FlashCameraNode> {
   FlashEngine? _engine; // Cache engine reference for safe disposal
 
   @override
-  FlashCamera createNode() => FlashCamera()
+  FlashCameraNode createNode() => FlashCameraNode()
     ..fov = widget.fov
     ..near = widget.near
     ..far = widget.far;
@@ -49,7 +49,7 @@ class _FlashCameraWidgetState extends FlashNodeWidgetState<FlashCameraWidget, Fl
   }
 
   @override
-  void applyProperties([FlashCameraWidget? oldWidget]) {
+  void applyProperties([FlashCamera? oldWidget]) {
     super.applyProperties(oldWidget);
     node.fov = widget.fov;
     node.near = widget.near;

@@ -10,7 +10,7 @@ class StateMachineDemoExample extends StatefulWidget {
 }
 
 class _StateMachineDemoExampleState extends State<StateMachineDemoExample> with FlashEventMixin {
-  late FlashStateMachine<CharacterState> _characterSM;
+  late FlashStateController<CharacterState> _characterSM;
   int _score = 0;
   int _health = 100;
   String _lastEventMsg = 'No events yet';
@@ -20,7 +20,7 @@ class _StateMachineDemoExampleState extends State<StateMachineDemoExample> with 
     super.initState();
 
     // Initialize State Machine
-    _characterSM = FlashStateMachine<CharacterState>();
+    _characterSM = FlashStateController<CharacterState>();
 
     _characterSM.addStates({
       CharacterState.idle: FlashSimpleState(name: 'Idle', enter: (prev) => debugPrint('Entered Idle from $prev')),
@@ -92,11 +92,11 @@ class _StateMachineDemoExampleState extends State<StateMachineDemoExample> with 
             return Stack(
               children: [
                 // Camera
-                FlashCameraWidget(position: v.Vector3(0, 0, 500), fov: 60),
+                FlashCamera(position: v.Vector3(0, 0, 500), fov: 60),
 
                 // Character Visualization
                 Center(
-                  child: FlashStateMachineWidget<CharacterState>(
+                  child: FlashStateMachine<CharacterState>(
                     machine: _characterSM,
                     builder: (context, state) {
                       Color color = Colors.blue;

@@ -8,7 +8,7 @@ import 'src/widgets/framework.dart';
 
 class Flash extends StatefulWidget {
   final Widget child;
-  final FlashPhysicsWorld? physicsWorld;
+  final FlashPhysicsSystem? physicsWorld;
   final bool showDebugOverlay;
 
   /// If false, Flash will not capture pointer/keyboard input,

@@ -44,7 +44,7 @@ class _LightingDemoState extends State<LightingDemo> with SingleTickerProviderSt
             return FlashNodes(
               children: [
                 // The Light Source (Visible as a small white circle for reference)
-                FlashLightWidget(
+                FlashLight(
                   name: 'PointLight',
                   position: v.Vector3(lightX, lightY, lightZ),
                   intensity: 1.5,

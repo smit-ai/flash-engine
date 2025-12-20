@@ -14,12 +14,12 @@ class RenderingDemoExample extends StatefulWidget {
 class _RenderingDemoExampleState extends State<RenderingDemoExample> {
   final List<v.Vector3> _pathPoints = [];
   double _time = 0;
-  late final FlashPhysicsWorld _physicsWorld;
+  late final FlashPhysicsSystem _physicsWorld;
 
   @override
   void initState() {
     super.initState();
-    _physicsWorld = FlashPhysicsWorld(gravity: v.Vector2(0, -9.81));
+    _physicsWorld = FlashPhysicsSystem(gravity: v.Vector2(0, -9.81));
     _generateWavyPath();
   }
 
@@ -47,9 +47,9 @@ class _RenderingDemoExampleState extends State<RenderingDemoExample> {
         child: Stack(
           children: [
             // Camera (Moved back for wider view)
-            FlashCameraWidget(position: v.Vector3(0, 0, 1000), fov: 60),
+            FlashCamera(position: v.Vector3(0, 0, 1000), fov: 60),
 
-            // No need for FlashPhysicsWorldWidget, passed directly to Flash
+            // No need for FlashPhysicsSystem, passed directly to Flash
 
             // 1. LINE RENDERER: Static Wavy Path (Now with Collision!)
             FlashRigidBody(

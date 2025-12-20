@@ -12,7 +12,7 @@ class PhysicsDemoExample extends StatefulWidget {
 }
 
 class _PhysicsDemoExampleState extends State<PhysicsDemoExample> {
-  late final FlashPhysicsWorld physicsWorld;
+  late final FlashPhysicsSystem physicsWorld;
   final List<f2d.Body> bodies = [];
   final List<Color> colors = [];
   final List<v.Vector2> sizes = [];
@@ -20,7 +20,7 @@ class _PhysicsDemoExampleState extends State<PhysicsDemoExample> {
   @override
   void initState() {
     super.initState();
-    physicsWorld = FlashPhysicsWorld(gravity: FlashPhysics.standardGravity);
+    physicsWorld = FlashPhysicsSystem(gravity: FlashPhysics.standardGravity);
     _createGround();
     for (int i = 0; i < 10; i++) {
       _addRandomBox();

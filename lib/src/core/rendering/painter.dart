@@ -7,7 +7,7 @@ import 'light.dart';
 
 class FlashPainter extends CustomPainter {
   final FlashScene scene;
-  final FlashCamera? camera;
+  final FlashCameraNode? camera;
 
   FlashPainter({required this.scene, required this.camera, super.repaint});
 
@@ -21,13 +21,13 @@ class FlashPainter extends CustomPainter {
       ..scale(size.width / 2, -size.height / 2, 1.0);
 
     // Use active camera or fallback
-    final activeCam = camera ?? FlashCamera(name: 'PainterFallback');
+    final activeCam = camera ?? FlashCameraNode(name: 'PainterFallback');
     final projectionMatrix = activeCam.getProjectionMatrix(size.width, size.height);
     final viewMatrix = activeCam.getViewMatrix();
     final cameraMatrix = viewportMatrix * projectionMatrix * viewMatrix;
 
     final List<FlashNode> flatList = [];
-    final List<FlashLight> lights = [];
+    final List<FlashLightNode> lights = [];
     final List<FlashParticleEmitter> emitters = [];
     _collectNodes(scene, flatList, lights, emitters);
 
@@ -51,11 +51,11 @@ class FlashPainter extends CustomPainter {
   void _collectNodes(
     FlashNode node,
     List<FlashNode> list,
-    List<FlashLight> lights,
+    List<FlashLightNode> lights,
     List<FlashParticleEmitter> emitters,
   ) {
     if (node != scene) {
-      if (node is FlashLight) {
+      if (node is FlashLightNode) {
         lights.add(node);
       } else if (node is FlashParticleEmitter) {
         emitters.add(node);

@@ -15,10 +15,10 @@ class FlashEngine extends ChangeNotifier {
   final FlashSceneManager sceneManager = FlashSceneManager();
   final FlashTweenManager tweenManager = FlashTweenManager();
 
-  FlashCamera? activeCamera;
-  FlashPhysicsWorld? physicsWorld;
-  FlashCamera? _defaultCamera;
-  final Set<FlashCamera> _activeCameras = {};
+  FlashCameraNode? activeCamera;
+  FlashPhysicsSystem? physicsWorld;
+  FlashCameraNode? _defaultCamera;
+  final Set<FlashCameraNode> _activeCameras = {};
 
   late final Ticker _ticker;
 
@@ -34,12 +34,12 @@ class FlashEngine extends ChangeNotifier {
   }
 
   /// Register a camera when it's added to the scene
-  void registerCamera(FlashCamera camera) {
+  void registerCamera(FlashCameraNode camera) {
     _activeCameras.add(camera);
   }
 
   /// Unregister a camera when it's removed from the scene
-  void unregisterCamera(FlashCamera camera) {
+  void unregisterCamera(FlashCameraNode camera) {
     _activeCameras.remove(camera);
   }
 
@@ -79,7 +79,7 @@ class FlashEngine extends ChangeNotifier {
     activeCamera = _activeCameras.firstWhere(
       (cam) => cam.visible,
       orElse: () {
-        _defaultCamera ??= FlashCamera(name: 'DefaultCamera');
+        _defaultCamera ??= FlashCameraNode(name: 'DefaultCamera');
         return _defaultCamera!;
       },
     );

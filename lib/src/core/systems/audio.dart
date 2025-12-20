@@ -115,7 +115,7 @@ class FlashAudioSystem {
     print('set3dAttenuation not implemented due to missing Enum export');
   }
 
-  void updateListener(FlashCamera camera) {
+  void updateListener(FlashCameraNode camera) {
     if (!_initialized) return;
 
     final pos = camera.worldPosition;

@@ -60,7 +60,7 @@ class _TweenDemoExampleState extends State<TweenDemoExample> {
             return Stack(
               children: [
                 // Camera
-                FlashCameraWidget(position: v.Vector3(0, 0, 500), fov: 60),
+                FlashCamera(position: v.Vector3(0, 0, 500), fov: 60),
 
                 // Animated box
                 FlashCube(

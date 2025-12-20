@@ -40,13 +40,13 @@ class _DepthDioramaExampleState extends State<DepthDioramaExample> with SingleTi
             return Stack(
               children: [
                 // Camera
-                FlashCameraWidget(position: v.Vector3(0, 0, 800), fov: 60),
+                FlashCamera(position: v.Vector3(0, 0, 800), fov: 60),
 
                 // Lighting - Key light
-                FlashLightWidget(position: v.Vector3(300, 400, 600), color: Colors.white, intensity: 1.2),
+                FlashLight(position: v.Vector3(300, 400, 600), color: Colors.white, intensity: 1.2),
 
                 // Lighting - Fill light
-                FlashLightWidget(position: v.Vector3(-300, 200, 400), color: Colors.blueAccent, intensity: 0.6),
+                FlashLight(position: v.Vector3(-300, 200, 400), color: Colors.blueAccent, intensity: 0.6),
 
                 // --- Sky/Background Layer (Z: -800 to -500) ---
                 // Stars

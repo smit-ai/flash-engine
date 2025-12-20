@@ -3,7 +3,7 @@ import 'package:flash/flash.dart';
 import 'package:vector_math/vector_math_64.dart' as v;
 import 'package:forge2d/forge2d.dart' as f2d;
 
-/// Demonstrates both Verlet (FlashRopeWidget) and Forge2D joint systems
+/// Demonstrates both Verlet (FlashRope) and Forge2D joint systems
 class JointDemoExample extends StatefulWidget {
   const JointDemoExample({super.key});
 
@@ -15,11 +15,11 @@ class _JointDemoExampleState extends State<JointDemoExample> {
   // Verlet anchor position (controlled by gesture)
   v.Vector3 _verletAnchor = v.Vector3(0, 100, 0);
 
-  // Key to access FlashRopeWidget state
-  final GlobalKey<FlashRopeWidgetState> _ropeKey = GlobalKey();
+  // Key to access FlashRope state
+  final GlobalKey<FlashRopeState> _ropeKey = GlobalKey();
 
   // Forge2D system
-  late FlashPhysicsWorld _physicsWorld;
+  late FlashPhysicsSystem _physicsWorld;
   late FlashPhysicsBody _pendulumBob;
   final List<FlashPhysicsBody> _chainBodies = [];
   v.Vector2 _forge2dAnchor = v.Vector2(0, 0);
@@ -33,7 +33,7 @@ class _JointDemoExampleState extends State<JointDemoExample> {
   }
 
   void _initForge2D() {
-    _physicsWorld = FlashPhysicsWorld(gravity: v.Vector2(0, -9.81));
+    _physicsWorld = FlashPhysicsSystem(gravity: v.Vector2(0, -9.81));
     const chainLength = 8;
     const linkSize = 20.0;
     FlashPhysicsBody? prevBody;
@@ -116,10 +116,10 @@ class _JointDemoExampleState extends State<JointDemoExample> {
 
                 return Stack(
                   children: [
-                    // LEFT: Verlet Rope using FlashRopeWidget
+                    // LEFT: Verlet Rope using FlashRope
                     Positioned.fill(
                       right: halfWidth,
-                      child: FlashRopeWidget(
+                      child: FlashRope(
                         key: _ropeKey,
                         anchorPosition: _verletAnchor,
                         segments: 12,
@@ -184,7 +184,7 @@ class _JointDemoExampleState extends State<JointDemoExample> {
                     ),
 
                     // Labels
-                    Positioned(top: 100, left: 20, child: _label('VERLET', 'FlashRopeWidget', Colors.cyanAccent)),
+                    Positioned(top: 100, left: 20, child: _label('VERLET', 'FlashRope', Colors.cyanAccent)),
                     Positioned(top: 100, right: 20, child: _label('FORGE2D', 'Physics Engine', Colors.orangeAccent)),
 
                     // Debug text

@@ -93,14 +93,14 @@ class _SolarSystemExampleState extends State<SolarSystemExample> with SingleTick
                 return FlashNodes(
                   children: [
                     // Camera Node
-                    FlashCameraWidget(
+                    FlashCamera(
                       name: 'MainCamera',
                       position: v.Vector3(0, 500, 1200),
                       rotation: v.Vector3(_cameraPitch, -_cameraYaw, 0),
                     ),
 
                     // Point Light at the Sun's position
-                    FlashLightWidget(
+                    FlashLight(
                       name: 'SunLight',
                       position: v.Vector3(0, 0, 0),
                       intensity: 2.5,

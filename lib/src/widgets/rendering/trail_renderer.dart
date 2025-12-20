@@ -144,7 +144,7 @@ class _TrailNode extends FlashNode {
   }
 
   @override
-  void renderSelf(Canvas canvas, Matrix4 viewportProjectionMatrix, List<FlashLight> activeLights) {
+  void renderSelf(Canvas canvas, Matrix4 viewportProjectionMatrix, List<FlashLightNode> activeLights) {
     if (!visible || _points.length < 2) return;
 
     // Trail points are in WORLD SPACE.

@@ -12,10 +12,10 @@ abstract class FlashJoint2D {
   f2d.Joint? get joint => _joint;
 
   /// Create the joint in the physics world
-  void create(FlashPhysicsWorld world);
+  void create(FlashPhysicsSystem world);
 
   /// Destroy the joint
-  void destroy(FlashPhysicsWorld world) {
+  void destroy(FlashPhysicsSystem world) {
     if (_joint != null) {
       world.world.destroyJoint(_joint!);
       _joint = null;
@@ -49,7 +49,7 @@ class FlashRevoluteJoint2D extends FlashJoint2D {
   });
 
   @override
-  void create(FlashPhysicsWorld world) {
+  void create(FlashPhysicsSystem world) {
     final bodyBRef = bodyB?.body ?? bodyA.body; // If no bodyB, use bodyA (pinned to world)
 
     final def = f2d.RevoluteJointDef()
@@ -81,7 +81,7 @@ class FlashDistanceJoint2D extends FlashJoint2D {
   FlashDistanceJoint2D({required super.bodyA, super.bodyB, required this.anchorA, required this.anchorB, this.length});
 
   @override
-  void create(FlashPhysicsWorld world) {
+  void create(FlashPhysicsSystem world) {
     final bodyBRef = bodyB?.body ?? bodyA.body;
 
     final def = f2d.DistanceJointDef()
@@ -112,7 +112,7 @@ class FlashWeldJoint2D extends FlashJoint2D {
   FlashWeldJoint2D({required super.bodyA, required FlashPhysicsBody super.bodyB, required this.anchorWorldPoint});
 
   @override
-  void create(FlashPhysicsWorld world) {
+  void create(FlashPhysicsSystem world) {
     final def = f2d.WeldJointDef()
       ..bodyA = bodyA.body
       ..bodyB = bodyB!.body
@@ -151,7 +151,7 @@ class FlashPrismaticJoint2D extends FlashJoint2D {
   });
 
   @override
-  void create(FlashPhysicsWorld world) {
+  void create(FlashPhysicsSystem world) {
     final bodyBRef = bodyB?.body ?? bodyA.body;
 
     final def = f2d.PrismaticJointDef()
@@ -194,7 +194,7 @@ class FlashPulleyJoint2D extends FlashJoint2D {
   });
 
   @override
-  void create(FlashPhysicsWorld world) {
+  void create(FlashPhysicsSystem world) {
     final def = f2d.PulleyJointDef()
       ..bodyA = bodyA.body
       ..bodyB = bodyB!.body
@@ -212,7 +212,7 @@ class FlashPulleyJoint2D extends FlashJoint2D {
 
 /// Joint manager for the physics world
 class FlashJoint2DManager {
-  final FlashPhysicsWorld world;
+  final FlashPhysicsSystem world;
   final List<FlashJoint2D> _joints = [];
 
   FlashJoint2DManager(this.world);

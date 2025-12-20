@@ -27,10 +27,10 @@ class _CollisionLayersDemoExampleState extends State<CollisionLayersDemoExample>
         child: Stack(
           children: [
             // Camera
-            FlashCameraWidget(position: v.Vector3(0, 0, 500), fov: 60),
+            FlashCamera(position: v.Vector3(0, 0, 500), fov: 60),
 
             // Physics World
-            FlashPhysicsWorldWidget(gravity: v.Vector2(0, -9.81)),
+            FlashPhysicsWorld(gravity: v.Vector2(0, -9.81)),
 
             // Static Floor (Collides with everything except Ghosts)
             FlashRigidBody(

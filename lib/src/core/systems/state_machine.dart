@@ -6,7 +6,7 @@ abstract class FlashState<T> {
   String get name;
 
   /// Reference to the state machine owning this state
-  FlashStateMachine<T>? machine;
+  FlashStateController<T>? machine;
 
   /// Called when entering this state
   void onEnter(T? previousState) {}
@@ -47,7 +47,7 @@ class FlashSimpleState<T> extends FlashState<T> {
 }
 
 /// State machine for managing game states with transitions
-class FlashStateMachine<T> extends ChangeNotifier {
+class FlashStateController<T> extends ChangeNotifier {
   final Map<T, FlashState<T>> _states = {};
   FlashState<T>? _currentState;
   FlashState<T>? _previousState;
@@ -74,7 +74,7 @@ class FlashStateMachine<T> extends ChangeNotifier {
   /// State history
   List<T> get history => List.unmodifiable(_history);
 
-  FlashStateMachine({this.maxHistorySize = 10});
+  FlashStateController({this.maxHistorySize = 10});
 
   /// Register a state
   void addState(T key, FlashState<T> state) {
@@ -178,11 +178,11 @@ class FlashStateMachine<T> extends ChangeNotifier {
 }
 
 /// Widget that provides a state machine to its children and rebuilds on state changes
-class FlashStateMachineWidget<T> extends StatelessWidget {
-  final FlashStateMachine<T> machine;
+class FlashStateMachine<T> extends StatelessWidget {
+  final FlashStateController<T> machine;
   final Widget Function(BuildContext context, T? state) builder;
 
-  const FlashStateMachineWidget({super.key, required this.machine, required this.builder});
+  const FlashStateMachine({super.key, required this.machine, required this.builder});
 
   @override
   Widget build(BuildContext context) {

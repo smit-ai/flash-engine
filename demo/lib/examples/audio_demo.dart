@@ -11,13 +11,13 @@ class AudioDemo extends StatefulWidget {
 }
 
 class _AudioDemoState extends State<AudioDemo> {
-  late final FlashPhysicsWorld _physicsWorld;
+  late final FlashPhysicsSystem _physicsWorld;
 
   @override
   void initState() {
     super.initState();
     // Gravity pointing down (-Y)
-    _physicsWorld = FlashPhysicsWorld(gravity: v.Vector2(0, -50.0));
+    _physicsWorld = FlashPhysicsSystem(gravity: v.Vector2(0, -50.0));
   }
 
   @override

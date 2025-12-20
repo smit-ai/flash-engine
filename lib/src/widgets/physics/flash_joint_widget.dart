@@ -5,7 +5,7 @@ import '../../core/systems/joint2d.dart';
 import '../framework.dart';
 
 /// Declarative widget for creating physics joints between bodies
-abstract class FlashJointWidget extends StatefulWidget {
+abstract class FlashJoint extends StatefulWidget {
   /// Name of bodyA in the scene
   final String bodyAName;
 
@@ -15,12 +15,12 @@ abstract class FlashJointWidget extends StatefulWidget {
   /// Whether joint should be created automatically
   final bool autoCreate;
 
-  const FlashJointWidget({super.key, required this.bodyAName, this.bodyBName, this.autoCreate = true});
+  const FlashJoint({super.key, required this.bodyAName, this.bodyBName, this.autoCreate = true});
 }
 
-abstract class FlashJointWidgetState<T extends FlashJointWidget> extends State<T> {
+abstract class FlashJointState<T extends FlashJoint> extends State<T> {
   FlashJoint2D? _joint;
-  FlashPhysicsWorld? _world;
+  FlashPhysicsSystem? _world;
 
   @override
   void didChangeDependencies() {
@@ -66,7 +66,7 @@ abstract class FlashJointWidgetState<T extends FlashJointWidget> extends State<T
 }
 
 /// Declarative revolute joint widget (rotation around anchor)
-class FlashRevoluteJointWidget extends FlashJointWidget {
+class FlashRevoluteJoint extends FlashJoint {
   final v.Vector2 anchorWorldPoint;
   final bool enableMotor;
   final double motorSpeed;
@@ -77,7 +77,7 @@ class FlashRevoluteJointWidget extends FlashJointWidget {
   final FlashPhysicsBody? bodyA;
   final FlashPhysicsBody? bodyB;
 
-  const FlashRevoluteJointWidget({
+  const FlashRevoluteJoint({
     super.key,
     super.bodyAName = '',
     super.bodyBName,
@@ -93,10 +93,10 @@ class FlashRevoluteJointWidget extends FlashJointWidget {
   });
 
   @override
-  State<FlashRevoluteJointWidget> createState() => _FlashRevoluteJointWidgetState();
+  State<FlashRevoluteJoint> createState() => _FlashRevoluteJointState();
 }
 
-class _FlashRevoluteJointWidgetState extends FlashJointWidgetState<FlashRevoluteJointWidget> {
+class _FlashRevoluteJointState extends FlashJointState<FlashRevoluteJoint> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -127,14 +127,14 @@ class _FlashRevoluteJointWidgetState extends FlashJointWidgetState<FlashRevolute
 }
 
 /// Declarative distance joint widget (spring connection)
-class FlashDistanceJointWidget extends FlashJointWidget {
+class FlashDistanceJoint extends FlashJoint {
   final v.Vector2 anchorA;
   final v.Vector2 anchorB;
   final double? length;
   final FlashPhysicsBody? bodyA;
   final FlashPhysicsBody? bodyB;
 
-  const FlashDistanceJointWidget({
+  const FlashDistanceJoint({
     super.key,
     super.bodyAName = '',
     super.bodyBName,
@@ -146,10 +146,10 @@ class FlashDistanceJointWidget extends FlashJointWidget {
   });
 
   @override
-  State<FlashDistanceJointWidget> createState() => _FlashDistanceJointWidgetState();
+  State<FlashDistanceJoint> createState() => _FlashDistanceJointState();
 }
 
-class _FlashDistanceJointWidgetState extends FlashJointWidgetState<FlashDistanceJointWidget> {
+class _FlashDistanceJointState extends FlashJointState<FlashDistanceJoint> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -176,12 +176,12 @@ class _FlashDistanceJointWidgetState extends FlashJointWidgetState<FlashDistance
 }
 
 /// Declarative weld joint widget (rigid connection)
-class FlashWeldJointWidget extends FlashJointWidget {
+class FlashWeldJoint extends FlashJoint {
   final v.Vector2 anchorWorldPoint;
   final FlashPhysicsBody? bodyA;
   final FlashPhysicsBody? bodyB;
 
-  const FlashWeldJointWidget({
+  const FlashWeldJoint({
     super.key,
     super.bodyAName = '',
     super.bodyBName,
@@ -191,10 +191,10 @@ class FlashWeldJointWidget extends FlashJointWidget {
   });
 
   @override
-  State<FlashWeldJointWidget> createState() => _FlashWeldJointWidgetState();
+  State<FlashWeldJoint> createState() => _FlashWeldJointState();
 }
 
-class _FlashWeldJointWidgetState extends FlashJointWidgetState<FlashWeldJointWidget> {
+class _FlashWeldJointState extends FlashJointState<FlashWeldJoint> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();

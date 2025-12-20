@@ -91,7 +91,7 @@ class _InputDemoExampleState extends State<InputDemoExample> {
             return Stack(
               children: [
                 // Camera
-                FlashCameraWidget(position: v.Vector3(0, 0, 500), fov: 60),
+                FlashCamera(position: v.Vector3(0, 0, 500), fov: 60),
 
                 // Player
                 FlashSphere(position: _playerPos, radius: 30, color: Colors.cyanAccent),

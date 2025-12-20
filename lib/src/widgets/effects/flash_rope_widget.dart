@@ -4,7 +4,7 @@ import '../../core/systems/verlet.dart';
 import '../framework.dart';
 
 /// Declarative widget for creating Verlet rope physics
-class FlashRopeWidget extends StatefulWidget {
+class FlashRope extends StatefulWidget {
   /// Starting anchor position
   final v.Vector3 anchorPosition;
 
@@ -29,7 +29,7 @@ class FlashRopeWidget extends StatefulWidget {
   /// Custom painter for rope rendering
   final CustomPainter Function(List<v.Vector3> positions)? painter;
 
-  FlashRopeWidget({
+  FlashRope({
     super.key,
     required this.anchorPosition,
     this.segments = 10,
@@ -42,11 +42,11 @@ class FlashRopeWidget extends StatefulWidget {
   }) : gravity = gravity ?? v.Vector3(0, -300, 0);
 
   @override
-  State<FlashRopeWidget> createState() => FlashRopeWidgetState();
+  State<FlashRope> createState() => FlashRopeState();
 }
 
-class FlashRopeWidgetState extends State<FlashRopeWidget> {
-  late FlashRopeJoint _rope;
+class FlashRopeState extends State<FlashRope> {
+  late FlashVerletRopeJoint _rope;
 
   /// Access rope positions directly
   List<v.Vector3> get positions => _rope.positions;
@@ -68,7 +68,7 @@ class FlashRopeWidgetState extends State<FlashRopeWidget> {
   }
 
   void _createRope() {
-    _rope = FlashRopeJoint(
+    _rope = FlashVerletRopeJoint(
       anchorA: widget.anchorPosition,
       segments: widget.segments,
       totalLength: widget.length,
@@ -101,7 +101,7 @@ class FlashRopeWidgetState extends State<FlashRopeWidget> {
   }
 
   @override
-  void didUpdateWidget(FlashRopeWidget oldWidget) {
+  void didUpdateWidget(FlashRope oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.segments != oldWidget.segments ||
         widget.length != oldWidget.length ||

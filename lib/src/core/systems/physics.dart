@@ -25,11 +25,11 @@ class FlashPhysics {
   static v.Vector3 toPixelsV(f2d.Vector2 meters) => v.Vector3(meters.x * pixelsPerMeter, meters.y * pixelsPerMeter, 0);
 }
 
-class FlashPhysicsWorld extends f2d.ContactListener {
+class FlashPhysicsSystem extends f2d.ContactListener {
   final f2d.World world;
   v.Vector2 gravity;
 
-  FlashPhysicsWorld({v.Vector2? gravity})
+  FlashPhysicsSystem({v.Vector2? gravity})
     : gravity = gravity ?? FlashPhysics.standardGravity,
       world = f2d.World((gravity ?? FlashPhysics.standardGravity)) {
     world.setContactListener(this);
