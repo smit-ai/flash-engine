@@ -17,6 +17,7 @@ class FlashBox extends FlashNodeWidget {
     this.height = 1.0,
     this.color = Colors.white,
     super.child,
+    super.billboard,
   });
 
   @override

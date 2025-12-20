@@ -9,6 +9,7 @@ class FlashNode {
   FlashNode? parent;
   final List<FlashNode> children = [];
   bool visible = true;
+  bool billboard = false;
 
   /// Current lighting for this node (available during draw)
   List<FlashLightNode> _currentLights = [];
@@ -80,7 +81,21 @@ class FlashNode {
     if (!visible) return;
 
     _currentLights = activeLights;
-    final renderMatrix = viewportProjectionMatrix * worldMatrix;
+
+    Matrix4 renderMatrix;
+    if (billboard) {
+      final worldPos = worldMatrix.getTranslation();
+      final scaleX = Vector3(worldMatrix.storage[0], worldMatrix.storage[1], worldMatrix.storage[2]).length;
+      final scaleY = Vector3(worldMatrix.storage[4], worldMatrix.storage[5], worldMatrix.storage[6]).length;
+      final scaleZ = Vector3(worldMatrix.storage[8], worldMatrix.storage[9], worldMatrix.storage[10]).length;
+      final avgScale = (scaleX + scaleY + scaleZ) / 3.0;
+
+      renderMatrix = viewportProjectionMatrix.clone()
+        ..translate(worldPos.x, worldPos.y, worldPos.z)
+        ..scale(avgScale, avgScale, avgScale);
+    } else {
+      renderMatrix = viewportProjectionMatrix * worldMatrix;
+    }
 
     canvas.save();
     canvas.transform(renderMatrix.storage);

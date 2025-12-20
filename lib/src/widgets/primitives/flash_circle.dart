@@ -15,6 +15,7 @@ class FlashCircle extends FlashNodeWidget {
     super.child,
     this.radius = 50,
     this.color = Colors.white,
+    super.billboard,
   });
 
   @override

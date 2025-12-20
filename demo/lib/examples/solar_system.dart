@@ -100,12 +100,7 @@ class _SolarSystemExampleState extends State<SolarSystemExample> with SingleTick
                     ),
 
                     // Point Light at the Sun's position
-                    FlashLight(
-                      name: 'SunLight',
-                      position: v.Vector3(0, 0, 0),
-                      intensity: 2.5,
-                      color: Colors.white,
-                    ),
+                    FlashLight(name: 'SunLight', position: v.Vector3(0, 0, 0), intensity: 2.5, color: Colors.white),
 
                     // Star field
                     for (int i = 0; i < 150; i++)
@@ -114,6 +109,7 @@ class _SolarSystemExampleState extends State<SolarSystemExample> with SingleTick
                         width: 4,
                         height: 4,
                         color: Colors.white24,
+                        billboard: true,
                       ),
 
                     // Sun (Self-rotating)

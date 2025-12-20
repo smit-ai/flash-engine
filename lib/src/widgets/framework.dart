@@ -22,7 +22,17 @@ abstract class FlashNodeWidget extends StatefulWidget {
   final String? name;
   final Widget? child; // Optional child for nesting provided by subclasses
 
-  const FlashNodeWidget({super.key, this.position, this.rotation, this.scale, this.name, this.child});
+  final bool billboard;
+
+  const FlashNodeWidget({
+    super.key,
+    this.name,
+    this.position,
+    this.rotation,
+    this.scale,
+    this.child,
+    this.billboard = false,
+  });
 }
 
 /// State class for FlashNodeWidget that manages the lifecycle of a FlashNode.
@@ -59,18 +69,11 @@ abstract class FlashNodeWidgetState<T extends FlashNodeWidget, N extends FlashNo
 
   @mustCallSuper
   void applyProperties([T? oldWidget]) {
-    if (widget.position != null && (oldWidget == null || widget.position != oldWidget.position)) {
-      node.transform.position = widget.position!;
-    }
-    if (widget.rotation != null && (oldWidget == null || widget.rotation != oldWidget.rotation)) {
-      node.transform.rotation = widget.rotation!;
-    }
-    if (widget.scale != null && (oldWidget == null || widget.scale != oldWidget.scale)) {
-      node.transform.scale = widget.scale!;
-    }
-    if (widget.name != null && (oldWidget == null || widget.name != oldWidget.name)) {
-      node.name = widget.name!;
-    }
+    node.name = widget.name ?? node.name;
+    if (widget.position != null) node.transform.position = widget.position!;
+    if (widget.rotation != null) node.transform.rotation = widget.rotation!;
+    if (widget.scale != null) node.transform.scale = widget.scale!;
+    node.billboard = widget.billboard;
   }
 
   @override
