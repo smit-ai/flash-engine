@@ -12,6 +12,8 @@ export 'primitives/flash_box.dart';
 // Export UI components
 export 'ui/flash_label.dart';
 export 'ui/flash_sprite.dart';
+export 'rendering/line_renderer.dart';
+export 'rendering/trail_renderer.dart';
 
 // Export Lighting
 export 'lighting/flash_light_widget.dart';

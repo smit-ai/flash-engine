@@ -26,8 +26,8 @@ class _FlashTriangleState extends FlashNodeWidgetState<FlashTriangle, _TriangleN
   _TriangleNode createNode() => _TriangleNode(size: widget.size, color: widget.color);
 
   @override
-  void applyProperties() {
-    super.applyProperties();
+  void applyProperties([FlashTriangle? oldWidget]) {
+    super.applyProperties(oldWidget);
     node.color = widget.color;
     // The following lines are added based on the provided Code Edit,
     // assuming `point1`, `point2`, `point3` are intended to be added

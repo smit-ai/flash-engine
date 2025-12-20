@@ -28,8 +28,8 @@ class _FlashLabelState extends FlashNodeWidgetState<FlashLabel, _LabelNode> {
   _LabelNode createNode() => _LabelNode(text: widget.text, style: widget.style, textAlign: widget.textAlign);
 
   @override
-  void applyProperties() {
-    super.applyProperties();
+  void applyProperties([FlashLabel? oldWidget]) {
+    super.applyProperties(oldWidget);
     node.text = widget.text;
     node.style = widget.style;
     node.textAlign = widget.textAlign;

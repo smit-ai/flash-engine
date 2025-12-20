@@ -13,6 +13,7 @@ class FlashTransform {
 
   Vector3 get position => _position;
   set position(Vector3 value) {
+    if (_position == value) return;
     _position = value;
     _dirty = true;
     onChanged?.call();
@@ -20,6 +21,7 @@ class FlashTransform {
 
   Vector3 get rotation => _rotation;
   set rotation(Vector3 value) {
+    if (_rotation == value) return;
     _rotation = value;
     _dirty = true;
     onChanged?.call();
@@ -27,6 +29,7 @@ class FlashTransform {
 
   Vector3 get scale => _scale;
   set scale(Vector3 value) {
+    if (_scale == value) return;
     _scale = value;
     _dirty = true;
     onChanged?.call();

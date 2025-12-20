@@ -25,8 +25,8 @@ class _FlashLightWidgetState extends FlashNodeWidgetState<FlashLightWidget, Flas
   FlashLight createNode() => FlashLight(color: widget.color, intensity: widget.intensity);
 
   @override
-  void applyProperties() {
-    super.applyProperties();
+  void applyProperties([FlashLightWidget? oldWidget]) {
+    super.applyProperties(oldWidget);
     node.color = widget.color;
     node.intensity = widget.intensity;
   }

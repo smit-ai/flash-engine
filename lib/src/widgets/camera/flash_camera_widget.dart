@@ -49,8 +49,8 @@ class _FlashCameraWidgetState extends FlashNodeWidgetState<FlashCameraWidget, Fl
   }
 
   @override
-  void applyProperties() {
-    super.applyProperties();
+  void applyProperties([FlashCameraWidget? oldWidget]) {
+    super.applyProperties(oldWidget);
     node.fov = widget.fov;
     node.near = widget.near;
     node.far = widget.far;

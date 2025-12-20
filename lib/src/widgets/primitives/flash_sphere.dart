@@ -30,8 +30,8 @@ class _FlashSphereState extends FlashNodeWidgetState<FlashSphere, _SphereNode> {
   _SphereNode createNode() => _SphereNode(radius: widget.radius, color: widget.color, texture: widget.texture);
 
   @override
-  void applyProperties() {
-    super.applyProperties();
+  void applyProperties([FlashSphere? oldWidget]) {
+    super.applyProperties(oldWidget);
     node.radius = widget.radius;
     node.color = widget.color;
     node.texture = widget.texture;

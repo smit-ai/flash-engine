@@ -102,6 +102,11 @@ class _FlashRigidBodyState extends FlashNodeWidgetState<FlashRigidBody, FlashPhy
       bodyDef.angle = widget.rotation!.z;
     }
 
+    // Scale linear velocity from pixels to meters (safe conversion between 32/64 bit)
+    final pxVelX = bodyDef.linearVelocity.x;
+    final pxVelY = bodyDef.linearVelocity.y;
+    bodyDef.linearVelocity.setValues(FlashPhysics.toMeters(pxVelX), FlashPhysics.toMeters(pxVelY));
+
     final body = world.world.createBody(bodyDef);
     if (widget.fixtures != null) {
       for (final fixtureDef in widget.fixtures!) {
@@ -124,15 +129,19 @@ class _FlashRigidBodyState extends FlashNodeWidgetState<FlashRigidBody, FlashPhy
 
   void _scaleShape(f2d.Shape shape) {
     if (shape is f2d.PolygonShape) {
-      for (int i = 0; i < shape.vertices.length; i++) {
-        shape.vertices[i].setFrom(FlashPhysics.toMetersV(shape.vertices[i]));
+      for (final vertex in shape.vertices) {
+        vertex.setValues(FlashPhysics.toMeters(vertex.x), FlashPhysics.toMeters(vertex.y));
       }
     } else if (shape is f2d.CircleShape) {
       shape.radius = FlashPhysics.toMeters(shape.radius);
-      shape.position.setFrom(FlashPhysics.toMetersV(shape.position));
+      shape.position.setValues(FlashPhysics.toMeters(shape.position.x), FlashPhysics.toMeters(shape.position.y));
     } else if (shape is f2d.EdgeShape) {
-      shape.vertex1.setFrom(FlashPhysics.toMetersV(shape.vertex1));
-      shape.vertex2.setFrom(FlashPhysics.toMetersV(shape.vertex2));
+      shape.vertex1.setValues(FlashPhysics.toMeters(shape.vertex1.x), FlashPhysics.toMeters(shape.vertex1.y));
+      shape.vertex2.setValues(FlashPhysics.toMeters(shape.vertex2.x), FlashPhysics.toMeters(shape.vertex2.y));
+    } else if (shape is f2d.ChainShape) {
+      for (final vertex in shape.vertices) {
+        vertex.setValues(FlashPhysics.toMeters(vertex.x), FlashPhysics.toMeters(vertex.y));
+      }
     }
   }
 }

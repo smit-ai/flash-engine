@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'src/core/systems/engine.dart';
 import 'src/core/rendering/painter.dart';
 import 'src/core/systems/physics.dart';
+import 'src/core/graph/node.dart';
 import 'src/widgets/framework.dart';
 
 class Flash extends StatefulWidget {
@@ -14,12 +15,15 @@ class Flash extends StatefulWidget {
   /// allowing Flutter's native gesture system (GestureDetector) to work
   final bool enableInputCapture;
 
+  final VoidCallback? onUpdate;
+
   const Flash({
     super.key,
     required this.child,
     this.physicsWorld,
     this.showDebugOverlay = true,
     this.enableInputCapture = true,
+    this.onUpdate,
   });
 
   @override
@@ -37,13 +41,23 @@ class _FlashState extends State<Flash> {
     engine = FlashEngine();
     engine.physicsWorld = widget.physicsWorld;
     engine.onUpdate = () {
+      widget.onUpdate?.call();
       final now = DateTime.now().millisecondsSinceEpoch / 1000.0;
       if (now - _lastDebugUpdate > 0.5) {
-        _debugInfo.value = '${engine.fps.toStringAsFixed(1)} FPS | ${engine.scene.children.length} Nodes';
+        int totalNodes = _countNodes(engine.scene);
+        _debugInfo.value = '${engine.fps.toStringAsFixed(1)} FPS | $totalNodes Nodes';
         _lastDebugUpdate = now;
       }
     };
     engine.start();
+  }
+
+  int _countNodes(FlashNode node) {
+    int count = 1;
+    for (final child in node.children) {
+      count += _countNodes(child);
+    }
+    return count;
   }
 
   @override

@@ -16,6 +16,7 @@ import 'examples/joint_demo.dart';
 import 'examples/scene_demo.dart';
 import 'examples/state_machine_demo.dart';
 import 'examples/collision_layers_demo.dart';
+import 'examples/rendering_demo.dart';
 
 void main() {
   runApp(const FlashDemoApp());
@@ -207,6 +208,14 @@ class ExampleMenu extends StatelessWidget {
                           context,
                           MaterialPageRoute(builder: (_) => const CollisionLayersDemoExample()),
                         ),
+                      ),
+                      const SizedBox(height: 20),
+                      _ExampleCard(
+                        title: 'Lines & Trails',
+                        description: 'Path rendering with LineRenderer and TrailRenderer.',
+                        icon: Icons.gesture_rounded,
+                        onTap: () =>
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const RenderingDemoExample())),
                       ),
                     ],
                   ),

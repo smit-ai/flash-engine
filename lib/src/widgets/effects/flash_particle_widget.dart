@@ -27,8 +27,8 @@ class _FlashParticleWidgetState extends FlashNodeWidgetState<FlashParticleWidget
   }
 
   @override
-  void applyProperties() {
-    super.applyProperties();
+  void applyProperties([FlashParticleWidget? oldWidget]) {
+    super.applyProperties(oldWidget);
     if (widget.config != null) {
       node.config = widget.config!;
     }

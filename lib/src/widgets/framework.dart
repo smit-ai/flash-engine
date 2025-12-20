@@ -54,15 +54,23 @@ abstract class FlashNodeWidgetState<T extends FlashNodeWidget, N extends FlashNo
   @override
   void didUpdateWidget(T oldWidget) {
     super.didUpdateWidget(oldWidget);
-    applyProperties();
+    applyProperties(oldWidget);
   }
 
   @mustCallSuper
-  void applyProperties() {
-    if (widget.position != null) node.transform.position = widget.position!;
-    if (widget.rotation != null) node.transform.rotation = widget.rotation!;
-    if (widget.scale != null) node.transform.scale = widget.scale!;
-    if (widget.name != null) node.name = widget.name!;
+  void applyProperties([T? oldWidget]) {
+    if (widget.position != null && (oldWidget == null || widget.position != oldWidget.position)) {
+      node.transform.position = widget.position!;
+    }
+    if (widget.rotation != null && (oldWidget == null || widget.rotation != oldWidget.rotation)) {
+      node.transform.rotation = widget.rotation!;
+    }
+    if (widget.scale != null && (oldWidget == null || widget.scale != oldWidget.scale)) {
+      node.transform.scale = widget.scale!;
+    }
+    if (widget.name != null && (oldWidget == null || widget.name != oldWidget.name)) {
+      node.name = widget.name!;
+    }
   }
 
   @override

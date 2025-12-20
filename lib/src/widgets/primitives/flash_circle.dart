@@ -26,8 +26,8 @@ class _FlashCircleState extends FlashNodeWidgetState<FlashCircle, _CircleNode> {
   _CircleNode createNode() => _CircleNode(radius: widget.radius, color: widget.color);
 
   @override
-  void applyProperties() {
-    super.applyProperties();
+  void applyProperties([FlashCircle? oldWidget]) {
+    super.applyProperties(oldWidget);
     node.color = widget.color;
     node.radius = widget.radius;
   }

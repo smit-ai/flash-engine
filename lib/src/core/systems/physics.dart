@@ -15,14 +15,14 @@ class FlashPhysics {
   /// Convert pixels to meters
   static double toMeters(double pixels) => pixels / pixelsPerMeter;
 
-  /// Convert pixels vector to meters vector
-  static v.Vector2 toMetersV(v.Vector2 pixels) => pixels / pixelsPerMeter;
+  /// Convert pixels vector (64-bit) to meters vector (32-bit)
+  static f2d.Vector2 toMetersV(v.Vector2 pixels) => f2d.Vector2(pixels.x / pixelsPerMeter, pixels.y / pixelsPerMeter);
 
-  /// Convert meters to pixels
+  /// Convert Forge2D Vector2 (32-bit) to pixels (double)
   static double toPixels(double meters) => meters * pixelsPerMeter;
 
-  /// Convert meters vector to pixels vector
-  static v.Vector2 toPixelsV(v.Vector2 meters) => meters * pixelsPerMeter;
+  /// Convert meters vector (32-bit) to pixels vector (64-bit)
+  static v.Vector3 toPixelsV(f2d.Vector2 meters) => v.Vector3(meters.x * pixelsPerMeter, meters.y * pixelsPerMeter, 0);
 }
 
 class FlashPhysicsWorld extends f2d.ContactListener {
@@ -100,7 +100,7 @@ class FlashPhysicsBody extends FlashNode {
     final angle = body.angle;
 
     // Convert from meters back to pixels for rendering
-    transform.position = v.Vector3(FlashPhysics.toPixels(pos.x), FlashPhysics.toPixels(pos.y), 0);
+    transform.position = FlashPhysics.toPixelsV(pos);
     transform.rotation = v.Vector3(0, 0, angle);
   }
 }

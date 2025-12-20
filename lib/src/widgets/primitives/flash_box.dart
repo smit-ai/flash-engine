@@ -28,8 +28,8 @@ class _FlashBoxState extends FlashNodeWidgetState<FlashBox, _BoxNode> {
   _BoxNode createNode() => _BoxNode(width: widget.width, height: widget.height, color: widget.color);
 
   @override
-  void applyProperties() {
-    super.applyProperties();
+  void applyProperties([FlashBox? oldWidget]) {
+    super.applyProperties(oldWidget);
     node.width = widget.width;
     node.height = widget.height;
     node.color = widget.color;

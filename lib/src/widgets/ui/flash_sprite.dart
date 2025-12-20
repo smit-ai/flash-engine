@@ -29,8 +29,8 @@ class _FlashSpriteState extends FlashNodeWidgetState<FlashSprite, _SpriteNode> {
   _SpriteNode createNode() => _SpriteNode(image: widget.image, width: widget.width, height: widget.height);
 
   @override
-  void applyProperties() {
-    super.applyProperties();
+  void applyProperties([FlashSprite? oldWidget]) {
+    super.applyProperties(oldWidget);
     node.image = widget.image;
     node.width = widget.width;
     node.height = widget.height;
