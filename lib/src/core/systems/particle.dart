@@ -1,7 +1,10 @@
 import 'dart:math';
 import 'dart:ui';
+import 'dart:ffi';
+import 'package:ffi/ffi.dart';
 import 'package:vector_math/vector_math_64.dart';
 import '../graph/node.dart';
+import '../native/particles_ffi.dart';
 
 /// Individual particle data
 class FlashParticle {
@@ -376,125 +379,110 @@ class ParticleEmitterConfig {
   );
 }
 
-/// Particle emitter node
+// ... (FlashParticle class can remain if used for high-level callbacks, but we'll focus on the emitter)
+
+/// Particle emitter node (High Performance Native Version)
 class FlashParticleEmitter extends FlashNode {
-  final List<FlashParticle> _particles = [];
+  final Pointer<ParticleEmitter> _nativeEmitter;
+  final int maxParticles;
   final Random _random = Random();
 
   ParticleEmitterConfig config;
   bool emitting;
   double _emissionAccumulator = 0;
 
-  /// Callback when a particle is spawned (for custom behavior)
-  void Function(FlashParticle)? onParticleSpawn;
-
   FlashParticleEmitter({ParticleEmitterConfig? config, this.emitting = true, super.name = 'ParticleEmitter'})
-    : config = config ?? ParticleEmitterConfig();
+    : config = config ?? ParticleEmitterConfig(),
+      maxParticles = config?.maxParticles ?? 1000,
+      _nativeEmitter = calloc<ParticleEmitter>() {
+    // Allocate shared memory for particles
+    _nativeEmitter.ref.particles = calloc<NativeParticle>(maxParticles);
+    _nativeEmitter.ref.maxParticles = maxParticles;
+    _nativeEmitter.ref.activeCount = 0;
 
-  /// All active particles (read-only)
-  List<FlashParticle> get particles => List.unmodifiable(_particles);
-
-  /// Number of active particles
-  int get particleCount => _particles.length;
-
-  /// Emit a burst of particles
-  void burst(int count) {
-    for (int i = 0; i < count && _particles.length < config.maxParticles; i++) {
-      _spawnParticle();
-    }
+    _updateNativeGravity();
   }
 
-  /// Clear all particles
-  void clear() {
-    _particles.clear();
+  void _updateNativeGravity() {
+    _nativeEmitter.ref.gravityX = config.gravity.x;
+    _nativeEmitter.ref.gravityY = config.gravity.y;
+    _nativeEmitter.ref.gravityZ = config.gravity.z;
   }
 
-  /// Update particles (called automatically by scene)
+  /// Direct access to native particles for the renderer
+  Pointer<NativeParticle> get nativeParticles => _nativeEmitter.ref.particles;
+  Pointer<ParticleEmitter> get nativeEmitterPointer => _nativeEmitter;
+  int get activeCount => _nativeEmitter.ref.activeCount;
+
   @override
   void update(double dt) {
     super.update(dt);
-    _updateParticles(dt);
-  }
 
-  void _updateParticles(double dt) {
-    // Emit new particles
-    if (emitting && (config.loop || _particles.isEmpty)) {
+    // Update native gravity in case it changed
+    _updateNativeGravity();
+
+    // 1. Emit new particles
+    if (emitting && (config.loop || activeCount == 0)) {
       _emissionAccumulator += dt * config.emissionRate;
-
-      while (_emissionAccumulator >= 1 && _particles.length < config.maxParticles) {
+      while (_emissionAccumulator >= 1 && activeCount < maxParticles) {
         _spawnParticle();
         _emissionAccumulator -= 1;
       }
     }
 
-    // Update existing particles
-    for (int i = _particles.length - 1; i >= 0; i--) {
-      final p = _particles[i];
-
-      // Apply velocity
-      p.position += p.velocity * dt;
-
-      // Apply gravity
-      p.velocity += config.gravity * dt;
-
-      // Apply rotation
-      p.rotation += p.rotationSpeed * dt;
-
-      // Decrease life
-      p.life -= dt / p.maxLife;
-
-      // Remove dead particles
-      if (p.life <= 0) {
-        _particles.removeAt(i);
-      }
-    }
+    // 2. Call Native C++ update logic
+    FlashNativeParticles.updateParticles!(_nativeEmitter, dt);
   }
 
   void _spawnParticle() {
-    // Random values within ranges
     final lifetime = _randomRange(config.lifetimeMin, config.lifetimeMax);
     final size = _randomRange(config.sizeMin, config.sizeMax);
 
-    // Random velocity with spread
     final baseVelocity = Vector3(
       _randomRange(config.velocityMin.x, config.velocityMax.x),
       _randomRange(config.velocityMin.y, config.velocityMax.y),
       _randomRange(config.velocityMin.z, config.velocityMax.z),
     );
 
-    // Apply spread angle
     if (config.spreadAngle > 0) {
       final spreadX = _randomRange(-config.spreadAngle, config.spreadAngle);
       final spreadZ = _randomRange(-config.spreadAngle, config.spreadAngle);
-
       final rotX = Matrix4.rotationX(spreadX);
       final rotZ = Matrix4.rotationZ(spreadZ);
       baseVelocity.applyMatrix4(rotX);
       baseVelocity.applyMatrix4(rotZ);
     }
 
-    final particle = FlashParticle(
-      position: worldPosition.clone(),
-      velocity: baseVelocity,
-      maxLife: lifetime,
-      size: size,
-      color: config.startColor,
-      endColor: config.endColor,
-      rotation: _randomRange(0, 2 * pi),
-      rotationSpeed: _randomRange(config.rotationSpeedMin, config.rotationSpeedMax),
+    // Pass to C++
+    FlashNativeParticles.spawnParticle!(
+      _nativeEmitter,
+      worldPosition.x,
+      worldPosition.y,
+      worldPosition.z,
+      baseVelocity.x,
+      baseVelocity.y,
+      baseVelocity.z,
+      lifetime,
+      size,
+      config.startColor.value,
     );
-
-    _particles.add(particle);
-    onParticleSpawn?.call(particle);
   }
 
   double _randomRange(double min, double max) {
     return min + _random.nextDouble() * (max - min);
   }
 
+  bool _disposed = false;
+  bool get isDisposed => _disposed;
+
   @override
   void dispose() {
-    _particles.clear();
+    if (_disposed) return;
+    _disposed = true;
+
+    // IMPORTANT: Free native memory!
+    calloc.free(_nativeEmitter.ref.particles);
+    calloc.free(_nativeEmitter);
     super.dispose();
   }
 }

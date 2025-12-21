@@ -1,144 +1,123 @@
-import 'package:forge2d/forge2d.dart' as f2d;
-export 'package:forge2d/forge2d.dart' show Contact, BodyDef, FixtureDef, BodyType, Vector2;
+import 'dart:ffi';
+import 'package:ffi/ffi.dart';
 import '../graph/node.dart';
 import 'package:vector_math/vector_math_64.dart' as v;
+import '../native/particles_ffi.dart';
 
 /// Core physics constants and utilities
 class FlashPhysics {
   /// Default conversion factor: 100 pixels = 1 meter
-  /// Forge2D/Box2D works best with object sizes between 0.1 and 10 meters.
   static double pixelsPerMeter = 100.0;
 
-  /// Standard downward gravity in Y-up coordinate system
-  static v.Vector2 get standardGravity => v.Vector2(0, -9.81);
+  /// Standard downward gravity in pixels/s^2 (multiplied by 100)
+  static v.Vector2 get standardGravity => v.Vector2(0, -981.0);
 
-  /// Convert pixels to meters
-  static double toMeters(double pixels) => pixels / pixelsPerMeter;
-
-  /// Convert pixels vector (64-bit) to meters vector (32-bit)
-  static f2d.Vector2 toMetersV(v.Vector2 pixels) => f2d.Vector2(pixels.x / pixelsPerMeter, pixels.y / pixelsPerMeter);
-
-  /// Convert Forge2D Vector2 (32-bit) to pixels (double)
-  static double toPixels(double meters) => meters * pixelsPerMeter;
-
-  /// Convert meters vector (32-bit) to pixels vector (64-bit)
-  static v.Vector3 toPixelsV(f2d.Vector2 meters) => v.Vector3(meters.x * pixelsPerMeter, meters.y * pixelsPerMeter, 0);
+  // Shape Types
+  static const int circle = 0;
+  static const int box = 1;
 }
 
-class FlashPhysicsSystem extends f2d.ContactListener {
-  final f2d.World world;
-  v.Vector2 gravity;
+class FlashPhysicsSystem {
+  late final Pointer<PhysicsWorld> world;
+  final int maxBodies;
 
-  FlashPhysicsSystem({v.Vector2? gravity})
-    : gravity = gravity ?? FlashPhysics.standardGravity,
-      // Gravity is assumed to be in m/s^2. No conversion needed for Forge2D world.
-      world = f2d.World(f2d.Vector2(gravity?.x ?? 0.0, gravity?.y ?? -9.81)) {
-    world.setContactListener(this);
+  FlashPhysicsSystem({v.Vector2? gravity, this.maxBodies = 1000}) {
+    final createFunc = FlashNativeParticles.createPhysicsWorld;
+    if (createFunc == null) {
+      throw StateError('Native core not initialized. Call FlashEngine.start() first.');
+    }
+    world = createFunc(maxBodies);
+
+    if (gravity != null) {
+      world.ref.gravityX = gravity.x;
+      world.ref.gravityY = gravity.y;
+    }
   }
 
   void update(double dt) {
-    world.stepDt(dt);
-  }
-
-  @override
-  void beginContact(f2d.Contact contact) {
-    _handleContact(contact, true);
-  }
-
-  @override
-  void endContact(f2d.Contact contact) {
-    _handleContact(contact, false);
-  }
-
-  @override
-  void preSolve(f2d.Contact contact, f2d.Manifold oldManifold) {}
-
-  @override
-  void postSolve(f2d.Contact contact, f2d.ContactImpulse impulse) {}
-
-  void _handleContact(f2d.Contact contact, bool isStart) {
-    final userDataA = contact.fixtureA.body.userData;
-    final userDataB = contact.fixtureB.body.userData;
-
-    if (userDataA is FlashPhysicsBody) {
-      if (isStart) {
-        userDataA.onCollisionStart?.call(contact);
-      } else {
-        userDataA.onCollisionEnd?.call(contact);
-      }
+    final stepFunc = FlashNativeParticles.stepPhysics;
+    if (stepFunc != null) {
+      stepFunc(world, dt);
     }
+  }
 
-    if (userDataB is FlashPhysicsBody) {
-      if (isStart) {
-        userDataB.onCollisionStart?.call(contact);
-      } else {
-        userDataB.onCollisionEnd?.call(contact);
-      }
+  void dispose() {
+    final destroyFunc = FlashNativeParticles.destroyPhysicsWorld;
+    if (destroyFunc != null) {
+      destroyFunc(world);
     }
   }
 }
 
 class FlashPhysicsBody extends FlashNode {
-  final f2d.Body body;
-  void Function(f2d.Contact)? onCollisionStart;
-  void Function(f2d.Contact)? onCollisionEnd;
-  void Function(f2d.Body)? onUpdate;
+  final Pointer<PhysicsWorld> _world;
+  final int bodyId;
 
-  FlashPhysicsBody({required this.body, super.name = 'PhysicsBody'}) {
-    body.userData = this;
+  /// Callback when a collision occurs.
+  void Function(FlashPhysicsBody)? onCollision;
+
+  /// Callback on every physics update.
+  void Function(FlashPhysicsBody)? onUpdate;
+
+  // Temporary buffers to avoid allocation in sync
+  static final Pointer<Float> _posX = calloc<Float>();
+  static final Pointer<Float> _posY = calloc<Float>();
+
+  FlashPhysicsBody({
+    required Pointer<PhysicsWorld> world,
+    int type = 2, // DYNAMIC
+    int shapeType = FlashPhysics.circle,
+    double x = 0,
+    double y = 0,
+    double width = 50,
+    double height = 50,
+    double rotation = 0,
+    super.name = 'PhysicsBody',
+  }) : _world = world,
+       bodyId = FlashNativeParticles.createBody!(world, type, shapeType, x, y, width, height, rotation) {
     _syncFromPhysics();
   }
 
   @override
   void update(double dt) {
-    onUpdate?.call(body);
     super.update(dt);
+    _syncFromPhysics();
+    onUpdate?.call(this);
+  }
 
-    // valid check for body disposal or if world is locked?
-    // body.isActive check is important
-    if (body.isActive && body.isAwake) {
-      _syncFromPhysics();
-    }
+  void setVelocity(double vx, double vy) {
+    FlashNativeParticles.setBodyVelocity!(_world, bodyId, vx, vy);
+  }
+
+  void applyForce(double fx, double fy) {
+    FlashNativeParticles.applyForce!(_world, bodyId, fx, fy);
+  }
+
+  void applyTorque(double torque) {
+    FlashNativeParticles.applyTorque!(_world, bodyId, torque);
   }
 
   void _syncFromPhysics() {
-    final pos = body.position;
-    final angle = body.angle;
+    FlashNativeParticles.getBodyPosition!(_world, bodyId, _posX, _posY);
 
-    // Convert from meters back to pixels for rendering
-    transform.position = FlashPhysics.toPixelsV(pos);
-    transform.rotation = v.Vector3(0, 0, angle);
+    final bodyPtr = _world.ref.bodies.elementAt(bodyId);
+    transform.position = v.Vector3(_posX.value, _posY.value, 0);
+    transform.rotation = v.Vector3(0, 0, bodyPtr.ref.rotation);
+
+    // Check for collisions (feedback from native core)
+    if (bodyPtr.ref.collisionCount > 0) {
+      onCollision?.call(this);
+    }
   }
 }
 
-/// Helper class for defining collision layers and masks
+/// Helper class for defining collision layers (Legacy/UI compatibility)
 class FlashCollisionLayer {
   static const int none = 0x0000;
   static const int all = 0xFFFF;
-
-  static const int layer1 = 0x0001;
-  static const int layer2 = 0x0002;
-  static const int layer3 = 0x0004;
-  static const int layer4 = 0x0008;
-  static const int layer5 = 0x0010;
-  static const int layer6 = 0x0020;
-  static const int layer7 = 0x0040;
-  static const int layer8 = 0x0080;
-  static const int layer9 = 0x0100;
-  static const int layer10 = 0x0200;
-  static const int layer11 = 0x0400;
-  static const int layer12 = 0x0800;
-  static const int layer13 = 0x1000;
-  static const int layer14 = 0x2000;
-  static const int layer15 = 0x4000;
-  static const int layer16 = 0x8000;
-
-  /// Helper to combine multiple layers into a mask
   static int maskOf(List<int> layers) {
     int mask = 0;
-    for (final layer in layers) {
-      mask |= layer;
-    }
+    for (final layer in layers) mask |= layer;
     return mask;
   }
 }

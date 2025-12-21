@@ -7,6 +7,7 @@ import '../rendering/camera.dart';
 import '../rendering/light.dart';
 import '../systems/physics.dart';
 import '../systems/particle.dart';
+import '../native/particles_ffi.dart';
 import 'audio.dart';
 import 'input.dart';
 import 'scene_manager.dart';
@@ -57,6 +58,7 @@ class FlashEngine extends ChangeNotifier {
 
   void start() {
     audio.init();
+    FlashNativeParticles.init();
     _ticker.start();
   }
 
@@ -71,8 +73,9 @@ class FlashEngine extends ChangeNotifier {
 
   @override
   void dispose() {
-    stop();
+    physicsWorld?.dispose();
     _ticker.dispose();
+    audio.dispose();
     super.dispose();
   }
 

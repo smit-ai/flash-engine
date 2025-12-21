@@ -22,8 +22,6 @@ export 'lighting/flash_light_widget.dart';
 export 'physics/flash_rigid_body.dart';
 export 'physics/flash_static_body.dart';
 export 'physics/flash_area.dart';
-export 'physics/flash_physics_node.dart';
-export 'physics/flash_joint_widget.dart';
 
 // Export Audio
 export 'audio/flash_audio_player.dart';

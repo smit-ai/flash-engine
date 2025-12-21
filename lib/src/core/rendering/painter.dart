@@ -1,7 +1,11 @@
+import 'dart:ffi' hide Size;
+import 'dart:ui' as ui hide Size;
+import 'package:ffi/ffi.dart';
 import 'package:flutter/widgets.dart';
 import 'package:vector_math/vector_math_64.dart';
 import '../systems/particle.dart';
 import '../systems/engine.dart';
+import '../native/particles_ffi.dart';
 import 'camera.dart';
 
 class FlashPainter extends CustomPainter {
@@ -49,30 +53,36 @@ class FlashPainter extends CustomPainter {
     }
   }
 
+  // Native buffers for 2M particles to avoid GC pressure and allow C++ access
+  static final Pointer<Float> _verticesPtr = calloc<Float>(2000000 * 3 * 2);
+  static final Pointer<Uint32> _colorsPtr = calloc<Uint32>(2000000 * 3);
+  static final Pointer<Float> _matrixPtr = calloc<Float>(16);
+
   void _renderParticles(Canvas canvas, Matrix4 cameraMatrix, FlashParticleEmitter emitter) {
-    final paint = Paint();
+    if (emitter.isDisposed) return;
+    final count = emitter.activeCount;
+    if (count == 0) return;
 
-    for (final particle in emitter.particles) {
-      // Transform particle position
-      final worldPos = particle.position.clone();
-      worldPos.applyMatrix4(cameraMatrix);
+    // Copy matrix to native memory
+    final matrixData = cameraMatrix.storage;
+    for (int i = 0; i < 16; i++) {
+      _matrixPtr[i] = matrixData[i];
+    }
 
-      // Check if behind camera (w < 0 after perspective)
-      if (worldPos.z < 0) continue;
+    // Fill native buffers in C++
+    final fillFunc = FlashNativeParticles.fillVertexBuffer;
+    if (fillFunc == null) return;
 
-      // Calculate screen position
-      final screenX = worldPos.x / worldPos.z;
-      final screenY = worldPos.y / worldPos.z;
-      final screenSize = particle.currentSize / worldPos.z * 500; // Scale by distance
+    final renderedCount = fillFunc(emitter.nativeEmitterPointer, _matrixPtr, _verticesPtr, _colorsPtr, 2000000);
 
-      // Skip if too small
-      if (screenSize < 0.5) continue;
+    if (renderedCount > 0) {
+      final vertices = ui.Vertices.raw(
+        ui.VertexMode.triangles,
+        _verticesPtr.asTypedList(renderedCount * 3 * 2),
+        colors: _colorsPtr.cast<Int32>().asTypedList(renderedCount * 3),
+      );
 
-      // Draw particle as circle with gradient
-      paint.color = particle.currentColor;
-      paint.maskFilter = MaskFilter.blur(BlurStyle.normal, screenSize * 0.3);
-
-      canvas.drawCircle(Offset(screenX, screenY), screenSize, paint);
+      canvas.drawVertices(vertices, BlendMode.srcOver, Paint());
     }
   }
 

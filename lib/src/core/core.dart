@@ -4,7 +4,6 @@ export 'systems/audio.dart';
 export 'systems/input.dart';
 export 'systems/particle.dart';
 export 'systems/tween.dart';
-export 'systems/joint2d.dart';
 export 'systems/verlet.dart';
 export 'systems/scene_manager.dart';
 export 'systems/state_machine.dart';

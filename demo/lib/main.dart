@@ -11,11 +11,11 @@ import 'examples/audio_demo.dart';
 import 'examples/input_demo.dart';
 import 'examples/particle_demo.dart';
 import 'examples/tween_demo.dart';
-import 'examples/joint_demo.dart';
 import 'examples/scene_demo.dart';
 import 'examples/state_machine_demo.dart';
 import 'examples/collision_layers_demo.dart';
 import 'examples/three_d_audio_demo.dart';
+import 'examples/native_particle_demo.dart';
 
 void main() {
   runApp(const FlashDemoApp());
@@ -63,8 +63,8 @@ class ExampleMenu extends StatelessWidget {
         builder: (_) => const ParticleFieldExample(),
       ),
       _ExampleData(
-        title: 'Physics World',
-        description: 'Forge2D dynamics.',
+        title: 'Native Physics',
+        description: 'Native C++ world.',
         icon: Icons.architecture_rounded,
         builder: (_) => const PhysicsDemoExample(),
       ),
@@ -87,8 +87,8 @@ class ExampleMenu extends StatelessWidget {
         builder: (_) => const LightingDemo(),
       ),
       _ExampleData(
-        title: '3D Audio',
-        description: 'Spatial SoLoud audio.',
+        title: 'Physics Audio',
+        description: 'Native collision sounds.',
         icon: Icons.surround_sound_rounded,
         builder: (_) => const AudioDemo(),
       ),
@@ -117,12 +117,6 @@ class ExampleMenu extends StatelessWidget {
         builder: (_) => const TweenDemoExample(),
       ),
       _ExampleData(
-        title: 'Joint System',
-        description: 'Verlet ropes & springs.',
-        icon: Icons.link,
-        builder: (_) => const JointDemoExample(),
-      ),
-      _ExampleData(
         title: 'Scene Manager',
         description: 'Transitions & effects.',
         icon: Icons.layers,
@@ -136,9 +130,15 @@ class ExampleMenu extends StatelessWidget {
       ),
       _ExampleData(
         title: 'Collisions',
-        description: 'Layer filtering.',
+        description: 'Native impact test.',
         icon: Icons.filter_center_focus_rounded,
         builder: (_) => const CollisionLayersDemoExample(),
+      ),
+      _ExampleData(
+        title: 'Native FFI Particles',
+        description: '100k particles stress test.',
+        icon: Icons.speed_rounded,
+        builder: (_) => const NativeParticleDemo(),
       ),
       _ExampleData(
         title: 'Lines & Trails',

@@ -1,22 +1,50 @@
 import 'package:flutter/material.dart';
-import 'package:forge2d/forge2d.dart' as f2d;
 import '../../core/systems/physics.dart';
 import '../framework.dart';
 
+/// A static physics body (e.g. floor, walls) that doesn't move.
 class FlashStaticBody extends FlashNodeWidget {
-  final f2d.BodyDef? bodyDef;
-  final List<f2d.FixtureDef>? fixtures;
+  final int shapeType;
+  final double width;
+  final double height;
 
   const FlashStaticBody({
     super.key,
-    this.bodyDef,
-    this.fixtures,
+    this.shapeType = FlashPhysics.box,
+    this.width = 100,
+    this.height = 100,
     super.position,
     super.rotation,
     super.scale,
-    super.name,
+    super.name = 'StaticBody',
     super.child,
   });
+
+  /// Shorthand constructor for squares
+  FlashStaticBody.square({
+    super.key,
+    this.shapeType = FlashPhysics.box,
+    double size = 100,
+    super.position,
+    super.rotation,
+    super.scale,
+    super.name = 'StaticBody',
+    super.child,
+  }) : width = size,
+       height = size;
+
+  /// Shorthand constructor for circles
+  FlashStaticBody.circle({
+    super.key,
+    this.shapeType = FlashPhysics.circle,
+    double radius = 50,
+    super.position,
+    super.rotation,
+    super.scale,
+    super.name = 'StaticBody',
+    super.child,
+  }) : width = radius * 2,
+       height = radius * 2;
 
   @override
   State<FlashStaticBody> createState() => _FlashStaticBodyState();
@@ -29,26 +57,25 @@ class _FlashStaticBodyState extends FlashNodeWidgetState<FlashStaticBody, FlashP
     final engine = (element?.widget as InheritedFlashNode?)?.engine;
     final world = engine?.physicsWorld;
 
-    if (world == null) {
-      throw Exception('FlashStaticBody requires a FlashPhysicsWorld in the Flash engine');
+    if (world == null && engine != null) {
+      engine.physicsWorld = FlashPhysicsSystem(gravity: FlashPhysics.standardGravity);
     }
 
-    final bodyDef = widget.bodyDef ?? f2d.BodyDef();
-    bodyDef.type = f2d.BodyType.static;
-    if (widget.position != null) {
-      bodyDef.position = f2d.Vector2(widget.position!.x, widget.position!.y);
-    }
-    if (widget.rotation != null) {
-      bodyDef.angle = widget.rotation!.z;
+    final activeWorld = engine?.physicsWorld;
+    if (activeWorld == null) {
+      throw Exception('FlashStaticBody: Failed to initialize physics world');
     }
 
-    final body = world.world.createBody(bodyDef);
-    if (widget.fixtures != null) {
-      for (final fixture in widget.fixtures!) {
-        body.createFixture(fixture);
-      }
-    }
-
-    return FlashPhysicsBody(body: body);
+    return FlashPhysicsBody(
+      world: activeWorld.world,
+      type: 0, // STATIC
+      shapeType: widget.shapeType,
+      x: widget.position?.x ?? 0,
+      y: widget.position?.y ?? 0,
+      width: widget.width,
+      height: widget.height,
+      rotation: widget.rotation?.z ?? 0,
+      name: widget.name ?? 'StaticBody',
+    );
   }
 }

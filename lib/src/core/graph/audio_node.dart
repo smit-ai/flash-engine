@@ -1,4 +1,3 @@
-import 'package:vector_math/vector_math_64.dart';
 import '../systems/audio.dart';
 import '../graph/node.dart';
 
@@ -23,7 +22,6 @@ class FlashAudioNode extends FlashNode {
   AudioSource? _source;
   final List<SoundHandle> _handles = [];
   FlashAudioSystem? _system;
-  Vector3 _lastPosition = Vector3.zero();
 
   FlashAudioNode({
     required this.assetPath,
@@ -44,7 +42,6 @@ class FlashAudioNode extends FlashNode {
     if (_source != null) return; // Already initialized
 
     _system = system;
-    _lastPosition = worldPosition.clone();
     await system.ready; // Wait for initialization
     _source = await system.loadAsset(assetPath);
     if (_source != null && autoplay) {
