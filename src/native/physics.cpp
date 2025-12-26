@@ -47,7 +47,7 @@ PhysicsWorld* create_physics_world(int maxBodies) {
     
     // Box2D-inspired solver configuration
     world->velocityIterations = 8;  // Box2D default
-    world->positionIterations = 3;  // Box2D default
+    world->positionIterations = 6;  // Increased for better penetration resolution
     world->enableWarmStarting = 1;  // Enable by default
     world->contactHertz = 30.0f;    // 30 Hz for soft contacts
     world->contactDampingRatio = 0.8f; // Slightly underdamped
@@ -492,8 +492,8 @@ void step_physics(PhysicsWorld* world, float dt) {
     }
 
     // Phase 6: Position correction (non-linear Gauss-Seidel)
-    const float slop = 0.01f;  // Box2D uses smaller slop
-    const float baumgarte = 0.2f;  // Box2D default
+    const float slop = 0.005f;  // Smaller slop for tighter correction
+    const float baumgarte = 0.4f;  // More aggressive correction (was 0.2)
     
     for (int iter = 0; iter < world->positionIterations; ++iter) {
         for (int i = 0; i < world->activeConstraints; ++i) {
