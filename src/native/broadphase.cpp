@@ -74,37 +74,47 @@ void insert_into_grid(SpatialHashGrid* grid, uint32_t bodyId, const AABB& aabb) 
 int query_grid_pairs(SpatialHashGrid* grid, BroadphasePair* outPairs, int maxPairs) {
     if (!grid) return 0;
     
-    int pairCount = 0;
+    // Clear the pairs cache for this frame
+    grid->pairs.clear();
+    
     int totalCells = grid->gridWidth * grid->gridHeight;
     
-    // For each cell, check all pairs of bodies in that cell
-    for (int i = 0; i < totalCells && pairCount < maxPairs; ++i) {
+    // 1. Collect ALL potential pairs (including duplicates)
+    for (int i = 0; i < totalCells; ++i) {
         const auto& bodyIds = grid->cells[i].bodyIds;
+        size_t count = bodyIds.size();
         
-        for (size_t j = 0; j < bodyIds.size() && pairCount < maxPairs; ++j) {
-            for (size_t k = j + 1; k < bodyIds.size() && pairCount < maxPairs; ++k) {
-                uint32_t bodyA = bodyIds[j];
-                uint32_t bodyB = bodyIds[k];
+        if (count < 2) continue;
+        
+        for (size_t j = 0; j < count; ++j) {
+            for (size_t k = j + 1; k < count; ++k) {
+                uint32_t a = bodyIds[j];
+                uint32_t b = bodyIds[k];
                 
-                // Check if we've already added this pair
-                uint64_t pairKey = make_pair_key(bodyA, bodyB);
+                // Store pair as uint64_t key
+                if (a > b) std::swap(a, b);
+                uint64_t key = ((uint64_t)a << 32) | b;
                 
-                bool alreadyAdded = false;
-                for (uint64_t existingKey : grid->pairs) {
-                    if (existingKey == pairKey) {
-                        alreadyAdded = true;
-                        break;
-                    }
-                }
-                
-                if (!alreadyAdded) {
-                    grid->pairs.push_back(pairKey);
-                    outPairs[pairCount].bodyA = bodyA;
-                    outPairs[pairCount].bodyB = bodyB;
-                    pairCount++;
-                }
+                grid->pairs.push_back(key);
             }
         }
+    }
+    
+    // 2. Sort and Unique to remove duplicates
+    if (grid->pairs.empty()) return 0;
+    
+    std::sort(grid->pairs.begin(), grid->pairs.end());
+    auto last = std::unique(grid->pairs.begin(), grid->pairs.end());
+    grid->pairs.erase(last, grid->pairs.end());
+    
+    // 3. Output unique pairs
+    int pairCount = 0;
+    for (uint64_t key : grid->pairs) {
+        if (pairCount >= maxPairs) break;
+        
+        outPairs[pairCount].bodyA = (uint32_t)(key >> 32);
+        outPairs[pairCount].bodyB = (uint32_t)(key & 0xFFFFFFFF);
+        pairCount++;
     }
     
     return pairCount;

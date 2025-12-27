@@ -112,6 +112,7 @@ class FlashPhysicsBody extends FlashNode {
 
   // Internal body ID from native physics
   final int bodyId;
+  final int shapeType; // Store the shape type for correct rendering
   final Pointer<PhysicsWorld> _world;
 
   /// Callback when this body collides
@@ -130,7 +131,7 @@ class FlashPhysicsBody extends FlashNode {
   FlashPhysicsBody({
     required Pointer<PhysicsWorld> world,
     int type = 2, // DYNAMIC
-    int shapeType = FlashPhysics.circle,
+    this.shapeType = FlashPhysics.circle,
     double x = 0,
     double y = 0,
     this.width = 50,
@@ -166,21 +167,7 @@ class FlashPhysicsBody extends FlashNode {
 
     final paint = Paint()..color = color;
 
-    // Detect shape from dimensions heuristic since we don't store shapeType yet.
-    // In our demo:
-    // - Balls are circles (width=height)
-    // - Anchors are circles (width=height)
-    // - Rope segments are squares (width=height)
-    // - Ground is a box (width!=height)
-
-    final isCircle =
-        (width == height) &&
-        (name.toLowerCase().contains('ball') ||
-            name.toLowerCase().contains('circle') ||
-            name.toLowerCase().contains('anchor') ||
-            name.toLowerCase().contains('pendulum'));
-
-    if (isCircle) {
+    if (shapeType == FlashPhysics.circle) {
       canvas.drawCircle(Offset.zero, width / 2, paint);
     } else {
       final visibleRect = Rect.fromCenter(center: Offset.zero, width: width, height: height);

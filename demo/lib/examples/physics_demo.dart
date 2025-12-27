@@ -11,9 +11,25 @@ class PhysicsDemoExample extends StatefulWidget {
 }
 
 class _PhysicsDemoExampleState extends State<PhysicsDemoExample> {
-  // Spawner state
+  // Persistent data to ensure stable keys and properties
+  final List<_BodyData> _bodies = [];
   bool _autoSpawn = false;
-  int _spawnCount = 0;
+
+  void _spawnBody() {
+    final r = Random();
+    final isCircle = r.nextBool();
+    _bodies.add(
+      _BodyData(
+        key: UniqueKey(),
+        isCircle: isCircle,
+        // Random position at top
+        position: v.Vector3((r.nextDouble() - 0.5) * 40, 350, 0),
+        // Random size
+        size: 15.0 + r.nextDouble() * 15.0,
+        color: Colors.accents[r.nextInt(Colors.accents.length)],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +51,7 @@ class _PhysicsDemoExampleState extends State<PhysicsDemoExample> {
             icon: const Icon(Icons.refresh),
             onPressed: () {
               setState(() {
-                _spawnCount = 0;
+                _bodies.clear();
                 _autoSpawn = false;
               });
             },
@@ -43,14 +59,12 @@ class _PhysicsDemoExampleState extends State<PhysicsDemoExample> {
         ],
       ),
       body: Flash(
-        autoUpdate: true,
+        autoUpdate: false, // Fix: Prevent full widget tree rebuild every frame
         child: Stack(
           children: [
             FlashCamera(position: v.Vector3(0, 0, 1000)),
 
-            // --- Static World Geometry (Walls & Pegs) ---
-
-            // Floor (Y is Negative, so Bottom is ~ -400)
+            // --- Static World Geometry ---
             FlashStaticBody(
               name: 'Floor',
               position: v.Vector3(0, -400, 0),
@@ -59,8 +73,6 @@ class _PhysicsDemoExampleState extends State<PhysicsDemoExample> {
               color: Colors.grey[800]!,
               debugDraw: true,
             ),
-
-            // Left Wall
             FlashStaticBody(
               name: 'LeftWall',
               position: v.Vector3(-380, 0, 0),
@@ -69,8 +81,6 @@ class _PhysicsDemoExampleState extends State<PhysicsDemoExample> {
               color: Colors.grey[800]!,
               debugDraw: true,
             ),
-
-            // Right Wall
             FlashStaticBody(
               name: 'RightWall',
               position: v.Vector3(380, 0, 0),
@@ -80,7 +90,7 @@ class _PhysicsDemoExampleState extends State<PhysicsDemoExample> {
               debugDraw: true,
             ),
 
-            // Pachinko Pegs (Static) - Staggered Grid
+            // Pegs
             for (int row = 0; row < 6; row++)
               for (int col = -4; col <= 4; col++)
                 if ((row % 2 == 0 && col % 2 == 0) || (row % 2 != 0 && col % 2 != 0))
@@ -92,33 +102,57 @@ class _PhysicsDemoExampleState extends State<PhysicsDemoExample> {
                     debugDraw: true,
                   ),
 
-            // --- Dynamic Spawner Logic ---
+            // --- Dynamic Spawner ---
             if (_autoSpawn)
               _Spawner(
                 interval: const Duration(milliseconds: 300),
                 onTick: () {
                   setState(() {
-                    _spawnCount++;
+                    _spawnBody();
                   });
                 },
               ),
 
-            // Dynamic Balls List
-            for (int i = 0; i < _spawnCount; i++)
-              FlashRigidBody.circle(
-                key: ValueKey('ball_$i'),
-                name: 'Ball_$i',
-                // Spawn at top center with slight random X jitter
-                position: v.Vector3((Random().nextDouble() - 0.5) * 40, 350, 0),
-                radius: 12,
-                color: Colors.accents[i % Colors.accents.length],
-                debugDraw: true,
-              ),
+            // --- Dynamic Bodies ---
+            for (final body in _bodies)
+              body.isCircle
+                  ? FlashRigidBody.circle(
+                      key: body.key,
+                      name: 'Body_${body.key}',
+                      position: body.position,
+                      radius: body.size,
+                      color: body.color,
+                      debugDraw: true,
+                    )
+                  : FlashRigidBody.square(
+                      key: body.key,
+                      name: 'Body_${body.key}',
+                      position: body.position,
+                      size: body.size * 2, // Width = Radius * 2
+                      color: body.color,
+                      debugDraw: true,
+                    ),
           ],
         ),
       ),
     );
   }
+}
+
+class _BodyData {
+  final Key key;
+  final bool isCircle;
+  final v.Vector3 position;
+  final double size;
+  final Color color;
+
+  _BodyData({
+    required this.key,
+    required this.isCircle,
+    required this.position,
+    required this.size,
+    required this.color,
+  });
 }
 
 // Logic widget to drive the spawning loop

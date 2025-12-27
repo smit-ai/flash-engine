@@ -36,11 +36,18 @@ class FlashPainter extends CustomPainter {
     final lights = engine.lights;
     final emitters = engine.emitters;
 
-    // Z-Sorting (Painter's Algorithm)
+    // Z-Sorting (Painter's Algorithm: Back-to-Front)
+    // Draw distant objects (Low Z) first, then close objects (High Z) on top.
     flatList.sort((a, b) {
       final az = a.worldPosition.z;
       final bz = b.worldPosition.z;
-      return bz.compareTo(az);
+      // 1. Sort by Z Ascending (Back to Front)
+      final cmp = az.compareTo(bz);
+      if (cmp != 0) return cmp;
+
+      // 2. Stable Tie-Breaker: If Z is equal, sort by hashCode (Creation/Memory order)
+      // This prevents Z-fighting flickering for objects on the same plane.
+      return a.hashCode.compareTo(b.hashCode);
     });
 
     for (final node in flatList) {
