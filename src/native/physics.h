@@ -173,6 +173,7 @@ void get_body_position(PhysicsWorld* world, int32_t bodyId, float* x, float* y);
 int32_t create_soft_body(PhysicsWorld* world, int pointCount, float* initialX, float* initialY, float pressure, float stiffness);
 void get_soft_body_point(PhysicsWorld* world, int32_t sbId, int pointIdx, float* x, float* y);
 void set_soft_body_point(PhysicsWorld* world, int32_t sbId, int pointIdx, float x, float y);
+void set_soft_body_params(PhysicsWorld* world, int32_t sbId, float pressure, float stiffness);
 
 // RayCasting
 struct RayCastHit {

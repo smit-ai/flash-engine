@@ -6,7 +6,8 @@ OUTPUT_DIR="lib/src/core/native/bin"
 LIB_NAME="libflash_core.dylib"
 CPP_FLAGS="-O3 -ffast-math -flto -std=c++11"
 
-# Create output directory
+# Clean output directory
+rm -rf "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
 
 echo "Compiling native core library (Particles + Physics) for iOS Simulator..."

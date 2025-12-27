@@ -214,6 +214,26 @@ class FPhysicsSystem {
   static void setSoftBodyPoint(WorldId world, int sbId, int pointIdx, double x, double y) {
     FlashNativeParticles.setSoftBodyPoint!(world, sbId, pointIdx, x, y);
   }
+
+  /// Helper to get point position as Offset without manual implementation management
+  static Offset getSoftBodyPointPos(WorldId world, int sbId, int pointIdx) {
+    final ptrX = calloc<Float>();
+    final ptrY = calloc<Float>();
+
+    FlashNativeParticles.getSoftBodyPoint!(world, sbId, pointIdx, ptrX, ptrY);
+
+    final x = ptrX.value;
+    final y = ptrY.value;
+
+    calloc.free(ptrX);
+    calloc.free(ptrY);
+
+    return Offset(x, y);
+  }
+
+  static void setSoftBodyParams(WorldId world, int sbId, double pressure, double stiffness) {
+    FlashNativeParticles.setSoftBodyParams!(world, sbId, pressure, stiffness);
+  }
 }
 
 class FPhysics {
@@ -409,7 +429,12 @@ class FSoftBody extends FNode {
 
     calloc.free(ptrX);
     calloc.free(ptrY);
+    calloc.free(ptrY);
     return id;
+  }
+
+  void setParams(double pressure, double stiffness) {
+    FPhysicsSystem.setSoftBodyParams(world, id, pressure, stiffness);
   }
 
   @override

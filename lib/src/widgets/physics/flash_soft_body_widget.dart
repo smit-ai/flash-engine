@@ -33,7 +33,8 @@ class _FSoftBodyWidgetState extends FNodeWidgetState<FSoftBodyWidget, FSoftBody>
   @override
   void applyProperties([FSoftBodyWidget? oldWidget]) {
     super.applyProperties(oldWidget);
-    // Note: If pressure/stiffness change, we would ideally update the native struct.
-    // For now, these are initial parameters.
+    if (oldWidget != null && (widget.pressure != oldWidget.pressure || widget.stiffness != oldWidget.stiffness)) {
+      node.setParams(widget.pressure, widget.stiffness);
+    }
   }
 }

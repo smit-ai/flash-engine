@@ -294,6 +294,7 @@ class FlashNativeParticles {
   static int Function(Pointer<PhysicsWorld>, int, Pointer<Float>, Pointer<Float>, double, double)? createSoftBody;
   static void Function(Pointer<PhysicsWorld>, int, int, Pointer<Float>, Pointer<Float>)? getSoftBodyPoint;
   static void Function(Pointer<PhysicsWorld>, int, int, double, double)? setSoftBodyPoint;
+  static void Function(Pointer<PhysicsWorld>, int, double, double)? setSoftBodyParams;
 
   // Scene/Node Functions
   static Pointer<NativeScene> Function(int)? createNativeScene;
@@ -390,6 +391,12 @@ class FlashNativeParticles {
           Void Function(Pointer<PhysicsWorld>, Int32, Int32, Float, Float),
           void Function(Pointer<PhysicsWorld>, int, int, double, double)
         >('set_soft_body_point');
+
+    setSoftBodyParams = _lib!
+        .lookupFunction<
+          Void Function(Pointer<PhysicsWorld>, Int32, Float, Float),
+          void Function(Pointer<PhysicsWorld>, int, double, double)
+        >('set_soft_body_params');
 
     // RayCast Binding
     rayCast = _lib!

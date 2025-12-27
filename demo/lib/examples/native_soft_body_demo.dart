@@ -1,10 +1,6 @@
 import 'dart:math' as math;
-import 'dart:ffi'; // Add FFI import
-import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:flash/flash.dart';
-// import 'package:flash/src/widgets/physics/flash_soft_body_widget.dart'; // Removed unnecessary import
-// import 'package:flash/src/core/native/particles_ffi.dart'; // Removed unused import
 import 'package:vector_math/vector_math_64.dart' as v;
 
 class NativeSoftBodyDemo extends StatefulWidget {
@@ -23,8 +19,6 @@ class _NativeSoftBodyDemoState extends State<NativeSoftBodyDemo> {
 
   // Dragging state
   int? _draggedPointIndex;
-  final Pointer<Float> _tempX = calloc<Float>();
-  final Pointer<Float> _tempY = calloc<Float>();
 
   @override
   void initState() {
@@ -42,8 +36,6 @@ class _NativeSoftBodyDemoState extends State<NativeSoftBodyDemo> {
 
   @override
   void dispose() {
-    calloc.free(_tempX);
-    calloc.free(_tempY);
     _physics.dispose();
     super.dispose();
   }
@@ -62,10 +54,11 @@ class _NativeSoftBodyDemoState extends State<NativeSoftBodyDemo> {
     // Check points
     const int count = 32;
     for (int i = 0; i < count; i++) {
-      FPhysicsSystem.getSoftBodyPoint(_physics.world, 0, i, _tempX, _tempY);
-      final px = _tempX.value;
-      final py = _tempY.value;
+      final point = FPhysicsSystem.getSoftBodyPointPos(_physics.world, 0, i);
+      final px = point.dx;
+      final py = point.dy;
       final dist = (wx - px) * (wx - px) + (wy - py) * (wy - py);
+
       if (dist < minDst) {
         minDst = dist;
         closest = i;
@@ -126,11 +119,11 @@ class _NativeSoftBodyDemoState extends State<NativeSoftBodyDemo> {
                         debugDraw: true,
                       ),
 
-                      FLight(
-                        position: v.Vector3(math.sin(elapsed) * 300, math.cos(elapsed) * 300, 200),
-                        color: Colors.cyan,
-                        intensity: 1.5,
-                      ),
+                      // FLight(
+                      //   position: v.Vector3(math.sin(elapsed) * 300, math.cos(elapsed) * 300, 200),
+                      //   color: Colors.cyan,
+                      //   intensity: 1.5,
+                      // ),
                     ],
                   ),
                 ];

@@ -641,6 +641,8 @@ int32_t create_soft_body(PhysicsWorld* world, int pointCount, float* initialX, f
 
     // Create neighbor constraints
     sb.constraintCount = pointCount + (pointCount / 2); // Perimeter + some interior supports
+    // Debug print
+    printf("DEBUG: creating soft body %d. Points: %d. Constraints: %d\n", id, pointCount, sb.constraintCount);
     sb.constraints = new SoftBodyConstraint[sb.constraintCount];
     
     int cIdx = 0;
@@ -691,7 +693,25 @@ void set_soft_body_point(PhysicsWorld* world, int32_t sbId, int pointIdx, float 
     sb.points[pointIdx].oldX = x;
     sb.points[pointIdx].oldY = y;
     sb.points[pointIdx].vx = 0;
+    sb.points[pointIdx].vx = 0;
     sb.points[pointIdx].vy = 0;
+}
+
+void set_soft_body_params(PhysicsWorld* world, int32_t sbId, float pressure, float stiffness) {
+    if (!world || sbId < 0 || sbId >= world->activeSoftBodies) return;
+    
+    NativeSoftBody& sb = world->softBodies[sbId];
+    sb.pressure = pressure;
+    
+    // Update constraint stiffness
+    for (int i = 0; i < sb.constraintCount; i++) {
+        // Interior constraints (last third roughly) are usually softer, but for simplicity we re-apply logic
+        // logic from create: stiffness * 0.1f for interior, stiffness for perimeter.
+        // We know perimeter is first 'pointCount' constraints.
+        
+        bool isPerimeter = i < sb.pointCount;
+        sb.constraints[i].stiffness = isPerimeter ? stiffness : (stiffness * 0.1f);
+    }
 }
 
 // --- Soft Body Simulation ---
