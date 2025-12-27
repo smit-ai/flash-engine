@@ -319,7 +319,7 @@ void step_physics(PhysicsWorld* world, float dt) {
         if (a.shapeType == SHAPE_CIRCLE && b.shapeType == SHAPE_CIRCLE) m = detectCircleCircle(a, b);
         else if (a.shapeType == SHAPE_BOX && b.shapeType == SHAPE_BOX) m = detectBoxBox(a, b);
         else if (a.shapeType == SHAPE_CIRCLE) m = detectCircleBox(a, b);
-        else { m = detectCircleBox(b, a); if (m.collided) m.normal = m.normal * -1.0f; }
+        else { m = detectCircleBox(b, a); } // Correct normal (A->B) returned directly
 
         if (!m.collided) continue;
         

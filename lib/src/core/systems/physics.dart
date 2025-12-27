@@ -24,6 +24,17 @@ class FlashPhysicsSystem {
     world.ref.gravityX = this.gravity.x;
     world.ref.gravityY = this.gravity.y;
 
+    // OPTIMIZED PARAMETERS for stability (prevent sinking & vibration)
+    // 8x Sub-stepping allows us to use very stiff springs (120Hz) stably.
+    // This is critical for preventing sinking into the rigid floor.
+    world.ref.contactHertz = 120.0;
+
+    // OPTIMIZED PARAMETERS for stability (prevent sinking & vibration)
+    world.ref.contactHertz = 120.0; // High stiffness to prevent sinking
+    world.ref.positionIterations = 4; // Sufficient with sub-stepping
+    world.ref.velocityIterations = 4;
+    world.ref.contactDampingRatio = 0.5; // Standard damping
+
     // Initialize Joints FFI if not already done
     if (_jointsFFI == null && Platform.isMacOS) {
       // Only try loading joints lib on supported platform
@@ -31,7 +42,7 @@ class FlashPhysicsSystem {
         final lib = PhysicsJointsFFI.loadLibrary();
         _jointsFFI = PhysicsJointsFFI(lib);
       } catch (e) {
-        print('Failed to load joints library: $e');
+        // Failed to load joints library
       }
     }
   }
@@ -48,8 +59,14 @@ class FlashPhysicsSystem {
   }
 
   void update(double dt) {
-    // FIX: stepPhysics only takes (world, dt), removing extra args 8, 3
-    FlashNativeParticles.stepPhysics!(world, dt);
+    // SUB-STEPPING:
+    // 8 substeps ensures trajectory is checked frequently enough to never penetrate deep.
+    const int substeps = 8;
+    final double subDt = dt / substeps;
+
+    for (int i = 0; i < substeps; i++) {
+      FlashNativeParticles.stepPhysics!(world, subDt);
+    }
   }
 
   void dispose() {
@@ -114,10 +131,23 @@ class FlashPhysicsBody extends FlashNode {
     super.name = 'PhysicsBody',
     this.color = Colors.white,
     this.debugDraw = false,
+    double restitution = 0.5, // Increased default bounciness
+    double friction = 0.1, // Reduced default friction
   }) : _world = world,
        bodyId = FlashNativeParticles.createBody!(world, type, shapeType, x, y, width, height, rotation) {
+    // Set initial material properties via FFI
+    this.restitution = restitution;
+    this.friction = friction;
     _syncFromPhysics();
   }
+
+  /// Get/Set Restitution (Bounciness) directly on native body
+  double get restitution => _world.ref.bodies[bodyId].restitution;
+  set restitution(double value) => _world.ref.bodies[bodyId].restitution = value;
+
+  /// Get/Set Friction directly on native body
+  double get friction => _world.ref.bodies[bodyId].friction;
+  set friction(double value) => _world.ref.bodies[bodyId].friction = value;
 
   /// Get the native physics world pointer
   Pointer<PhysicsWorld> get world => _world;

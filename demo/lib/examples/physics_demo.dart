@@ -57,6 +57,7 @@ class _PhysicsDemoExampleState extends State<PhysicsDemoExample> {
               width: 800,
               height: 40,
               color: Colors.grey[800]!,
+              debugDraw: true,
             ),
 
             // Left Wall
@@ -66,6 +67,7 @@ class _PhysicsDemoExampleState extends State<PhysicsDemoExample> {
               width: 40,
               height: 800,
               color: Colors.grey[800]!,
+              debugDraw: true,
             ),
 
             // Right Wall
@@ -75,18 +77,19 @@ class _PhysicsDemoExampleState extends State<PhysicsDemoExample> {
               width: 40,
               height: 800,
               color: Colors.grey[800]!,
+              debugDraw: true,
             ),
 
             // Pachinko Pegs (Static) - Staggered Grid
             for (int row = 0; row < 6; row++)
               for (int col = -4; col <= 4; col++)
                 if ((row % 2 == 0 && col % 2 == 0) || (row % 2 != 0 && col % 2 != 0))
-                  FlashStaticBody(
+                  FlashStaticBody.circle(
                     name: 'Peg_${row}_$col',
                     position: v.Vector3(col * 60.0, 200.0 - row * 70.0, 0),
-                    width: 20,
-                    height: 20,
+                    radius: 10,
                     color: Colors.blueGrey,
+                    debugDraw: true,
                   ),
 
             // --- Dynamic Spawner Logic ---

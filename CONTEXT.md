@@ -21,6 +21,13 @@
     *   Enable it explicitly for pure physics demos (`SimpleJointsDemo`).
 
 ## Build Instructions
+1.  **macOS Desktop (Dev)**:
+    *   Command: `flutter run -d macos`
+    *   **Native Rebuild**: `clang++ -dynamiclib -std=c++17 -undefined dynamic_lookup -o lib/src/core/native/bin/libflash_core.dylib src/native/*.cpp`
+2.  **iOS Simulator (Mobile)**:
+    *   Command: `flutter run`
+    *   **Note**: Uses `libflash_core_sim.dylib`. Recompiling for simulator requires `xcrun` and arch flags (advanced).
+
 ## Verification Protocol (Strict)
 1.  **Never Assume Success**: After editing code, YOU MUST verify it.
 2.  **Tooling Mandatory**:
@@ -49,3 +56,14 @@
 3.  **Positioning Rule**:
     *   **Don't Guess**: Use `FlashCamera.getWorldBounds()` (if available) or assume a Safe Zone (e.g., +/- 150px) rather than hardcoding large values like `y: -500` which might be off-screen.
 
+
+### Native Development Rules
+- **Manual Recompilation**: Any change to C++ files (`src/native/*.cpp`) **REQUIRES** a manual recompilation of the dylib. Hot Restart will NOT pick up C++ changes.
+- **Build Command**: Use `clang++ -dynamiclib -std=c++17 -undefined dynamic_lookup -o lib/src/core/native/bin/libflash_core.dylib src/native/*.cpp` for macOS.
+
+### Physics Stability Rules
+- **Sub-stepping**: Run the physics solver at least 8 times per frame (`substeps = 8`) to ensure rock-solid floors.
+- **Contact Hardness**: With 8x sub-stepping, use `contactHertz = 120.0` for rigid bodies. High stiffness prevents ALL sinking.
+- **Solver Iterations**: Use 4 Position and 4 Velocity iterations per SUB-STEP (Total 32/frame).
+- **Collision Shapes**: Prefer Circle-Circle collisions for high-speed or chaotic simulations (like Pachinko).
+- **Shared World**: All rigid bodies must share the same `FlashPhysicsSystem` instance from the engine context.

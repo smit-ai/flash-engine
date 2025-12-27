@@ -42,6 +42,8 @@ class FlashRigidBody extends FlashNodeWidget {
   final void Function(FlashPhysicsBody)? onCreated;
   final Color color;
   final bool debugDraw;
+  final double restitution;
+  final double friction;
 
   const FlashRigidBody({
     super.key,
@@ -59,75 +61,51 @@ class FlashRigidBody extends FlashNodeWidget {
     this.onCreated,
     this.color = Colors.blue,
     this.debugDraw = false,
+    this.restitution = 0.5,
+    this.friction = 0.1,
   });
 
-  /// Shorthand constructor for squares/circles (as Boxes)
-  factory FlashRigidBody.square({
-    Key? key,
-    required v.Vector3 position,
+  /// Shorthand constructor for squares/boxes
+  const FlashRigidBody.square({
+    super.key,
     required double size,
-    v.Vector3? rotation,
-    Widget? child,
-    String? name,
-    Color color = Colors.blue,
-    v.Vector2? initialVelocity,
-    void Function(FlashPhysicsBody)? onCollision,
-    void Function(FlashPhysicsBody)? onUpdate,
-    void Function(FlashPhysicsBody)? onCreated,
-    bool debugDraw = false,
-  }) {
-    return FlashRigidBody(
-      key: key,
-      position: position,
-      type: 2,
-      shapeType: FlashPhysics.box,
-      width: size,
-      height: size,
-      rotation: rotation,
-      name: name,
-      color: color,
-      initialVelocity: initialVelocity,
-      onCollision: onCollision,
-      onUpdate: onUpdate,
-      onCreated: onCreated,
-      debugDraw: debugDraw,
-      child: child,
-    );
-  }
+    super.position,
+    super.rotation,
+    super.name,
+    super.child,
+    this.initialVelocity,
+    this.onUpdate,
+    this.onCreated,
+    this.color = Colors.red,
+    this.onCollision,
+    this.debugDraw = false,
+    this.restitution = 0.5,
+    this.friction = 0.1,
+  }) : type = 2,
+       shapeType = FlashPhysics.box,
+       width = size,
+       height = size;
 
   /// Shorthand constructor for circles
-  factory FlashRigidBody.circle({
-    Key? key,
-    required v.Vector3 position,
+  const FlashRigidBody.circle({
+    super.key,
     required double radius,
-    v.Vector3? rotation,
-    Widget? child,
-    String? name,
-    Color color = Colors.red,
-    v.Vector2? initialVelocity,
-    void Function(FlashPhysicsBody)? onCollision,
-    void Function(FlashPhysicsBody)? onUpdate,
-    void Function(FlashPhysicsBody)? onCreated,
-    bool debugDraw = false,
-  }) {
-    return FlashRigidBody(
-      key: key,
-      position: position,
-      type: 2,
-      shapeType: FlashPhysics.circle,
-      width: radius * 2,
-      height: radius * 2,
-      rotation: rotation,
-      name: name,
-      color: color,
-      initialVelocity: initialVelocity,
-      onCollision: onCollision,
-      onUpdate: onUpdate,
-      onCreated: onCreated,
-      debugDraw: debugDraw,
-      child: child,
-    );
-  }
+    super.position,
+    super.rotation,
+    super.name,
+    super.child,
+    this.initialVelocity,
+    this.onUpdate,
+    this.onCreated,
+    this.color = Colors.blue,
+    this.onCollision,
+    this.debugDraw = false,
+    this.restitution = 0.5,
+    this.friction = 0.1,
+  }) : type = 2,
+       shapeType = FlashPhysics.circle,
+       width = radius * 2,
+       height = radius * 2;
 
   @override
   State<FlashRigidBody> createState() => _FlashRigidBodyState();
@@ -136,12 +114,17 @@ class FlashRigidBody extends FlashNodeWidget {
 class _FlashRigidBodyState extends FlashNodeWidgetState<FlashRigidBody, FlashPhysicsBody> {
   @override
   FlashPhysicsBody createNode() {
-    // Determine physics system.
-    // Ideally we look up the engine. For now, we assume the global singleton mechanism
-    // or that the parent creates it. FlashPhysicsBody currently requires a pointer.
-    // We will use a safe fallback if context isn't ready, but usually it is.
+    // Look up shared engine to get the shared physics world
+    final element = context.getElementForInheritedWidgetOfExactType<InheritedFlashNode>();
+    final engine = (element?.widget as InheritedFlashNode?)?.engine;
 
-    final physicsSystem = FlashPhysicsSystem(); // Uses existing singleton or creates new
+    // Auto-initialize physics if missing (e.g. no FlashPhysicsWorld widget used)
+    if (engine != null && engine.physicsWorld == null) {
+      engine.physicsWorld = FlashPhysicsSystem();
+    }
+
+    final physicsSystem =
+        engine?.physicsWorld ?? FlashPhysicsSystem(); // Fallback only if no engine (shouldn't happen in widget tree)
 
     final double safeX = widget.position?.x ?? 0.0;
     final double safeY = widget.position?.y ?? 0.0;
@@ -158,6 +141,8 @@ class _FlashRigidBodyState extends FlashNodeWidgetState<FlashRigidBody, FlashPhy
       name: widget.name ?? 'RigidBody',
       color: widget.color,
       debugDraw: widget.debugDraw,
+      restitution: widget.restitution,
+      friction: widget.friction,
     );
 
     if (widget.initialVelocity != null) {

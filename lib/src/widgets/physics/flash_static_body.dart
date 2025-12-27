@@ -9,6 +9,9 @@ class FlashStaticBody extends FlashNodeWidget {
   final double height;
   final void Function(FlashPhysicsBody)? onCreated;
   final Color color;
+  final bool debugDraw;
+  final double restitution;
+  final double friction;
 
   const FlashStaticBody({
     super.key,
@@ -17,6 +20,9 @@ class FlashStaticBody extends FlashNodeWidget {
     this.height = 100,
     this.onCreated,
     this.color = Colors.grey,
+    this.debugDraw = false,
+    this.restitution = 0.5,
+    this.friction = 0.1,
     super.position,
     super.rotation,
     super.scale,
@@ -31,6 +37,9 @@ class FlashStaticBody extends FlashNodeWidget {
     double size = 100,
     this.onCreated,
     this.color = Colors.grey,
+    this.debugDraw = false,
+    this.restitution = 0.5,
+    this.friction = 0.1,
     super.position,
     super.rotation,
     super.scale,
@@ -42,16 +51,19 @@ class FlashStaticBody extends FlashNodeWidget {
   /// Shorthand constructor for circles
   const FlashStaticBody.circle({
     super.key,
-    this.shapeType = FlashPhysics.circle,
     double radius = 50,
     this.onCreated,
     this.color = Colors.grey,
+    this.debugDraw = false,
+    this.restitution = 0.5,
+    this.friction = 0.1,
     super.position,
     super.rotation,
     super.scale,
     super.name = 'StaticBody',
     super.child,
-  }) : width = radius * 2,
+  }) : shapeType = 0, // CIRCLE
+       width = radius * 2,
        height = radius * 2;
 
   @override
@@ -85,6 +97,9 @@ class _FlashStaticBodyState extends FlashNodeWidgetState<FlashStaticBody, FlashP
       rotation: widget.rotation?.z ?? 0,
       name: widget.name ?? 'StaticBody',
       color: widget.color,
+      debugDraw: widget.debugDraw,
+      restitution: widget.restitution,
+      friction: widget.friction,
     );
 
     widget.onCreated?.call(node);
