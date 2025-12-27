@@ -16,7 +16,17 @@ class FPhysicsSystem {
 
   // Static instance of Joints FFI
   static PhysicsJointsFFI? _jointsFFI;
-  static PhysicsJointsFFI? get jointsFFI => _jointsFFI;
+  static PhysicsJointsFFI? get jointsFFI {
+    if (_jointsFFI == null && (Platform.isMacOS || Platform.isIOS)) {
+      try {
+        final lib = PhysicsJointsFFI.loadLibrary();
+        _jointsFFI = PhysicsJointsFFI(lib);
+      } catch (e) {
+        debugPrint('⚠️ Failed to load physics joints FFI: $e');
+      }
+    }
+    return _jointsFFI;
+  }
 
   FPhysicsSystem({v.Vector2? gravity})
     : gravity = gravity ?? FPhysics.standardGravity,
@@ -37,17 +47,7 @@ class FPhysicsSystem {
     world.ref.velocityIterations = 4;
     world.ref.contactDampingRatio = 0.5; // Standard damping
 
-    // Initialize Joints FFI if not already done
-    if (_jointsFFI == null && Platform.isMacOS) {
-      // Only try loading joints lib on supported platform
-      try {
-        final lib = PhysicsJointsFFI.loadLibrary();
-        _jointsFFI = PhysicsJointsFFI(lib);
-      } catch (e) {
-        // Failed to load joints library
-        debugPrint('Failed to load physics joints FFI: $e');
-      }
-    }
+    // Joints FFI is now lazily initialized via the getter
   }
 
   static WorldId _createWorldSafe(int capacity) {
@@ -333,9 +333,14 @@ class FPhysicsBody extends FNode {
 
   void _syncFromPhysics() {
     FPhysicsSystem.getBodyPosition(_world, bodyId, _posX, _posY);
+    final rot = FPhysicsSystem.getRotation(_world, bodyId);
+
+    if (_posX.value.isNaN || _posY.value.isNaN || rot.isNaN) {
+      return;
+    }
 
     transform.position = v.Vector3(_posX.value, _posY.value, 0);
-    transform.rotation = v.Vector3(0, 0, FPhysicsSystem.getRotation(_world, bodyId));
+    transform.rotation = v.Vector3(0, 0, rot);
 
     // Check for collisions (feedback from native core)
     if (FPhysicsSystem.getCollisionCount(_world, bodyId) > 0) {

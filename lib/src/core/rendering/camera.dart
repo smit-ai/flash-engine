@@ -6,15 +6,26 @@ class FCameraNode extends FNode {
   double fov = 60.0;
   double near = 0.1;
   double far = 2000.0;
+  bool isOrthographic = false;
+  double orthographicSize = 400.0; // Half-height in ortho mode
 
   FCameraNode({super.name = 'Camera'}) {
     // Default position back
     transform.position.setValues(0, 0, 1000);
   }
 
+  Matrix2? _projectionMatrix; // Not used here, using local caching if needed but standard is getProjectionMatrix
+
   Matrix4 getProjectionMatrix(double width, double height) {
     if (width <= 0 || height <= 0) return Matrix4.identity();
     final aspect = width / height;
+
+    if (isOrthographic) {
+      final halfH = orthographicSize;
+      final halfW = halfH * aspect;
+      return makeOrthographicMatrix(-halfW, halfW, -halfH, halfH, near, far);
+    }
+
     return makePerspectiveMatrix(radians(fov), aspect, near, far);
   }
 

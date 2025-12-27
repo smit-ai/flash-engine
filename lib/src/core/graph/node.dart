@@ -169,6 +169,18 @@ class FNode {
     }
   }
 
+  /// Recursively find a child node by its name.
+  FNode? findChild(String name, {bool recursive = true}) {
+    for (final child in children) {
+      if (child.name == name) return child;
+      if (recursive) {
+        final found = child.findChild(name, recursive: true);
+        if (found != null) return found;
+      }
+    }
+    return null;
+  }
+
   void update(double dt) {
     if (!_canProcess()) return;
 

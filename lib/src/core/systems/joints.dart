@@ -40,14 +40,14 @@ abstract class FJoint {
 }
 
 /// Distance joint - maintains a fixed or spring distance between two bodies
-class FDistanceJoint extends FJoint {
+class FDistanceJointStructure extends FJoint {
   final v.Vector2 anchorA;
   final v.Vector2 anchorB;
   final double length;
   final double frequency;
   final double dampingRatio;
 
-  FDistanceJoint({
+  FDistanceJointStructure({
     required super.bodyA,
     required super.bodyB,
     v.Vector2? anchorA,
@@ -108,7 +108,7 @@ class FDistanceJoint extends FJoint {
 }
 
 /// Revolute joint - forces two bodies to share a common anchor point
-class FRevoluteJoint extends FJoint {
+class FRevoluteJointStructure extends FJoint {
   final v.Vector2 anchor;
   final bool enableMotor;
   final double motorSpeed;
@@ -117,7 +117,7 @@ class FRevoluteJoint extends FJoint {
   final double lowerAngle;
   final double upperAngle;
 
-  FRevoluteJoint({
+  FRevoluteJointStructure({
     required super.bodyA,
     required super.bodyB,
     required this.anchor,
@@ -163,7 +163,7 @@ class FRevoluteJoint extends FJoint {
 }
 
 /// Prismatic joint - allows relative translation along a specified axis
-class FPrismaticJoint extends FJoint {
+class FPrismaticJointStructure extends FJoint {
   final v.Vector2 axis;
   final bool enableLimit;
   final double lowerTranslation;
@@ -172,7 +172,7 @@ class FPrismaticJoint extends FJoint {
   final double motorSpeed;
   final double maxMotorForce;
 
-  FPrismaticJoint({
+  FPrismaticJointStructure({
     required super.bodyA,
     required super.bodyB,
     required this.axis,
@@ -217,12 +217,12 @@ class FPrismaticJoint extends FJoint {
 }
 
 /// Weld joint - constrains relative position and orientation
-class FWeldJoint extends FJoint {
+class FWeldJointStructure extends FJoint {
   final v.Vector2 anchor;
   final double stiffness;
   final double damping;
 
-  FWeldJoint({
+  FWeldJointStructure({
     required super.bodyA,
     required super.bodyB,
     required this.anchor,

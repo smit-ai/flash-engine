@@ -43,7 +43,7 @@ class _JointsDemoExampleState extends State<JointsDemoExample> {
       body: FView(
         child: Stack(
           children: [
-            FCamera(position: v.Vector3(0, 0, 800)),
+            FCamera(position: v.Vector3(0, 0, 1000), isOrthographic: true, orthographicSize: 600.0),
 
             // Ground
             FStaticBody(
@@ -104,13 +104,48 @@ class _JointsDemoExampleState extends State<JointsDemoExample> {
           child: FBox(width: segmentSize, height: segmentSize, color: Colors.orange.withValues(alpha: 0.8)),
         ),
 
+      // Joints (Declarative)
+      FDistanceJoint(
+        name: 'Joint0',
+        nodeA: 'LeftAnchor',
+        nodeB: 'RopeSegment0',
+        length: spacing,
+        frequency: 5,
+        dampingRatio: 0.5,
+      ),
+      for (int i = 0; i < segmentCount - 1; i++)
+        FDistanceJoint(
+          name: 'Joint${i + 1}',
+          nodeA: 'RopeSegment$i',
+          nodeB: 'RopeSegment${i + 1}',
+          length: spacing,
+          frequency: 5,
+          dampingRatio: 0.5,
+        ),
+      FDistanceJoint(
+        name: 'JointLast',
+        nodeA: 'RopeSegment${segmentCount - 1}',
+        nodeB: 'RightAnchor',
+        length: spacing,
+        frequency: 5,
+        dampingRatio: 0.5,
+      ),
+
       // Heavy weight in the middle
       FRigidBody.circle(
         key: const ValueKey('weight'),
         name: 'Weight',
-        position: v.Vector3(0, 150, 0),
+        position: v.Vector3(0, 50, 0),
         radius: 40,
         child: FCircle(radius: 40, color: Colors.red),
+      ),
+      FDistanceJoint(
+        name: 'WeightJoint',
+        nodeA: 'RopeSegment4',
+        nodeB: 'Weight',
+        length: 100,
+        frequency: 2,
+        dampingRatio: 0.2,
       ),
     ];
   }
@@ -161,6 +196,20 @@ class _JointsDemoExampleState extends State<JointsDemoExample> {
         width: 10,
         height: 10,
         child: FBox(width: 10, height: 10, color: Colors.yellow),
+      ),
+
+      // Pendulum Joint
+      FRevoluteJoint(name: 'PendulumJoint', nodeA: 'Ceiling', nodeB: 'PendulumBob', anchor: v.Vector2(0, 200)),
+
+      // Motorized Joint
+      FRevoluteJoint(
+        name: 'MotorJoint',
+        nodeA: 'MotorAnchor',
+        nodeB: 'MotorWheel',
+        anchor: v.Vector2(-150, 100),
+        enableMotor: true,
+        motorSpeed: 2.0,
+        maxMotorTorque: 10000.0,
       ),
     ];
   }
@@ -227,6 +276,34 @@ class _JointsDemoExampleState extends State<JointsDemoExample> {
         width: 10,
         height: 400,
         child: FBox(width: 10, height: 400, color: Colors.grey[600]!.withValues(alpha: 0.5)),
+      ),
+
+      // Piston Joint
+      FPrismaticJoint(
+        name: 'PistonJoint',
+        nodeA: 'Cylinder',
+        nodeB: 'PistonHead',
+        axis: v.Vector2(1, 0),
+        enableLimit: true,
+        lowerTranslation: -80,
+        upperTranslation: 80,
+        enableMotor: true,
+        motorSpeed: 2.0,
+        maxMotorForce: 1000.0,
+      ),
+
+      // Elevator Joint
+      FPrismaticJoint(
+        name: 'ElevatorJoint',
+        nodeA: 'Rail',
+        nodeB: 'Elevator',
+        axis: v.Vector2(0, 1),
+        enableLimit: true,
+        lowerTranslation: -150,
+        upperTranslation: 150,
+        enableMotor: true,
+        motorSpeed: 3.0,
+        maxMotorForce: 5000.0,
       ),
     ];
   }
@@ -309,6 +386,21 @@ class _JointsDemoExampleState extends State<JointsDemoExample> {
         height: 70,
         child: FBox(width: 20, height: 70, color: Colors.blue[700]!),
       ),
+
+      // Ragdoll Joints (Revolute for articulation)
+      FRevoluteJoint(
+        name: 'Neck',
+        nodeA: 'Torso',
+        nodeB: 'Head',
+        anchor: v.Vector2(0, 120),
+        enableLimit: true,
+        lowerAngle: -0.5,
+        upperAngle: 0.5,
+      ),
+      FRevoluteJoint(name: 'LeftShoulder', nodeA: 'Torso', nodeB: 'LeftArm', anchor: v.Vector2(-25, 110)),
+      FRevoluteJoint(name: 'RightShoulder', nodeA: 'Torso', nodeB: 'RightArm', anchor: v.Vector2(25, 110)),
+      FRevoluteJoint(name: 'LeftHip', nodeA: 'Torso', nodeB: 'LeftLeg', anchor: v.Vector2(-15, 45)),
+      FRevoluteJoint(name: 'RightHip', nodeA: 'Torso', nodeB: 'RightLeg', anchor: v.Vector2(15, 45)),
     ];
   }
 
@@ -380,6 +472,25 @@ class _JointsDemoExampleState extends State<JointsDemoExample> {
         size: 30,
         child: FBox(width: 30, height: 30, color: Colors.pink),
       ),
+
+      // Joints (All types)
+      FDistanceJoint(name: 'ChainJoint0', nodeA: 'ChainAnchor', nodeB: 'Chain0', length: 50),
+      FDistanceJoint(name: 'ChainJoint1', nodeA: 'Chain0', nodeB: 'Chain1', length: 40),
+      FDistanceJoint(name: 'ChainJoint2', nodeA: 'Chain1', nodeB: 'Chain2', length: 40),
+
+      FRevoluteJoint(
+        name: 'WheelJoint',
+        nodeA: 'WheelAnchor',
+        nodeB: 'Wheel',
+        anchor: v.Vector2(-100, 100),
+        enableMotor: true,
+        motorSpeed: 1.0,
+        maxMotorTorque: 5000,
+      ),
+
+      FPrismaticJoint(name: 'SliderJoint', nodeA: 'Ground', nodeB: 'Slider', axis: v.Vector2(1, 0)),
+
+      FWeldJoint(name: 'WeldJoint', nodeA: 'Weld1', nodeB: 'Weld2', anchor: v.Vector2(270, 100)),
     ];
   }
 

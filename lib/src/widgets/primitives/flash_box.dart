@@ -50,8 +50,8 @@ class _BoxNode extends FNode {
 
   @override
   void draw(Canvas canvas) {
-    // Default to unlit (full brightness) if no lights are present
-    double brightness = lights.isEmpty ? 1.0 : 0.2; // 0.2 is ambient for lit scenes
+    // Basic brightness logic
+    double brightness = lights.isEmpty ? 1.0 : 0.2;
 
     if (lights.isNotEmpty) {
       final worldPos = worldPosition;
@@ -69,23 +69,21 @@ class _BoxNode extends FNode {
 
     brightness = brightness.clamp(0.0, 1.0);
 
-    // Update paint if color or brightness changed
+    // Update paint - use withOpacity for better compatibility and simplicity
     if (color != _lastColor || brightness != _lastBrightness) {
       _lastColor = color;
       _lastBrightness = brightness;
-      _paint.color = Color.from(
+
+      // Calculate lit color
+      final litColor = Color.from(
         alpha: color.a,
         red: color.r * brightness,
         green: color.g * brightness,
         blue: color.b * brightness,
       );
+      _paint.color = litColor;
     }
 
-    // Draw centered rect with width/height
-    // Reuse Rect? Since width/height might change rarely, we could cache it, but Rect creation is cheap.
-    // However, recreating Rect every frame is what we want to avoid if possible.
-    // But width/height are mutable. Let's just create Rect here, it's a struct basically.
-    // Paint is the heavy one.
     final rect = Rect.fromCenter(center: Offset.zero, width: width, height: height);
     canvas.drawRect(rect, _paint);
   }

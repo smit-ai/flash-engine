@@ -7,6 +7,8 @@ class FCamera extends FNodeWidget {
   final double fov;
   final double near;
   final double far;
+  final bool isOrthographic;
+  final double orthographicSize;
 
   const FCamera({
     super.key,
@@ -18,6 +20,8 @@ class FCamera extends FNodeWidget {
     this.fov = 60.0,
     this.near = 0.1,
     this.far = 2000.0,
+    this.isOrthographic = false,
+    this.orthographicSize = 400.0,
   });
 
   @override
@@ -31,7 +35,9 @@ class _FCameraState extends FNodeWidgetState<FCamera, FCameraNode> {
   FCameraNode createNode() => FCameraNode()
     ..fov = widget.fov
     ..near = widget.near
-    ..far = widget.far;
+    ..far = widget.far
+    ..isOrthographic = widget.isOrthographic
+    ..orthographicSize = widget.orthographicSize;
 
   @override
   void didChangeDependencies() {
@@ -54,5 +60,7 @@ class _FCameraState extends FNodeWidgetState<FCamera, FCameraNode> {
     node.fov = widget.fov;
     node.near = widget.near;
     node.far = widget.far;
+    node.isOrthographic = widget.isOrthographic;
+    node.orthographicSize = widget.orthographicSize;
   }
 }
