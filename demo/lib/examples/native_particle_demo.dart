@@ -13,11 +13,11 @@ class _NativeParticleDemoState extends State<NativeParticleDemo> {
   bool initialized = false;
   int particleCount = 20000;
 
-  void _setupScene(FlashEngine engine) {
+  void _setupScene(FEngine engine) {
     engine.scene.children.clear();
 
     // Add a native emitter with high particle count
-    final emitter = FlashParticleEmitter(
+    final emitter = FParticleEmitter(
       config: ParticleEmitterConfig(
         maxParticles: 500000,
         emissionRate: 100000, // Balanced for 500k
@@ -42,13 +42,13 @@ class _NativeParticleDemoState extends State<NativeParticleDemo> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Flash(
+      body: FView(
         autoUpdate: true,
         child: Stack(
           children: [
             Builder(
               builder: (context) {
-                final engine = context.dependOnInheritedWidgetOfExactType<InheritedFlashNode>()?.engine;
+                final engine = context.dependOnInheritedWidgetOfExactType<InheritedFNode>()?.engine;
                 if (engine != null && !initialized) {
                   _setupScene(engine);
                   initialized = true;
@@ -62,7 +62,7 @@ class _NativeParticleDemoState extends State<NativeParticleDemo> {
               left: 20,
               child: Builder(
                 builder: (context) {
-                  final engine = context.dependOnInheritedWidgetOfExactType<InheritedFlashNode>()?.engine;
+                  final engine = context.dependOnInheritedWidgetOfExactType<InheritedFNode>()?.engine;
                   if (engine == null) return const SizedBox.shrink();
 
                   final activeCount = engine.emitters.fold<int>(0, (sum, e) => sum + e.activeCount);

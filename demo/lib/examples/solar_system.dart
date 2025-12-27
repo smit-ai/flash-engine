@@ -85,26 +85,26 @@ class _SolarSystemExampleState extends State<SolarSystemExample> with SingleTick
         },
         child: Container(
           color: const Color(0xFF000814),
-          child: Flash(
+          child: FView(
             child: AnimatedBuilder(
               animation: _controller,
               builder: (context, _) {
                 final t = _controller.value * 2 * pi;
-                return FlashNodes(
+                return FNodes(
                   children: [
                     // Camera Node
-                    FlashCamera(
+                    FCamera(
                       name: 'MainCamera',
                       position: v.Vector3(0, 500, 1200),
                       rotation: v.Vector3(_cameraPitch, -_cameraYaw, 0),
                     ),
 
                     // Point Light at the Sun's position
-                    FlashLight(name: 'SunLight', position: v.Vector3(0, 0, 0), intensity: 2.5, color: Colors.white),
+                    FLight(name: 'SunLight', position: v.Vector3(0, 0, 0), intensity: 2.5, color: Colors.white),
 
                     // Star field
                     for (int i = 0; i < 150; i++)
-                      FlashBox(
+                      FBox(
                         position: v.Vector3((sin(i * 1.5) * 2000), (cos(i * 2.1) * 2000), -1500 + (i % 5) * 200),
                         width: 4,
                         height: 4,
@@ -113,31 +113,31 @@ class _SolarSystemExampleState extends State<SolarSystemExample> with SingleTick
                       ),
 
                     // Sun (Self-rotating)
-                    FlashSphere(
+                    FSphere(
                       name: 'Sun',
                       radius: 100,
                       color: Colors.orange,
                       texture: _sunTexture,
                       rotation: v.Vector3(0, t * 0.2, 0), // Axis rotation
-                      child: FlashNodes(
+                      child: FNodes(
                         children: [
                           // Earth Orbit
-                          FlashNodeGroup(
+                          FNodeGroup(
                             name: 'EarthOrbit',
                             rotation: v.Vector3(0, t, 0),
-                            child: FlashNodes(
+                            child: FNodes(
                               children: [
-                                FlashSphere(
+                                FSphere(
                                   name: 'Earth',
                                   position: v.Vector3(400, 0, 0),
                                   radius: 40,
                                   color: Colors.blue,
                                   texture: _earthTexture,
                                   rotation: v.Vector3(0, t * 3, 0), // Axis rotation (spins faster)
-                                  child: FlashNodeGroup(
+                                  child: FNodeGroup(
                                     name: 'MoonOrbit',
                                     rotation: v.Vector3(0, t * 2, 0),
-                                    child: FlashSphere(
+                                    child: FSphere(
                                       name: 'Moon',
                                       position: v.Vector3(90, 0, 0),
                                       radius: 14,
@@ -150,10 +150,10 @@ class _SolarSystemExampleState extends State<SolarSystemExample> with SingleTick
                           ),
 
                           // Mars Orbit
-                          FlashNodeGroup(
+                          FNodeGroup(
                             name: 'MarsOrbit',
                             rotation: v.Vector3(0, t * 0.6, 0),
-                            child: FlashSphere(
+                            child: FSphere(
                               name: 'Mars',
                               position: v.Vector3(-650, 30, 0),
                               radius: 30,

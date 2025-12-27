@@ -8,10 +8,10 @@ enum SceneTransition { none, fade, slideLeft, slideRight, slideUp, slideDown, sc
 enum SceneState { entering, active, exiting, inactive }
 
 /// Scene wrapper for managing scene lifecycle
-class FlashSceneWrapper {
+class FSceneWrapper {
   final String name;
-  final FlashScene scene;
-  final Widget Function(BuildContext context, FlashScene scene)? builder;
+  final FScene scene;
+  final Widget Function(BuildContext context, FScene scene)? builder;
 
   SceneState state = SceneState.inactive;
   double transitionProgress = 0;
@@ -25,13 +25,13 @@ class FlashSceneWrapper {
   /// Called every frame while active
   void Function(double dt)? onUpdate;
 
-  FlashSceneWrapper({required this.name, FlashScene? scene, this.builder, this.onEnter, this.onExit, this.onUpdate})
-    : scene = scene ?? FlashScene(name: name);
+  FSceneWrapper({required this.name, FScene? scene, this.builder, this.onEnter, this.onExit, this.onUpdate})
+    : scene = scene ?? FScene(name: name);
 }
 
 /// Scene manager for handling multiple scenes and transitions
-class FlashSceneManager extends ChangeNotifier {
-  final Map<String, FlashSceneWrapper> _scenes = {};
+class FSceneManager extends ChangeNotifier {
+  final Map<String, FSceneWrapper> _scenes = {};
   String? _currentSceneName;
   String? _previousSceneName;
 
@@ -41,7 +41,7 @@ class FlashSceneManager extends ChangeNotifier {
   bool _isTransitioning = false;
 
   /// Register a scene
-  void registerScene(FlashSceneWrapper scene) {
+  void registerScene(FSceneWrapper scene) {
     _scenes[scene.name] = scene;
   }
 
@@ -54,10 +54,10 @@ class FlashSceneManager extends ChangeNotifier {
   }
 
   /// Get current scene
-  FlashSceneWrapper? get currentScene => _currentSceneName != null ? _scenes[_currentSceneName] : null;
+  FSceneWrapper? get currentScene => _currentSceneName != null ? _scenes[_currentSceneName] : null;
 
   /// Get previous scene (during transition)
-  FlashSceneWrapper? get previousScene => _previousSceneName != null ? _scenes[_previousSceneName] : null;
+  FSceneWrapper? get previousScene => _previousSceneName != null ? _scenes[_previousSceneName] : null;
 
   /// Check if transitioning
   bool get isTransitioning => _isTransitioning;
@@ -170,11 +170,11 @@ class FlashSceneManager extends ChangeNotifier {
 }
 
 /// Widget for rendering scene transitions
-class FlashSceneTransitionWidget extends StatelessWidget {
-  final FlashSceneManager sceneManager;
-  final Widget Function(FlashSceneWrapper scene) builder;
+class FSceneTransitionWidget extends StatelessWidget {
+  final FSceneManager sceneManager;
+  final Widget Function(FSceneWrapper scene) builder;
 
-  const FlashSceneTransitionWidget({super.key, required this.sceneManager, required this.builder});
+  const FSceneTransitionWidget({super.key, required this.sceneManager, required this.builder});
 
   @override
   Widget build(BuildContext context) {
@@ -208,7 +208,7 @@ class FlashSceneTransitionWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildSceneWidget(FlashSceneWrapper scene, Size size, {required bool isEntering}) {
+  Widget _buildSceneWidget(FSceneWrapper scene, Size size, {required bool isEntering}) {
     Widget child = builder(scene);
 
     // Apply transition effects

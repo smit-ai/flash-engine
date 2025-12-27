@@ -7,7 +7,7 @@ import '../graph/node.dart';
 import '../native/particles_ffi.dart';
 import '../native/physics_joints_ffi.dart';
 
-class FlashPhysicsSystem {
+class FPhysicsSystem {
   // Singleton instance of the native physics world
   final Pointer<PhysicsWorld> world;
   final v.Vector2 gravity;
@@ -16,8 +16,8 @@ class FlashPhysicsSystem {
   static PhysicsJointsFFI? _jointsFFI;
   static PhysicsJointsFFI? get jointsFFI => _jointsFFI;
 
-  FlashPhysicsSystem({v.Vector2? gravity})
-    : gravity = gravity ?? FlashPhysics.standardGravity,
+  FPhysicsSystem({v.Vector2? gravity})
+    : gravity = gravity ?? FPhysics.standardGravity,
       // Safety check for native initialization
       world = _createWorldSafe(2048) {
     // Set gravity on the world struct directly
@@ -86,7 +86,7 @@ class FlashPhysicsSystem {
   }
 }
 
-class FlashPhysics {
+class FPhysics {
   // Conversion constants
   static const double pixelsToMeters = 1.0 / 50.0;
   static const double metersToPixels = 50.0;
@@ -104,7 +104,7 @@ class FlashPhysics {
   static const int box = 1;
 }
 
-class FlashPhysicsBody extends FlashNode {
+class FPhysicsBody extends FNode {
   final double width;
   final double height;
   final double rotation;
@@ -116,10 +116,10 @@ class FlashPhysicsBody extends FlashNode {
   final Pointer<PhysicsWorld> _world;
 
   /// Callback when this body collides
-  void Function(FlashPhysicsBody)? onCollision;
+  void Function(FPhysicsBody)? onCollision;
 
   /// Callback on every physics update.
-  void Function(FlashPhysicsBody)? onUpdate;
+  void Function(FPhysicsBody)? onUpdate;
 
   // Temporary buffers to avoid allocation in sync
   static final Pointer<Float> _posX = calloc<Float>();
@@ -128,10 +128,10 @@ class FlashPhysicsBody extends FlashNode {
   // Mutable debug flag
   bool debugDraw;
 
-  FlashPhysicsBody({
+  FPhysicsBody({
     required Pointer<PhysicsWorld> world,
     int type = 2, // DYNAMIC
-    this.shapeType = FlashPhysics.circle,
+    this.shapeType = FPhysics.circle,
     double x = 0,
     double y = 0,
     this.width = 50,
@@ -167,7 +167,7 @@ class FlashPhysicsBody extends FlashNode {
 
     final paint = Paint()..color = color;
 
-    if (shapeType == FlashPhysics.circle) {
+    if (shapeType == FPhysics.circle) {
       canvas.drawCircle(Offset.zero, width / 2, paint);
     } else {
       final visibleRect = Rect.fromCenter(center: Offset.zero, width: width, height: height);
@@ -217,7 +217,7 @@ class FlashPhysicsBody extends FlashNode {
 }
 
 /// Helper class for defining collision layers (Legacy/UI compatibility)
-class FlashCollisionLayer {
+class FCollisionLayer {
   static const int none = 0x0000;
   static const int all = 0xFFFF;
   static int maskOf(List<int> layers) {

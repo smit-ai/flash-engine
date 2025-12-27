@@ -8,11 +8,11 @@ import '../systems/engine.dart';
 import '../native/particles_ffi.dart';
 import 'camera.dart';
 
-class FlashPainter extends CustomPainter {
-  final FlashEngine engine;
-  final FlashCameraNode? camera;
+class FPainter extends CustomPainter {
+  final FEngine engine;
+  final FCameraNode? camera;
 
-  FlashPainter({required this.engine, required this.camera, super.repaint});
+  FPainter({required this.engine, required this.camera, super.repaint});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -27,7 +27,7 @@ class FlashPainter extends CustomPainter {
       ..scaleByVector3(Vector3(size.width / 2, -size.height / 2, 1.0));
 
     // Use active camera or fallback
-    final activeCam = camera ?? FlashCameraNode(name: 'PainterFallback');
+    final activeCam = camera ?? FCameraNode(name: 'PainterFallback');
     final projectionMatrix = activeCam.getProjectionMatrix(size.width, size.height);
     final viewMatrix = activeCam.getViewMatrix();
     final cameraMatrix = viewportMatrix * projectionMatrix * viewMatrix;
@@ -65,7 +65,7 @@ class FlashPainter extends CustomPainter {
   static final Pointer<Uint32> _colorsPtr = calloc<Uint32>(500000 * 18);
   static final Pointer<Float> _matrixPtr = calloc<Float>(16);
 
-  void _renderParticles(Canvas canvas, Matrix4 cameraMatrix, FlashParticleEmitter emitter) {
+  void _renderParticles(Canvas canvas, Matrix4 cameraMatrix, FParticleEmitter emitter) {
     if (emitter.isDisposed) return;
     final count = emitter.activeCount;
     if (count == 0) return;
@@ -94,5 +94,5 @@ class FlashPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant FlashPainter oldDelegate) => true;
+  bool shouldRepaint(covariant FPainter oldDelegate) => true;
 }

@@ -20,42 +20,42 @@ class _CollisionLayersDemoExampleState extends State<CollisionLayersDemoExample>
         elevation: 0,
       ),
       extendBodyBehindAppBar: true,
-      body: Flash(
+      body: FView(
         child: Stack(
           children: [
             // Camera
-            FlashCamera(position: v.Vector3(0, 0, 1000), fov: 60),
+            FCamera(position: v.Vector3(0, 0, 1000), fov: 60),
 
             // Physics World
-            FlashPhysicsWorld(gravity: FlashPhysics.standardGravity),
+            FPhysicsWorld(gravity: FPhysics.standardGravity),
 
             // Static Floor
-            FlashStaticBody(
+            FStaticBody(
               name: 'Ground',
               position: v.Vector3(0, -350, 0),
               width: 800,
               height: 40,
-              child: FlashBox(width: 800, height: 40, color: Colors.white12),
+              child: FBox(width: 800, height: 40, color: Colors.white12),
             ),
 
             // MANY BLUE BOXES (Native high performance test)
             for (int i = 0; i < 20; i++)
-              FlashRigidBody.square(
+              FRigidBody.square(
                 key: ValueKey('blue_$i'),
                 name: 'BlueBox',
                 position: v.Vector3(-150 + (i * 20), 400 + (i * 60), 0),
                 size: 30,
-                child: const FlashBox(width: 30, height: 30, color: Colors.cyanAccent),
+                child: const FBox(width: 30, height: 30, color: Colors.cyanAccent),
               ),
 
             // MANY RED BOXES
             for (int i = 0; i < 20; i++)
-              FlashRigidBody.square(
+              FRigidBody.square(
                 key: ValueKey('red_$i'),
                 name: 'RedBox',
                 position: v.Vector3(150 - (i * 20), 400 + (i * 60), 0),
                 size: 30,
-                child: const FlashBox(width: 30, height: 30, color: Colors.redAccent),
+                child: const FBox(width: 30, height: 30, color: Colors.redAccent),
               ),
 
             // UI Overlay

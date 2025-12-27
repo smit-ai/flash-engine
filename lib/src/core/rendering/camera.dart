@@ -2,12 +2,12 @@ import 'dart:math';
 import 'package:vector_math/vector_math_64.dart';
 import '../graph/node.dart';
 
-class FlashCameraNode extends FlashNode {
+class FCameraNode extends FNode {
   double fov = 60.0;
   double near = 0.1;
   double far = 2000.0;
 
-  FlashCameraNode({super.name = 'Camera'}) {
+  FCameraNode({super.name = 'Camera'}) {
     // Default position back
     transform.position.setValues(0, 0, 1000);
   }

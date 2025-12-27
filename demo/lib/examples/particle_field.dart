@@ -53,11 +53,11 @@ class _ParticleFieldExampleState extends State<ParticleFieldExample> with Single
       extendBodyBehindAppBar: true,
       body: Container(
         color: Colors.black,
-        child: Flash(
+        child: FView(
           child: AnimatedBuilder(
             animation: _controller,
             builder: (context, _) {
-              return FlashNodes(
+              return FNodes(
                 children: [for (final p in particles) _ParticleWidget(data: p, time: _controller.value)],
               );
             },
@@ -85,7 +85,7 @@ class _ParticleWidget extends StatelessWidget {
     if (pos.y.abs() > 400) pos.y %= 400;
     if (pos.z.abs() > 400) pos.z %= 400;
 
-    return FlashBox(position: pos, width: data.size, height: data.size, color: data.color);
+    return FBox(position: pos, width: data.size, height: data.size, color: data.color);
   }
 }
 

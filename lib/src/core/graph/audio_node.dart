@@ -8,7 +8,7 @@ import '../graph/node.dart';
 // FlashNode.update(dt) doesn't pass context.
 // Ideally, the Node should be registered with the AudioSystem.
 
-class FlashAudioNode extends FlashNode {
+class FAudioNode extends FNode {
   final String assetPath;
   final bool autoplay;
   final bool loop;
@@ -21,9 +21,9 @@ class FlashAudioNode extends FlashNode {
   // Runtime state
   AudioSource? _source;
   final List<SoundHandle> _handles = [];
-  FlashAudioSystem? _system;
+  FAudioSystem? _system;
 
-  FlashAudioNode({
+  FAudioNode({
     required this.assetPath,
     super.name = 'AudioNode',
     this.autoplay = true,
@@ -38,7 +38,7 @@ class FlashAudioNode extends FlashNode {
   // Since we don't have "onEnterTree" yet in generic FlashNode,
   // we rely on declarative widget to trigger init, OR we add lazy init in update.
 
-  Future<void> initialize(FlashAudioSystem system) async {
+  Future<void> initialize(FAudioSystem system) async {
     if (_source != null) return; // Already initialized
 
     _system = system;

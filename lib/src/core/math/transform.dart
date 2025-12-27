@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-class FlashTransform {
+class FTransform {
   VoidCallback? onChanged;
 
   Vector3 _position = Vector3.all(0);
@@ -83,8 +83,8 @@ class FlashTransform {
     return _cachedMatrix;
   }
 
-  FlashTransform copy() {
-    return FlashTransform()
+  FTransform copy() {
+    return FTransform()
       ..position = _position.clone()
       ..rotation = _rotation.clone()
       ..scale = _scale.clone();

@@ -4,7 +4,7 @@ import '../../core/graph/node.dart';
 import '../framework.dart';
 
 /// A widget that renders a line based on a list of points.
-class FlashLineRenderer extends FlashNodeWidget {
+class FLineRenderer extends FNodeWidget {
   /// The points that define the line, in local space.
   final List<v.Vector3> points;
 
@@ -26,7 +26,7 @@ class FlashLineRenderer extends FlashNodeWidget {
   /// The blur radius for the glow effect.
   final double glowSigma;
 
-  const FlashLineRenderer({
+  const FLineRenderer({
     super.key,
     required this.points,
     this.color = Colors.white,
@@ -42,12 +42,12 @@ class FlashLineRenderer extends FlashNodeWidget {
   });
 
   @override
-  State<FlashLineRenderer> createState() => _FlashLineRendererState();
+  State<FLineRenderer> createState() => _FLineRendererState();
 }
 
-class _FlashLineRendererState extends FlashNodeWidgetState<FlashLineRenderer, _LineNode> {
+class _FLineRendererState extends FNodeWidgetState<FLineRenderer, _FLineNode> {
   @override
-  _LineNode createNode() => _LineNode(
+  _FLineNode createNode() => _FLineNode(
     points: widget.points,
     color: widget.color,
     width: widget.width,
@@ -58,7 +58,7 @@ class _FlashLineRendererState extends FlashNodeWidgetState<FlashLineRenderer, _L
   )..name = widget.name ?? 'LineRenderer';
 
   @override
-  void applyProperties([FlashLineRenderer? oldWidget]) {
+  void applyProperties([FLineRenderer? oldWidget]) {
     super.applyProperties(oldWidget);
     node.points = widget.points;
     node.color = widget.color;
@@ -70,7 +70,7 @@ class _FlashLineRendererState extends FlashNodeWidgetState<FlashLineRenderer, _L
   }
 }
 
-class _LineNode extends FlashNode {
+class _FLineNode extends FNode {
   List<v.Vector3> points;
   Color color;
   double width;
@@ -79,7 +79,7 @@ class _LineNode extends FlashNode {
   bool glow;
   double glowSigma;
 
-  _LineNode({
+  _FLineNode({
     required this.points,
     required this.color,
     required this.width,

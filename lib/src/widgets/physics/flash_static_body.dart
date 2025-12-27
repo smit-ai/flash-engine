@@ -3,19 +3,19 @@ import '../../core/systems/physics.dart';
 import '../framework.dart';
 
 /// A static physics body (e.g. floor, walls) that doesn't move.
-class FlashStaticBody extends FlashNodeWidget {
+class FStaticBody extends FNodeWidget {
   final int shapeType;
   final double width;
   final double height;
-  final void Function(FlashPhysicsBody)? onCreated;
+  final void Function(FPhysicsBody)? onCreated;
   final Color color;
   final bool debugDraw;
   final double restitution;
   final double friction;
 
-  const FlashStaticBody({
+  const FStaticBody({
     super.key,
-    this.shapeType = FlashPhysics.box,
+    this.shapeType = FPhysics.box,
     this.width = 100,
     this.height = 100,
     this.onCreated,
@@ -31,9 +31,9 @@ class FlashStaticBody extends FlashNodeWidget {
   });
 
   /// Shorthand constructor for squares
-  const FlashStaticBody.square({
+  const FStaticBody.square({
     super.key,
-    this.shapeType = FlashPhysics.box,
+    this.shapeType = FPhysics.box,
     double size = 100,
     this.onCreated,
     this.color = Colors.grey,
@@ -49,7 +49,7 @@ class FlashStaticBody extends FlashNodeWidget {
        height = size;
 
   /// Shorthand constructor for circles
-  const FlashStaticBody.circle({
+  const FStaticBody.circle({
     super.key,
     double radius = 50,
     this.onCreated,
@@ -67,26 +67,26 @@ class FlashStaticBody extends FlashNodeWidget {
        height = radius * 2;
 
   @override
-  State<FlashStaticBody> createState() => _FlashStaticBodyState();
+  State<FStaticBody> createState() => _FStaticBodyState();
 }
 
-class _FlashStaticBodyState extends FlashNodeWidgetState<FlashStaticBody, FlashPhysicsBody> {
+class _FStaticBodyState extends FNodeWidgetState<FStaticBody, FPhysicsBody> {
   @override
-  FlashPhysicsBody createNode() {
-    final element = context.getElementForInheritedWidgetOfExactType<InheritedFlashNode>();
-    final engine = (element?.widget as InheritedFlashNode?)?.engine;
+  FPhysicsBody createNode() {
+    final element = context.getElementForInheritedWidgetOfExactType<InheritedFNode>();
+    final engine = (element?.widget as InheritedFNode?)?.engine;
     final world = engine?.physicsWorld;
 
     if (world == null && engine != null) {
-      engine.physicsWorld = FlashPhysicsSystem(gravity: FlashPhysics.standardGravity);
+      engine.physicsWorld = FPhysicsSystem(gravity: FPhysics.standardGravity);
     }
 
     final activeWorld = engine?.physicsWorld;
     if (activeWorld == null) {
-      throw Exception('FlashStaticBody: Failed to initialize physics world');
+      throw Exception('FStaticBody: Failed to initialize physics world');
     }
 
-    final node = FlashPhysicsBody(
+    final node = FPhysicsBody(
       world: activeWorld.world,
       type: 0, // STATIC
       shapeType: widget.shapeType,

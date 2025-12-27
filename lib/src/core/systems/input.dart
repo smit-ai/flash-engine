@@ -20,46 +20,46 @@ enum InputState {
 enum SwipeDirection { up, down, left, right }
 
 /// Defines an input action that can be mapped to keys/buttons
-class FlashInputAction {
+class FInputAction {
   final String name;
   final Set<LogicalKeyboardKey> keys;
   final Set<int> mouseButtons; // 0 = left, 1 = middle, 2 = right
 
-  const FlashInputAction({required this.name, this.keys = const {}, this.mouseButtons = const {}});
+  const FInputAction({required this.name, this.keys = const {}, this.mouseButtons = const {}});
 
   /// Common preset actions
-  static final moveUp = FlashInputAction(name: 'move_up', keys: {LogicalKeyboardKey.keyW, LogicalKeyboardKey.arrowUp});
+  static final moveUp = FInputAction(name: 'move_up', keys: {LogicalKeyboardKey.keyW, LogicalKeyboardKey.arrowUp});
 
-  static final moveDown = FlashInputAction(
+  static final moveDown = FInputAction(
     name: 'move_down',
     keys: {LogicalKeyboardKey.keyS, LogicalKeyboardKey.arrowDown},
   );
 
-  static final moveLeft = FlashInputAction(
+  static final moveLeft = FInputAction(
     name: 'move_left',
     keys: {LogicalKeyboardKey.keyA, LogicalKeyboardKey.arrowLeft},
   );
 
-  static final moveRight = FlashInputAction(
+  static final moveRight = FInputAction(
     name: 'move_right',
     keys: {LogicalKeyboardKey.keyD, LogicalKeyboardKey.arrowRight},
   );
 
-  static final jump = FlashInputAction(name: 'jump', keys: {LogicalKeyboardKey.space});
+  static final jump = FInputAction(name: 'jump', keys: {LogicalKeyboardKey.space});
 
-  static final attack = FlashInputAction(
+  static final attack = FInputAction(
     name: 'attack',
     keys: {LogicalKeyboardKey.keyZ},
     mouseButtons: {0}, // Left click
   );
 
-  static final interact = FlashInputAction(name: 'interact', keys: {LogicalKeyboardKey.keyE, LogicalKeyboardKey.enter});
+  static final interact = FInputAction(name: 'interact', keys: {LogicalKeyboardKey.keyE, LogicalKeyboardKey.enter});
 
-  static final pause = FlashInputAction(name: 'pause', keys: {LogicalKeyboardKey.escape});
+  static final pause = FInputAction(name: 'pause', keys: {LogicalKeyboardKey.escape});
 }
 
 /// Core input system that tracks keyboard and pointer state
-class FlashInputSystem {
+class FInputSystem {
   // Keyboard state
   final Set<LogicalKeyboardKey> _pressedKeys = {};
   final Set<LogicalKeyboardKey> _justPressedKeys = {};
@@ -76,7 +76,7 @@ class FlashInputSystem {
   Offset _lastPointerPosition = Offset.zero;
 
   // Action mappings
-  final Map<String, FlashInputAction> _actions = {};
+  final Map<String, FInputAction> _actions = {};
 
   // Scroll
   double _scrollDelta = 0.0;
@@ -159,12 +159,12 @@ class FlashInputSystem {
   double get scrollDelta => _scrollDelta;
 
   /// Register an action for easy querying
-  void registerAction(FlashInputAction action) {
+  void registerAction(FInputAction action) {
     _actions[action.name] = action;
   }
 
   /// Register multiple actions at once
-  void registerActions(List<FlashInputAction> actions) {
+  void registerActions(List<FInputAction> actions) {
     for (final action in actions) {
       registerAction(action);
     }
@@ -279,16 +279,16 @@ class FlashInputSystem {
     double x = 0;
     double y = 0;
 
-    if (isActionPressed('move_left') || isActionPressed(FlashInputAction.moveLeft.name)) {
+    if (isActionPressed('move_left') || isActionPressed(FInputAction.moveLeft.name)) {
       x -= 1;
     }
-    if (isActionPressed('move_right') || isActionPressed(FlashInputAction.moveRight.name)) {
+    if (isActionPressed('move_right') || isActionPressed(FInputAction.moveRight.name)) {
       x += 1;
     }
-    if (isActionPressed('move_up') || isActionPressed(FlashInputAction.moveUp.name)) {
+    if (isActionPressed('move_up') || isActionPressed(FInputAction.moveUp.name)) {
       y -= 1; // Screen: up is negative Y
     }
-    if (isActionPressed('move_down') || isActionPressed(FlashInputAction.moveDown.name)) {
+    if (isActionPressed('move_down') || isActionPressed(FInputAction.moveDown.name)) {
       y += 1;
     }
 
@@ -301,16 +301,16 @@ class FlashInputSystem {
     double x = 0;
     double y = 0;
 
-    if (isActionPressed('move_left') || isActionPressed(FlashInputAction.moveLeft.name)) {
+    if (isActionPressed('move_left') || isActionPressed(FInputAction.moveLeft.name)) {
       x -= 1;
     }
-    if (isActionPressed('move_right') || isActionPressed(FlashInputAction.moveRight.name)) {
+    if (isActionPressed('move_right') || isActionPressed(FInputAction.moveRight.name)) {
       x += 1;
     }
-    if (isActionPressed('move_up') || isActionPressed(FlashInputAction.moveUp.name)) {
+    if (isActionPressed('move_up') || isActionPressed(FInputAction.moveUp.name)) {
       y += 1; // World: up is positive Y
     }
-    if (isActionPressed('move_down') || isActionPressed(FlashInputAction.moveDown.name)) {
+    if (isActionPressed('move_down') || isActionPressed(FInputAction.moveDown.name)) {
       y -= 1;
     }
 

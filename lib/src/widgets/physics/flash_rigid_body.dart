@@ -5,24 +5,24 @@ import '../../core/systems/physics.dart';
 import '../framework.dart';
 
 /// Declarative widget to initialize a physics world in the Flash engine.
-class FlashPhysicsWorld extends StatefulWidget {
+class FPhysicsWorld extends StatefulWidget {
   final v.Vector2? gravity;
 
-  const FlashPhysicsWorld({super.key, this.gravity});
+  const FPhysicsWorld({super.key, this.gravity});
 
   @override
-  State<FlashPhysicsWorld> createState() => _FlashPhysicsWorldState();
+  State<FPhysicsWorld> createState() => _FPhysicsWorldState();
 }
 
-class _FlashPhysicsWorldState extends State<FlashPhysicsWorld> {
+class _FPhysicsWorldState extends State<FPhysicsWorld> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final element = context.getElementForInheritedWidgetOfExactType<InheritedFlashNode>();
-    final engine = (element?.widget as InheritedFlashNode?)?.engine;
+    final element = context.getElementForInheritedWidgetOfExactType<InheritedFNode>();
+    final engine = (element?.widget as InheritedFNode?)?.engine;
 
     if (engine != null && engine.physicsWorld == null) {
-      engine.physicsWorld = FlashPhysicsSystem(gravity: widget.gravity);
+      engine.physicsWorld = FPhysicsSystem(gravity: widget.gravity);
     }
   }
 
@@ -31,25 +31,25 @@ class _FlashPhysicsWorldState extends State<FlashPhysicsWorld> {
 }
 
 /// A rigid body that reacts to physics forces. Native implementation.
-class FlashRigidBody extends FlashNodeWidget {
+class FRigidBody extends FNodeWidget {
   final int type; // 0: Static, 1: Kinematic, 2: Dynamic
-  final int shapeType; // FlashPhysics.circle or FlashPhysics.box
+  final int shapeType; // FPhysics.circle or FPhysics.box
   final double width;
   final double height;
   final v.Vector2? initialVelocity;
-  final void Function(FlashPhysicsBody)? onCollision;
-  final void Function(FlashPhysicsBody)? onUpdate;
-  final void Function(FlashPhysicsBody)? onCreated;
+  final void Function(FPhysicsBody)? onCollision;
+  final void Function(FPhysicsBody)? onUpdate;
+  final void Function(FPhysicsBody)? onCreated;
   final Color color;
   final bool debugDraw;
   final double restitution;
   final double friction;
 
-  const FlashRigidBody({
+  const FRigidBody({
     super.key,
     super.position,
     this.type = 2, // Default: Dynamic
-    this.shapeType = FlashPhysics.box, // Default to box for convenience
+    this.shapeType = FPhysics.box, // Default to box for convenience
     this.width = 50,
     this.height = 50,
     super.rotation,
@@ -66,7 +66,7 @@ class FlashRigidBody extends FlashNodeWidget {
   });
 
   /// Shorthand constructor for squares/boxes
-  const FlashRigidBody.square({
+  const FRigidBody.square({
     super.key,
     required double size,
     super.position,
@@ -82,12 +82,12 @@ class FlashRigidBody extends FlashNodeWidget {
     this.restitution = 0.5,
     this.friction = 0.1,
   }) : type = 2,
-       shapeType = FlashPhysics.box,
+       shapeType = FPhysics.box,
        width = size,
        height = size;
 
   /// Shorthand constructor for circles
-  const FlashRigidBody.circle({
+  const FRigidBody.circle({
     super.key,
     required double radius,
     super.position,
@@ -103,33 +103,33 @@ class FlashRigidBody extends FlashNodeWidget {
     this.restitution = 0.5,
     this.friction = 0.1,
   }) : type = 2,
-       shapeType = FlashPhysics.circle,
+       shapeType = FPhysics.circle,
        width = radius * 2,
        height = radius * 2;
 
   @override
-  State<FlashRigidBody> createState() => _FlashRigidBodyState();
+  State<FRigidBody> createState() => _FRigidBodyState();
 }
 
-class _FlashRigidBodyState extends FlashNodeWidgetState<FlashRigidBody, FlashPhysicsBody> {
+class _FRigidBodyState extends FNodeWidgetState<FRigidBody, FPhysicsBody> {
   @override
-  FlashPhysicsBody createNode() {
+  FPhysicsBody createNode() {
     // Look up shared engine to get the shared physics world
-    final element = context.getElementForInheritedWidgetOfExactType<InheritedFlashNode>();
-    final engine = (element?.widget as InheritedFlashNode?)?.engine;
+    final element = context.getElementForInheritedWidgetOfExactType<InheritedFNode>();
+    final engine = (element?.widget as InheritedFNode?)?.engine;
 
-    // Auto-initialize physics if missing (e.g. no FlashPhysicsWorld widget used)
+    // Auto-initialize physics if missing (e.g. no FPhysicsWorld widget used)
     if (engine != null && engine.physicsWorld == null) {
-      engine.physicsWorld = FlashPhysicsSystem();
+      engine.physicsWorld = FPhysicsSystem();
     }
 
     final physicsSystem =
-        engine?.physicsWorld ?? FlashPhysicsSystem(); // Fallback only if no engine (shouldn't happen in widget tree)
+        engine?.physicsWorld ?? FPhysicsSystem(); // Fallback only if no engine (shouldn't happen in widget tree)
 
     final double safeX = widget.position?.x ?? 0.0;
     final double safeY = widget.position?.y ?? 0.0;
 
-    final body = FlashPhysicsBody(
+    final body = FPhysicsBody(
       world: physicsSystem.world,
       type: widget.type,
       shapeType: widget.shapeType,
@@ -160,7 +160,7 @@ class _FlashRigidBodyState extends FlashNodeWidgetState<FlashRigidBody, FlashPhy
   }
 
   @override
-  void applyProperties([FlashRigidBody? oldWidget]) {
+  void applyProperties([FRigidBody? oldWidget]) {
     super.applyProperties(oldWidget);
     if (widget.debugDraw != oldWidget?.debugDraw) {
       node.debugDraw = widget.debugDraw;

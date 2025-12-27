@@ -5,12 +5,12 @@ import '../../core/graph/node.dart';
 import '../framework.dart';
 import '../../core/utils/asset_loader.dart';
 
-class FlashSprite extends FlashNodeWidget {
+class FSprite extends FNodeWidget {
   final ui.Image image;
   final double? width;
   final double? height;
 
-  const FlashSprite({
+  const FSprite({
     super.key,
     required this.image,
     this.width,
@@ -22,7 +22,7 @@ class FlashSprite extends FlashNodeWidget {
     super.child,
   });
 
-  static Future<FlashSprite> fromAsset(
+  static Future<FSprite> fromAsset(
     String path, {
     Key? key,
     double? width,
@@ -34,7 +34,7 @@ class FlashSprite extends FlashNodeWidget {
     String? name,
   }) async {
     final image = await AssetLoader.loadImage(path);
-    return FlashSprite(
+    return FSprite(
       key: key,
       image: image,
       width: width,
@@ -47,15 +47,15 @@ class FlashSprite extends FlashNodeWidget {
   }
 
   @override
-  State<FlashSprite> createState() => _FlashSpriteState();
+  State<FSprite> createState() => _FSpriteState();
 }
 
-class _FlashSpriteState extends FlashNodeWidgetState<FlashSprite, _SpriteNode> {
+class _FSpriteState extends FNodeWidgetState<FSprite, _FSpriteNode> {
   @override
-  _SpriteNode createNode() => _SpriteNode(image: widget.image, width: widget.width, height: widget.height);
+  _FSpriteNode createNode() => _FSpriteNode(image: widget.image, width: widget.width, height: widget.height);
 
   @override
-  void applyProperties([FlashSprite? oldWidget]) {
+  void applyProperties([FSprite? oldWidget]) {
     super.applyProperties(oldWidget);
     node.image = widget.image;
     node.width = widget.width;
@@ -63,14 +63,14 @@ class _FlashSpriteState extends FlashNodeWidgetState<FlashSprite, _SpriteNode> {
   }
 }
 
-class _SpriteNode extends FlashNode {
+class _FSpriteNode extends FNode {
   ui.Image image;
   double? width;
   double? height;
 
   final Paint _paint = Paint();
 
-  _SpriteNode({required this.image, this.width, this.height}) {
+  _FSpriteNode({required this.image, this.width, this.height}) {
     _paint.filterQuality = FilterQuality.medium;
     _paint.isAntiAlias = true;
   }

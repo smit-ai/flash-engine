@@ -4,7 +4,7 @@ import '../../core/systems/verlet.dart';
 import '../framework.dart';
 
 /// Declarative widget for creating Verlet rope physics
-class FlashRope extends StatefulWidget {
+class FRope extends StatefulWidget {
   /// Starting anchor position
   final v.Vector3 anchorPosition;
 
@@ -29,7 +29,7 @@ class FlashRope extends StatefulWidget {
   /// Custom painter for rope rendering
   final CustomPainter Function(List<v.Vector3> positions)? painter;
 
-  FlashRope({
+  FRope({
     super.key,
     required this.anchorPosition,
     this.segments = 10,
@@ -42,11 +42,11 @@ class FlashRope extends StatefulWidget {
   }) : gravity = gravity ?? v.Vector3(0, -300, 0);
 
   @override
-  State<FlashRope> createState() => FlashRopeState();
+  State<FRope> createState() => FRopeState();
 }
 
-class FlashRopeState extends State<FlashRope> {
-  late FlashVerletRopeJoint _rope;
+class FRopeState extends State<FRope> {
+  late FVerletRopeJoint _rope;
 
   /// Access rope positions directly
   List<v.Vector3> get positions => _rope.positions;
@@ -68,7 +68,7 @@ class FlashRopeState extends State<FlashRope> {
   }
 
   void _createRope() {
-    _rope = FlashVerletRopeJoint(
+    _rope = FVerletRopeJoint(
       anchorA: widget.anchorPosition,
       segments: widget.segments,
       totalLength: widget.length,
@@ -85,7 +85,7 @@ class FlashRopeState extends State<FlashRope> {
   }
 
   void _registerWithEngine() {
-    final inherited = context.dependOnInheritedWidgetOfExactType<InheritedFlashNode>();
+    final inherited = context.dependOnInheritedWidgetOfExactType<InheritedFNode>();
     final engine = inherited?.engine;
 
     if (engine != null) {
@@ -101,7 +101,7 @@ class FlashRopeState extends State<FlashRope> {
   }
 
   @override
-  void didUpdateWidget(FlashRope oldWidget) {
+  void didUpdateWidget(FRope oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.segments != oldWidget.segments ||
         widget.length != oldWidget.length ||
@@ -121,14 +121,14 @@ class FlashRopeState extends State<FlashRope> {
 }
 
 /// Pre-built rope painter with glow effect
-class FlashRopePainter extends CustomPainter {
+class FRopePainter extends CustomPainter {
   final List<v.Vector3> positions;
   final Color color;
   final double strokeWidth;
   final Offset center;
   final bool showNodes;
 
-  FlashRopePainter({
+  FRopePainter({
     required this.positions,
     required this.color,
     this.strokeWidth = 4,
@@ -181,5 +181,5 @@ class FlashRopePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant FlashRopePainter oldDelegate) => true;
+  bool shouldRepaint(covariant FRopePainter oldDelegate) => true;
 }

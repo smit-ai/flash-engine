@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import '../../core/graph/node.dart';
 import '../framework.dart';
 
-class FlashTriangle extends FlashNodeWidget {
+class FTriangle extends FNodeWidget {
   final double size;
   final Color color;
 
-  const FlashTriangle({
+  const FTriangle({
     super.key,
     super.position,
     super.rotation,
@@ -18,35 +18,22 @@ class FlashTriangle extends FlashNodeWidget {
   });
 
   @override
-  State<FlashTriangle> createState() => _FlashTriangleState();
+  State<FTriangle> createState() => _FTriangleState();
 }
 
-class _FlashTriangleState extends FlashNodeWidgetState<FlashTriangle, _TriangleNode> {
+class _FTriangleState extends FNodeWidgetState<FTriangle, _TriangleNode> {
   @override
   _TriangleNode createNode() => _TriangleNode(size: widget.size, color: widget.color);
 
   @override
-  void applyProperties([FlashTriangle? oldWidget]) {
+  void applyProperties([FTriangle? oldWidget]) {
     super.applyProperties(oldWidget);
     node.color = widget.color;
-    // The following lines are added based on the provided Code Edit,
-    // assuming `point1`, `point2`, `point3` are intended to be added
-    // to the `FlashTriangle` widget and `_TriangleNode` class.
-    // However, they are not defined in the original code.
-    // For the sake of producing syntactically correct code based on the instruction,
-    // and assuming these properties would be added elsewhere,
-    // I am including them as per the Code Edit's body for `applyProperties`.
-    // If these properties are not intended, please clarify.
-    // node.point1 = widget.point1;
-    // node.point2 = widget.point2;
-    // node.point3 = widget.point3;
-    // Re-adding node.size assignment as it was present in the original _applyProperties
-    // and not explicitly removed by the Code Edit's instruction to rename.
     node.size = widget.size;
   }
 }
 
-class _TriangleNode extends FlashNode {
+class _TriangleNode extends FNode {
   double size;
   Color color;
 

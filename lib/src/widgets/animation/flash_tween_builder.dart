@@ -5,7 +5,7 @@ import '../framework.dart';
 
 /// Declarative tween animation builder widget
 /// Automatically handles animation lifecycle with engine tick
-class FlashTweenBuilder<T> extends StatefulWidget {
+class FTweenBuilder<T> extends StatefulWidget {
   /// Starting value
   final T from;
 
@@ -39,14 +39,14 @@ class FlashTweenBuilder<T> extends StatefulWidget {
   /// Lerp function for custom types
   final T Function(T a, T b, double t)? lerp;
 
-  const FlashTweenBuilder({
+  const FTweenBuilder({
     super.key,
     required this.from,
     required this.to,
     required this.duration,
     required this.builder,
     this.delay = Duration.zero,
-    this.easing = FlashEasing.easeInOutQuad,
+    this.easing = FEasing.easeInOutQuad,
     this.repeat = 0,
     this.yoyo = false,
     this.autoStart = true,
@@ -55,10 +55,10 @@ class FlashTweenBuilder<T> extends StatefulWidget {
   });
 
   @override
-  State<FlashTweenBuilder<T>> createState() => _FlashTweenBuilderState<T>();
+  State<FTweenBuilder<T>> createState() => _FTweenBuilderState<T>();
 }
 
-class _FlashTweenBuilderState<T> extends State<FlashTweenBuilder<T>> {
+class _FTweenBuilderState<T> extends State<FTweenBuilder<T>> {
   late _InternalTween<T> _tween;
   T? _currentValue;
 
@@ -106,7 +106,7 @@ class _FlashTweenBuilderState<T> extends State<FlashTweenBuilder<T>> {
   }
 
   void _registerWithEngine() {
-    final inherited = context.dependOnInheritedWidgetOfExactType<InheritedFlashNode>();
+    final inherited = context.dependOnInheritedWidgetOfExactType<InheritedFNode>();
     final engine = inherited?.engine;
     if (engine != null) {
       // Store previous onUpdate and chain ours
@@ -119,7 +119,7 @@ class _FlashTweenBuilderState<T> extends State<FlashTweenBuilder<T>> {
   }
 
   @override
-  void didUpdateWidget(FlashTweenBuilder<T> oldWidget) {
+  void didUpdateWidget(FTweenBuilder<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.from != oldWidget.from || widget.to != oldWidget.to || widget.duration != oldWidget.duration) {
       _createTween();
@@ -209,8 +209,8 @@ class _InternalTween<T> {
 }
 
 /// Convenience widget for animating double values
-class FlashAnimatedDouble extends FlashTweenBuilder<double> {
-  const FlashAnimatedDouble({
+class FAnimatedDouble extends FTweenBuilder<double> {
+  const FAnimatedDouble({
     super.key,
     required super.from,
     required super.to,
@@ -228,29 +228,29 @@ class FlashAnimatedDouble extends FlashTweenBuilder<double> {
 }
 
 /// Convenience widget for animating node position
-class FlashPositionAnimation extends StatefulWidget {
-  final FlashNode node;
+class FPositionAnimation extends StatefulWidget {
+  final FNode node;
   final dynamic from; // Vector3 or null (uses current)
   final dynamic to; // Vector3
   final Duration duration;
   final EasingFunction easing;
   final Widget child;
 
-  const FlashPositionAnimation({
+  const FPositionAnimation({
     super.key,
     required this.node,
     this.from,
     required this.to,
     required this.duration,
-    this.easing = FlashEasing.easeInOutQuad,
+    this.easing = FEasing.easeInOutQuad,
     required this.child,
   });
 
   @override
-  State<FlashPositionAnimation> createState() => _FlashPositionAnimationState();
+  State<FPositionAnimation> createState() => _FPositionAnimationState();
 }
 
-class _FlashPositionAnimationState extends State<FlashPositionAnimation> with SingleTickerProviderStateMixin {
+class _FPositionAnimationState extends State<FPositionAnimation> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 

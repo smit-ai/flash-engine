@@ -31,7 +31,7 @@ class _LightingDemoState extends State<LightingDemo> with SingleTickerProviderSt
       backgroundColor: const Color(0xFF020617),
       appBar: AppBar(title: const Text('Dynamic Lighting Demo'), backgroundColor: Colors.transparent, elevation: 0),
       extendBodyBehindAppBar: true,
-      body: Flash(
+      body: FView(
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, _) {
@@ -41,10 +41,10 @@ class _LightingDemoState extends State<LightingDemo> with SingleTickerProviderSt
             final lightZ = cos(t) * 400;
             final lightY = sin(t * 0.5) * 200;
 
-            return FlashNodes(
+            return FNodes(
               children: [
                 // The Light Source (Visible as a small white circle for reference)
-                FlashLight(
+                FLight(
                   name: 'PointLight',
                   position: v.Vector3(lightX, lightY, lightZ),
                   intensity: 1.5,
@@ -52,15 +52,10 @@ class _LightingDemoState extends State<LightingDemo> with SingleTickerProviderSt
                 ),
 
                 // Visual feedback for light position
-                FlashCircle(
-                  position: v.Vector3(lightX, lightY, lightZ),
-                  radius: 10,
-                  color: Colors.white,
-                  name: 'LightViz',
-                ),
+                FCircle(position: v.Vector3(lightX, lightY, lightZ), radius: 10, color: Colors.white, name: 'LightViz'),
 
                 // Center Cube
-                FlashCube(
+                FCube(
                   size: 150,
                   color: Colors.blue,
                   position: v.Vector3(-150, 0, 0),
@@ -68,10 +63,10 @@ class _LightingDemoState extends State<LightingDemo> with SingleTickerProviderSt
                 ),
 
                 // Center Sphere
-                FlashSphere(radius: 80, color: Colors.purple, position: v.Vector3(150, 0, 0), name: 'ShadedBall'),
+                FSphere(radius: 80, color: Colors.purple, position: v.Vector3(150, 0, 0), name: 'ShadedBall'),
 
                 // Floor Plane (reacts to light)
-                FlashBox(
+                FBox(
                   position: v.Vector3(0, -250, 0),
                   rotation: v.Vector3(pi / 2, 0, 0),
                   width: 1200,
@@ -81,7 +76,7 @@ class _LightingDemoState extends State<LightingDemo> with SingleTickerProviderSt
                 ),
 
                 // Ambient labels
-                FlashLabel(
+                FLabel(
                   text: 'Dinamik Işıklandırma Sistemi',
                   position: v.Vector3(0, 300, 0),
                   style: const TextStyle(color: Colors.cyanAccent, fontSize: 32, fontWeight: FontWeight.bold),

@@ -31,16 +31,16 @@ class _ThreeDDemoState extends State<ThreeDDemo> with SingleTickerProviderStateM
       backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(title: const Text('3D Primitives Demo'), backgroundColor: Colors.transparent, elevation: 0),
       extendBodyBehindAppBar: true,
-      body: Flash(
+      body: FView(
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, _) {
             final t = _controller.value * 2 * pi;
-            return FlashNodes(
+            return FNodes(
               position: v.Vector3(0, 0, 0),
               children: [
                 // Rotating Cube 1
-                FlashCube(
+                FCube(
                   size: 150,
                   color: Colors.cyanAccent,
                   position: v.Vector3(-200, 0, 0),
@@ -48,7 +48,7 @@ class _ThreeDDemoState extends State<ThreeDDemo> with SingleTickerProviderStateM
                 ),
 
                 // Rotating Cube 2 (Opposite direction)
-                FlashCube(
+                FCube(
                   size: 100,
                   color: Colors.purpleAccent,
                   position: v.Vector3(200, 100, -100),
@@ -56,7 +56,7 @@ class _ThreeDDemoState extends State<ThreeDDemo> with SingleTickerProviderStateM
                 ),
 
                 // Floating Sphere 1
-                FlashSphere(
+                FSphere(
                   radius: 60,
                   color: Colors.orangeAccent,
                   position: v.Vector3(0, 150 + sin(t) * 50, 50),
@@ -64,7 +64,7 @@ class _ThreeDDemoState extends State<ThreeDDemo> with SingleTickerProviderStateM
                 ),
 
                 // Floating Sphere 2
-                FlashSphere(
+                FSphere(
                   radius: 40,
                   color: Colors.pinkAccent,
                   position: v.Vector3(150 * cos(t), -200, 150 * sin(t)),
@@ -72,7 +72,7 @@ class _ThreeDDemoState extends State<ThreeDDemo> with SingleTickerProviderStateM
                 ),
 
                 // Ground Plane (using nodes)
-                FlashBox(
+                FBox(
                   position: v.Vector3(0, -300, 0),
                   rotation: v.Vector3(pi / 2, 0, 0),
                   width: 1000,
@@ -81,12 +81,12 @@ class _ThreeDDemoState extends State<ThreeDDemo> with SingleTickerProviderStateM
                 ),
 
                 // Some depth reference labels
-                FlashLabel(
+                FLabel(
                   text: 'FRONT',
                   position: v.Vector3(0, 0, 200),
                   style: const TextStyle(color: Colors.white, fontSize: 24),
                 ),
-                FlashLabel(
+                FLabel(
                   text: 'BACK',
                   position: v.Vector3(0, 0, -200),
                   style: const TextStyle(color: Colors.white54, fontSize: 24),

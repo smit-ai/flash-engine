@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import '../../core/rendering/light.dart';
 import '../framework.dart';
 
-class FlashLight extends FlashNodeWidget {
+class FLight extends FNodeWidget {
   final Color color;
   final double intensity;
 
-  const FlashLight({
+  const FLight({
     super.key,
     super.position,
     super.rotation,
@@ -17,15 +17,15 @@ class FlashLight extends FlashNodeWidget {
   });
 
   @override
-  State<FlashLight> createState() => _FlashLightState();
+  State<FLight> createState() => _FLightState();
 }
 
-class _FlashLightState extends FlashNodeWidgetState<FlashLight, FlashLightNode> {
+class _FLightState extends FNodeWidgetState<FLight, FLightNode> {
   @override
-  FlashLightNode createNode() => FlashLightNode(color: widget.color, intensity: widget.intensity);
+  FLightNode createNode() => FLightNode(color: widget.color, intensity: widget.intensity);
 
   @override
-  void applyProperties([FlashLight? oldWidget]) {
+  void applyProperties([FLight? oldWidget]) {
     super.applyProperties(oldWidget);
     node.color = widget.color;
     node.intensity = widget.intensity;

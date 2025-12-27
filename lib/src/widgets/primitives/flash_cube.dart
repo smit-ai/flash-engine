@@ -4,7 +4,7 @@ import 'dart:math';
 import '../layout/group.dart';
 import 'flash_box.dart';
 
-class FlashCube extends StatelessWidget {
+class FCube extends StatelessWidget {
   final double size;
   final Color color;
   final v.Vector3? position;
@@ -12,7 +12,7 @@ class FlashCube extends StatelessWidget {
   final v.Vector3? scale;
   final String? name;
 
-  const FlashCube({
+  const FCube({
     super.key,
     this.size = 100,
     this.color = Colors.white,
@@ -25,16 +25,16 @@ class FlashCube extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final half = size / 2;
-    return FlashNodes(
+    return FNodes(
       name: name ?? 'Cube',
       position: position,
       rotation: rotation,
       scale: scale,
       children: [
         // Front
-        FlashBox(name: 'Front', position: v.Vector3(0, 0, half), width: size, height: size, color: color),
+        FBox(name: 'Front', position: v.Vector3(0, 0, half), width: size, height: size, color: color),
         // Back
-        FlashBox(
+        FBox(
           name: 'Back',
           position: v.Vector3(0, 0, -half),
           rotation: v.Vector3(0, pi, 0),
@@ -43,7 +43,7 @@ class FlashCube extends StatelessWidget {
           color: color.withValues(alpha: 0.8),
         ),
         // Top
-        FlashBox(
+        FBox(
           name: 'Top',
           position: v.Vector3(0, half, 0),
           rotation: v.Vector3(-pi / 2, 0, 0),
@@ -52,7 +52,7 @@ class FlashCube extends StatelessWidget {
           color: color.withValues(alpha: 0.9),
         ),
         // Bottom
-        FlashBox(
+        FBox(
           name: 'Bottom',
           position: v.Vector3(0, -half, 0),
           rotation: v.Vector3(pi / 2, 0, 0),
@@ -61,7 +61,7 @@ class FlashCube extends StatelessWidget {
           color: color.withValues(alpha: 0.7),
         ),
         // Left
-        FlashBox(
+        FBox(
           name: 'Left',
           position: v.Vector3(-half, 0, 0),
           rotation: v.Vector3(0, -pi / 2, 0),
@@ -70,7 +70,7 @@ class FlashCube extends StatelessWidget {
           color: color.withValues(alpha: 0.75),
         ),
         // Right
-        FlashBox(
+        FBox(
           name: 'Right',
           position: v.Vector3(half, 0, 0),
           rotation: v.Vector3(0, pi / 2, 0),

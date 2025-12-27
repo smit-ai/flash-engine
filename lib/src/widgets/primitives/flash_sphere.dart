@@ -5,12 +5,12 @@ import '../../core/graph/node.dart';
 import '../../core/rendering/light.dart';
 import '../framework.dart';
 
-class FlashSphere extends FlashNodeWidget {
+class FSphere extends FNodeWidget {
   final double radius;
   final Color color;
   final ui.Image? texture;
 
-  const FlashSphere({
+  const FSphere({
     super.key,
     super.position,
     super.rotation,
@@ -25,15 +25,15 @@ class FlashSphere extends FlashNodeWidget {
   });
 
   @override
-  State<FlashSphere> createState() => _FlashSphereState();
+  State<FSphere> createState() => _FSphereState();
 }
 
-class _FlashSphereState extends FlashNodeWidgetState<FlashSphere, _SphereNode> {
+class _FSphereState extends FNodeWidgetState<FSphere, _SphereNode> {
   @override
   _SphereNode createNode() => _SphereNode(radius: widget.radius, color: widget.color, texture: widget.texture);
 
   @override
-  void applyProperties([FlashSphere? oldWidget]) {
+  void applyProperties([FSphere? oldWidget]) {
     super.applyProperties(oldWidget);
     node.radius = widget.radius;
     node.color = widget.color;
@@ -41,7 +41,7 @@ class _FlashSphereState extends FlashNodeWidgetState<FlashSphere, _SphereNode> {
   }
 }
 
-class _SphereNode extends FlashNode {
+class _SphereNode extends FNode {
   double radius;
   Color color;
   ui.Image? texture;
@@ -54,7 +54,7 @@ class _SphereNode extends FlashNode {
 
     if (lights.isNotEmpty) {
       final worldPos = worldPosition;
-      FlashLightNode? bestLight;
+      FLightNode? bestLight;
       double bestIntensity = -1;
 
       for (final light in lights) {

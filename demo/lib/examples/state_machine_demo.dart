@@ -9,8 +9,8 @@ class StateMachineDemoExample extends StatefulWidget {
   State<StateMachineDemoExample> createState() => _StateMachineDemoExampleState();
 }
 
-class _StateMachineDemoExampleState extends State<StateMachineDemoExample> with FlashEventMixin {
-  late FlashStateController<CharacterState> _characterSM;
+class _StateMachineDemoExampleState extends State<StateMachineDemoExample> with FEventMixin {
+  late FStateController<CharacterState> _characterSM;
   int _score = 0;
   int _health = 100;
   String _lastEventMsg = 'No events yet';
@@ -20,12 +20,12 @@ class _StateMachineDemoExampleState extends State<StateMachineDemoExample> with 
     super.initState();
 
     // Initialize State Machine
-    _characterSM = FlashStateController<CharacterState>();
+    _characterSM = FStateController<CharacterState>();
 
     _characterSM.addStates({
-      CharacterState.idle: FlashSimpleState(name: 'Idle', enter: (prev) => debugPrint('Entered Idle from $prev')),
-      CharacterState.walking: FlashSimpleState(name: 'Walking', update: (dt) => debugPrint('Character is walking...')),
-      CharacterState.jumping: FlashSimpleState(
+      CharacterState.idle: FSimpleState(name: 'Idle', enter: (prev) => debugPrint('Entered Idle from $prev')),
+      CharacterState.walking: FSimpleState(name: 'Walking', update: (dt) => debugPrint('Character is walking...')),
+      CharacterState.jumping: FSimpleState(
         name: 'Jumping',
         enter: (prev) {
           debugPrint('JUMP!');
@@ -37,7 +37,7 @@ class _StateMachineDemoExampleState extends State<StateMachineDemoExample> with 
           });
         },
       ),
-      CharacterState.hurt: FlashSimpleState(
+      CharacterState.hurt: FSimpleState(
         name: 'Hurt',
         enter: (prev) {
           Future.delayed(const Duration(milliseconds: 500), () {
@@ -51,7 +51,7 @@ class _StateMachineDemoExampleState extends State<StateMachineDemoExample> with 
 
     _characterSM.transitionTo(CharacterState.idle);
 
-    // Subscribe to events using FlashEventMixin
+    // Subscribe to events using FEventMixin
     subscribe<ScoreChangedEvent>((event) {
       if (mounted) setState(() => _score = event.newScore);
     });
@@ -66,7 +66,7 @@ class _StateMachineDemoExampleState extends State<StateMachineDemoExample> with 
       }
     });
 
-    subscribe<FlashSignal>((event) {
+    subscribe<FSignalEvent>((event) {
       if (mounted) setState(() => _lastEventMsg = 'Signal received: ${event.signal}');
     });
   }
@@ -81,10 +81,10 @@ class _StateMachineDemoExampleState extends State<StateMachineDemoExample> with 
         elevation: 0,
       ),
       extendBodyBehindAppBar: true,
-      body: Flash(
+      body: FView(
         child: Builder(
           builder: (context) {
-            final engine = context.dependOnInheritedWidgetOfExactType<InheritedFlashNode>()?.engine;
+            final engine = context.dependOnInheritedWidgetOfExactType<InheritedFNode>()?.engine;
             if (engine != null) {
               engine.onUpdate = () => _characterSM.update(1 / 60.0);
             }
@@ -92,11 +92,11 @@ class _StateMachineDemoExampleState extends State<StateMachineDemoExample> with 
             return Stack(
               children: [
                 // Camera
-                FlashCamera(position: v.Vector3(0, 0, 500), fov: 60),
+                FCamera(position: v.Vector3(0, 0, 500), fov: 60),
 
                 // Character Visualization
                 Center(
-                  child: FlashStateMachine<CharacterState>(
+                  child: FStateMachine<CharacterState>(
                     machine: _characterSM,
                     builder: (context, state) {
                       Color color = Colors.blue;
@@ -123,7 +123,7 @@ class _StateMachineDemoExampleState extends State<StateMachineDemoExample> with 
                           break;
                       }
 
-                      return FlashCube(
+                      return FCube(
                         position: v.Vector3(0, state == CharacterState.jumping ? 100 : 0, 0),
                         size: 80,
                         color: color,

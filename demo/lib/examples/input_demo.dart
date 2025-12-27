@@ -29,10 +29,10 @@ class _InputDemoExampleState extends State<InputDemoExample> {
       backgroundColor: const Color(0xFF1a1a2e),
       appBar: AppBar(title: const Text('Input System Demo'), backgroundColor: Colors.transparent, elevation: 0),
       extendBodyBehindAppBar: true,
-      body: Flash(
+      body: FView(
         child: Builder(
           builder: (context) {
-            final engineWidget = context.dependOnInheritedWidgetOfExactType<InheritedFlashNode>();
+            final engineWidget = context.dependOnInheritedWidgetOfExactType<InheritedFNode>();
             final engine = engineWidget?.engine;
 
             if (engine == null) {
@@ -43,11 +43,11 @@ class _InputDemoExampleState extends State<InputDemoExample> {
 
             // Register default movement actions
             engine.input.registerActions([
-              FlashInputAction.moveUp,
-              FlashInputAction.moveDown,
-              FlashInputAction.moveLeft,
-              FlashInputAction.moveRight,
-              FlashInputAction.jump,
+              FInputAction.moveUp,
+              FInputAction.moveDown,
+              FInputAction.moveLeft,
+              FInputAction.moveRight,
+              FInputAction.jump,
             ]);
 
             // Update logic
@@ -91,10 +91,10 @@ class _InputDemoExampleState extends State<InputDemoExample> {
             return Stack(
               children: [
                 // Camera
-                FlashCamera(position: v.Vector3(0, 0, 500), fov: 60),
+                FCamera(position: v.Vector3(0, 0, 500), fov: 60),
 
                 // Player
-                FlashSphere(position: _playerPos, radius: 30, color: Colors.cyanAccent),
+                FSphere(position: _playerPos, radius: 30, color: Colors.cyanAccent),
 
                 // Control hints (top)
                 Positioned(

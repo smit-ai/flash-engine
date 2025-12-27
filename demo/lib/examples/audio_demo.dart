@@ -10,12 +10,12 @@ class AudioDemo extends StatefulWidget {
 }
 
 class _AudioDemoState extends State<AudioDemo> {
-  late final FlashPhysicsSystem _physicsWorld;
+  late final FPhysicsSystem _physicsWorld;
 
   @override
   void initState() {
     super.initState();
-    _physicsWorld = FlashPhysicsSystem(gravity: FlashPhysics.standardGravity);
+    _physicsWorld = FPhysicsSystem(gravity: FPhysics.standardGravity);
   }
 
   @override
@@ -23,38 +23,38 @@ class _AudioDemoState extends State<AudioDemo> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(title: const Text('Native Physics Audio Collision'), backgroundColor: Colors.transparent),
-      body: Flash(
+      body: FView(
         physicsWorld: _physicsWorld,
         autoUpdate: true,
         child: Stack(
           children: [
-            FlashCamera(position: v.Vector3(0, 0, 800), fov: 60),
+            FCamera(position: v.Vector3(0, 0, 800), fov: 60),
 
             // Floor
-            FlashStaticBody(
+            FStaticBody(
               name: 'Floor',
               position: v.Vector3(0, -350, 0),
               width: 1200,
               height: 40,
-              child: FlashBox(width: 1200, height: 40, color: Colors.white10),
+              child: FBox(width: 1200, height: 40, color: Colors.white10),
             ),
 
             // Left Wall
-            FlashStaticBody(
+            FStaticBody(
               name: 'LeftWall',
               position: v.Vector3(-450, 0, 0),
               width: 40,
               height: 800,
-              child: FlashBox(width: 40, height: 800, color: Colors.white10),
+              child: FBox(width: 40, height: 800, color: Colors.white10),
             ),
 
             // Right Wall
-            FlashStaticBody(
+            FStaticBody(
               name: 'RightWall',
               position: v.Vector3(450, 0, 0),
               width: 40,
               height: 800,
-              child: FlashBox(width: 40, height: 800, color: Colors.white10),
+              child: FBox(width: 40, height: 800, color: Colors.white10),
             ),
 
             // Slider A (Moving Right)
@@ -69,11 +69,11 @@ class _AudioDemoState extends State<AudioDemo> {
   }
 
   Widget _buildSliderBox({required v.Vector3 position, required v.Vector2 velocity, required Color color}) {
-    final controller = FlashAudioController();
+    final controller = FAudioController();
     int lastPlayTime = 0;
     const int cooldownMs = 100; // Prevent spamming sounds
 
-    return FlashRigidBody.square(
+    return FRigidBody.square(
       position: position,
       initialVelocity: velocity,
       size: 40,
@@ -87,8 +87,8 @@ class _AudioDemoState extends State<AudioDemo> {
       },
       child: Stack(
         children: [
-          FlashBox(width: 40, height: 40, color: color),
-          FlashAudioPlayer(assetPath: 'asset/demo.mp3', controller: controller, autoplay: false, is3D: false),
+          FBox(width: 40, height: 40, color: color),
+          FAudioPlayer(assetPath: 'asset/demo.mp3', controller: controller, autoplay: false, is3D: false),
         ],
       ),
     );

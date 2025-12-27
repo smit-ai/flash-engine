@@ -4,18 +4,18 @@ import '../core/graph/node.dart';
 import '../core/systems/engine.dart';
 
 /// An InheritedWidget that provides the current FlashNode to descendants.
-class InheritedFlashNode extends InheritedWidget {
-  final FlashNode node;
-  final FlashEngine engine;
+class InheritedFNode extends InheritedWidget {
+  final FNode node;
+  final FEngine engine;
 
-  const InheritedFlashNode({required this.node, required this.engine, required super.child, super.key});
+  const InheritedFNode({required this.node, required this.engine, required super.child, super.key});
 
   @override
-  bool updateShouldNotify(InheritedFlashNode oldWidget) => oldWidget.node != node || oldWidget.engine != engine;
+  bool updateShouldNotify(InheritedFNode oldWidget) => oldWidget.node != node || oldWidget.engine != engine;
 }
 
 /// Base class for all declarative Flash widgets.
-abstract class FlashNodeWidget extends StatefulWidget {
+abstract class FNodeWidget extends StatefulWidget {
   final v.Vector3? position;
   final v.Vector3? rotation;
   final v.Vector3? scale;
@@ -24,7 +24,7 @@ abstract class FlashNodeWidget extends StatefulWidget {
 
   final bool billboard;
 
-  const FlashNodeWidget({
+  const FNodeWidget({
     super.key,
     this.name,
     this.position,
@@ -36,9 +36,9 @@ abstract class FlashNodeWidget extends StatefulWidget {
 }
 
 /// State class for FlashNodeWidget that manages the lifecycle of a FlashNode.
-abstract class FlashNodeWidgetState<T extends FlashNodeWidget, N extends FlashNode> extends State<T> {
+abstract class FNodeWidgetState<T extends FNodeWidget, N extends FNode> extends State<T> {
   late N node;
-  FlashNode? _parent;
+  FNode? _parent;
 
   N createNode();
 
@@ -52,7 +52,7 @@ abstract class FlashNodeWidgetState<T extends FlashNodeWidget, N extends FlashNo
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final parentHost = context.dependOnInheritedWidgetOfExactType<InheritedFlashNode>();
+    final parentHost = context.dependOnInheritedWidgetOfExactType<InheritedFNode>();
     final newParent = parentHost?.node;
     if (_parent != newParent) {
       _parent?.removeChild(node);
@@ -98,9 +98,9 @@ abstract class FlashNodeWidgetState<T extends FlashNodeWidget, N extends FlashNo
   Widget build(BuildContext context) {
     // If the widget has a child, wrap it in InheritedFlashNode so it finds this node as parent
     if (widget.child != null) {
-      final engine = context.dependOnInheritedWidgetOfExactType<InheritedFlashNode>()?.engine;
+      final engine = context.dependOnInheritedWidgetOfExactType<InheritedFNode>()?.engine;
       if (engine != null) {
-        return InheritedFlashNode(node: node, engine: engine, child: widget.child!);
+        return InheritedFNode(node: node, engine: engine, child: widget.child!);
       }
     }
     return widget.child ?? const SizedBox.shrink();
@@ -108,27 +108,20 @@ abstract class FlashNodeWidgetState<T extends FlashNodeWidget, N extends FlashNo
 }
 
 /// Base class for widgets that can have multiple children (like Groups).
-abstract class FlashMultiNodeWidget extends FlashNodeWidget {
+abstract class FMultiNodeWidget extends FNodeWidget {
   final List<Widget> children;
 
-  const FlashMultiNodeWidget({
-    super.key,
-    required this.children,
-    super.position,
-    super.rotation,
-    super.scale,
-    super.name,
-  }) : super(child: null);
+  const FMultiNodeWidget({super.key, required this.children, super.position, super.rotation, super.scale, super.name})
+    : super(child: null);
 }
 
-abstract class FlashMultiNodeWidgetState<T extends FlashMultiNodeWidget, N extends FlashNode>
-    extends FlashNodeWidgetState<T, N> {
+abstract class FMultiNodeWidgetState<T extends FMultiNodeWidget, N extends FNode> extends FNodeWidgetState<T, N> {
   @override
   Widget build(BuildContext context) {
-    final engine = context.dependOnInheritedWidgetOfExactType<InheritedFlashNode>()?.engine;
+    final engine = context.dependOnInheritedWidgetOfExactType<InheritedFNode>()?.engine;
     if (engine == null) return const SizedBox.shrink();
 
-    return InheritedFlashNode(
+    return InheritedFNode(
       node: node,
       engine: engine,
       child: Stack(children: widget.children),

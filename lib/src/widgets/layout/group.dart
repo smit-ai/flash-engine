@@ -2,26 +2,26 @@ import 'package:flutter/material.dart';
 import '../../core/graph/node.dart';
 import '../framework.dart';
 
-class FlashNodes extends FlashMultiNodeWidget {
-  const FlashNodes({super.key, required super.children, super.position, super.rotation, super.scale, super.name});
+class FNodes extends FMultiNodeWidget {
+  const FNodes({super.key, required super.children, super.position, super.rotation, super.scale, super.name});
 
   @override
-  State<FlashNodes> createState() => _FlashNodesState();
+  State<FNodes> createState() => _FNodesState();
 }
 
-class _FlashNodesState extends FlashMultiNodeWidgetState<FlashNodes, FlashNode> {
+class _FNodesState extends FMultiNodeWidgetState<FNodes, FNode> {
   @override
-  FlashNode createNode() => FlashNode();
+  FNode createNode() => FNode();
 }
 
-class FlashNodeGroup extends FlashNodeWidget {
-  const FlashNodeGroup({super.key, super.position, super.rotation, super.scale, super.name, super.child});
+class FNodeGroup extends FNodeWidget {
+  const FNodeGroup({super.key, super.position, super.rotation, super.scale, super.name, super.child});
 
   @override
-  State<FlashNodeGroup> createState() => _FlashNodeGroupState();
+  State<FNodeGroup> createState() => _FNodeGroupState();
 }
 
-class _FlashNodeGroupState extends FlashNodeWidgetState<FlashNodeGroup, FlashNode> {
+class _FNodeGroupState extends FNodeWidgetState<FNodeGroup, FNode> {
   @override
-  FlashNode createNode() => FlashNode();
+  FNode createNode() => FNode();
 }

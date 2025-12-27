@@ -3,12 +3,12 @@ import 'dart:ui' as ui;
 import '../../core/graph/node.dart';
 import '../framework.dart';
 
-class FlashLabel extends FlashNodeWidget {
+class FLabel extends FNodeWidget {
   final String text;
   final TextStyle style;
   final TextAlign textAlign;
 
-  const FlashLabel({
+  const FLabel({
     super.key,
     required this.text,
     super.position,
@@ -20,15 +20,15 @@ class FlashLabel extends FlashNodeWidget {
   });
 
   @override
-  State<FlashLabel> createState() => _FlashLabelState();
+  State<FLabel> createState() => _FLabelState();
 }
 
-class _FlashLabelState extends FlashNodeWidgetState<FlashLabel, _LabelNode> {
+class _FLabelState extends FNodeWidgetState<FLabel, _FLabelNode> {
   @override
-  _LabelNode createNode() => _LabelNode(text: widget.text, style: widget.style, textAlign: widget.textAlign);
+  _FLabelNode createNode() => _FLabelNode(text: widget.text, style: widget.style, textAlign: widget.textAlign);
 
   @override
-  void applyProperties([FlashLabel? oldWidget]) {
+  void applyProperties([FLabel? oldWidget]) {
     super.applyProperties(oldWidget);
     node.text = widget.text;
     node.style = widget.style;
@@ -36,7 +36,7 @@ class _FlashLabelState extends FlashNodeWidgetState<FlashLabel, _LabelNode> {
   }
 }
 
-class _LabelNode extends FlashNode {
+class _FLabelNode extends FNode {
   String text;
   TextStyle style;
   TextAlign textAlign;
@@ -46,7 +46,7 @@ class _LabelNode extends FlashNode {
   double _lastHeight = 0;
   bool _isGenerating = false;
 
-  _LabelNode({required this.text, required this.style, required this.textAlign}) {
+  _FLabelNode({required this.text, required this.style, required this.textAlign}) {
     _layout();
   }
 

@@ -15,12 +15,12 @@ class JointType {
 }
 
 /// Base class for all joints
-abstract class FlashJoint {
-  final FlashPhysicsBody bodyA;
-  final FlashPhysicsBody bodyB;
+abstract class FJoint {
+  final FPhysicsBody bodyA;
+  final FPhysicsBody bodyB;
   int? _jointId;
 
-  FlashJoint({required this.bodyA, required this.bodyB});
+  FJoint({required this.bodyA, required this.bodyB});
 
   /// Create the joint in the physics world
   void create(Pointer<PhysicsWorld> world);
@@ -28,7 +28,7 @@ abstract class FlashJoint {
   /// Destroy the joint
   void destroy(Pointer world) {
     if (_jointId != null && _jointId! >= 0) {
-      final ffi = FlashPhysicsSystem.jointsFFI;
+      final ffi = FPhysicsSystem.jointsFFI;
       if (ffi != null) {
         ffi.destroyJoint(world, _jointId!);
       }
@@ -40,14 +40,14 @@ abstract class FlashJoint {
 }
 
 /// Distance joint - maintains a fixed or spring distance between two bodies
-class FlashDistanceJoint extends FlashJoint {
+class FDistanceJoint extends FJoint {
   final v.Vector2 anchorA;
   final v.Vector2 anchorB;
   final double length;
   final double frequency;
   final double dampingRatio;
 
-  FlashDistanceJoint({
+  FDistanceJoint({
     required super.bodyA,
     required super.bodyB,
     v.Vector2? anchorA,
@@ -59,12 +59,7 @@ class FlashDistanceJoint extends FlashJoint {
        anchorB = anchorB ?? v.Vector2.zero(),
        length = length ?? _calculateDistance(bodyA, bodyB, anchorA, anchorB);
 
-  static double _calculateDistance(
-    FlashPhysicsBody bodyA,
-    FlashPhysicsBody bodyB,
-    v.Vector2? anchorA,
-    v.Vector2? anchorB,
-  ) {
+  static double _calculateDistance(FPhysicsBody bodyA, FPhysicsBody bodyB, v.Vector2? anchorA, v.Vector2? anchorB) {
     final aPos = bodyA.transform.position;
     final bPos = bodyB.transform.position;
     final aAnchor = anchorA ?? v.Vector2.zero();
@@ -79,7 +74,7 @@ class FlashDistanceJoint extends FlashJoint {
   void create(Pointer<PhysicsWorld> world) {
     if (isCreated) return;
 
-    final ffi = FlashPhysicsSystem.jointsFFI;
+    final ffi = FPhysicsSystem.jointsFFI;
     if (ffi == null) {
       print('⚠️  Joints FFI not available');
       return;
@@ -113,7 +108,7 @@ class FlashDistanceJoint extends FlashJoint {
 }
 
 /// Revolute joint - forces two bodies to share a common anchor point
-class FlashRevoluteJoint extends FlashJoint {
+class FRevoluteJoint extends FJoint {
   final v.Vector2 anchor;
   final bool enableMotor;
   final double motorSpeed;
@@ -122,7 +117,7 @@ class FlashRevoluteJoint extends FlashJoint {
   final double lowerAngle;
   final double upperAngle;
 
-  FlashRevoluteJoint({
+  FRevoluteJoint({
     required super.bodyA,
     required super.bodyB,
     required this.anchor,
@@ -138,7 +133,7 @@ class FlashRevoluteJoint extends FlashJoint {
   void create(Pointer<PhysicsWorld> world) {
     if (isCreated) return;
 
-    final ffi = FlashPhysicsSystem.jointsFFI;
+    final ffi = FPhysicsSystem.jointsFFI;
     if (ffi == null) {
       print('⚠️  Joints FFI not available for Revolute Joint');
       return;
@@ -168,7 +163,7 @@ class FlashRevoluteJoint extends FlashJoint {
 }
 
 /// Prismatic joint - allows relative translation along a specified axis
-class FlashPrismaticJoint extends FlashJoint {
+class FPrismaticJoint extends FJoint {
   final v.Vector2 axis;
   final bool enableLimit;
   final double lowerTranslation;
@@ -177,7 +172,7 @@ class FlashPrismaticJoint extends FlashJoint {
   final double motorSpeed;
   final double maxMotorForce;
 
-  FlashPrismaticJoint({
+  FPrismaticJoint({
     required super.bodyA,
     required super.bodyB,
     required this.axis,
@@ -193,7 +188,7 @@ class FlashPrismaticJoint extends FlashJoint {
   void create(Pointer<PhysicsWorld> world) {
     if (isCreated) return;
 
-    final ffi = FlashPhysicsSystem.jointsFFI;
+    final ffi = FPhysicsSystem.jointsFFI;
     if (ffi == null) {
       print('⚠️ Joints FFI not available for Prismatic Joint');
       return;
@@ -222,12 +217,12 @@ class FlashPrismaticJoint extends FlashJoint {
 }
 
 /// Weld joint - constrains relative position and orientation
-class FlashWeldJoint extends FlashJoint {
+class FWeldJoint extends FJoint {
   final v.Vector2 anchor;
   final double stiffness;
   final double damping;
 
-  FlashWeldJoint({
+  FWeldJoint({
     required super.bodyA,
     required super.bodyB,
     required this.anchor,
@@ -239,7 +234,7 @@ class FlashWeldJoint extends FlashJoint {
   void create(Pointer<PhysicsWorld> world) {
     if (isCreated) return;
 
-    final ffi = FlashPhysicsSystem.jointsFFI;
+    final ffi = FPhysicsSystem.jointsFFI;
     if (ffi == null) {
       print('⚠️ Joints FFI not available for Weld Joint');
       return;

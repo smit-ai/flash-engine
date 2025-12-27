@@ -12,12 +12,12 @@ class RenderingDemoExample extends StatefulWidget {
 
 class _RenderingDemoExampleState extends State<RenderingDemoExample> {
   final List<v.Vector3> _pathPoints = [];
-  late final FlashPhysicsSystem _physicsWorld;
+  late final FPhysicsSystem _physicsWorld;
 
   @override
   void initState() {
     super.initState();
-    _physicsWorld = FlashPhysicsSystem(gravity: FlashPhysics.standardGravity);
+    _physicsWorld = FPhysicsSystem(gravity: FPhysics.standardGravity);
     _generateWavyPath();
   }
 
@@ -41,19 +41,18 @@ class _RenderingDemoExampleState extends State<RenderingDemoExample> {
       backgroundColor: const Color(0xFF020408),
       appBar: AppBar(title: const Text('Renderers Demo'), backgroundColor: Colors.transparent, elevation: 0),
       extendBodyBehindAppBar: true,
-      body: Flash(
+      body: FView(
         physicsWorld: _physicsWorld,
-        autoUpdate: true, // Now this is all we need!
+        autoUpdate: true,
         child: Stack(
           children: [
-            FlashCamera(position: v.Vector3(0, 0, 1800), fov: 60, far: 5000),
+            FCamera(position: v.Vector3(0, 0, 1800), fov: 60, far: 5000),
 
-            // 1. LINE RENDERER: Ground
             // 1. LINE RENDERER: Ground + Physics Segments
-            FlashNodes(
+            FNodes(
               position: v.Vector3.zero(),
               children: [
-                FlashLineRenderer(
+                FLineRenderer(
                   name: 'WavyPath',
                   points: _pathPoints,
                   width: 15,
@@ -69,11 +68,11 @@ class _RenderingDemoExampleState extends State<RenderingDemoExample> {
             Builder(
               builder: (context) {
                 final orbitRotation = (DateTime.now().millisecondsSinceEpoch / 1000.0) * 1.5;
-                return FlashNodeGroup(
+                return FNodeGroup(
                   position: v.Vector3(0, 200, 0),
                   rotation: v.Vector3(0, 0, orbitRotation),
                   scale: v.Vector3.all(0.8 + sin(orbitRotation) * 0.2),
-                  child: FlashLineRenderer(
+                  child: FLineRenderer(
                     name: 'CirclePath',
                     points: _generateCirclePoints(150, 4),
                     isLoop: true,
@@ -85,15 +84,15 @@ class _RenderingDemoExampleState extends State<RenderingDemoExample> {
             ),
 
             // 3. TRAIL RENDERER: Bouncing Physics Ball
-            FlashRigidBody.circle(
+            FRigidBody.circle(
               name: 'TrailBall',
               position: v.Vector3(-300, 500, 0),
               initialVelocity: v.Vector2(400, -200),
               radius: 30,
-              child: FlashNodes(
+              child: FNodes(
                 children: [
-                  FlashCircle(radius: 30, color: Colors.orangeAccent),
-                  const FlashTrailRenderer(
+                  FCircle(radius: 30, color: Colors.orangeAccent),
+                  const FTrailRenderer(
                     lifetime: 1.5,
                     startWidth: 25,
                     endWidth: 0,
@@ -104,26 +103,26 @@ class _RenderingDemoExampleState extends State<RenderingDemoExample> {
               ),
             ),
 
-            FlashRigidBody.square(
+            FRigidBody.square(
               name: 'DynamicObstacle',
               position: v.Vector3(-150, 200, 0),
               size: 60,
               initialVelocity: v.Vector2(100, 0),
-              child: const FlashBox(width: 60, height: 60, color: Colors.redAccent),
+              child: const FBox(width: 60, height: 60, color: Colors.redAccent),
             ),
-            FlashStaticBody(
+            FStaticBody(
               name: 'LeftWall',
               position: v.Vector3(-600, 0, 0),
               width: 40,
               height: 2000,
-              child: FlashBox(width: 40, height: 2000, color: Colors.cyanAccent.withValues(alpha: 0.1)),
+              child: FBox(width: 40, height: 2000, color: Colors.cyanAccent.withValues(alpha: 0.1)),
             ),
-            FlashStaticBody(
+            FStaticBody(
               name: 'RightWall',
               position: v.Vector3(600, 0, 0),
               width: 40,
               height: 2000,
-              child: FlashBox(width: 40, height: 2000, color: Colors.cyanAccent.withValues(alpha: 0.1)),
+              child: FBox(width: 40, height: 2000, color: Colors.cyanAccent.withValues(alpha: 0.1)),
             ),
 
             // Legend
@@ -161,7 +160,7 @@ class _RenderingDemoExampleState extends State<RenderingDemoExample> {
       final cy = (p1.y + p2.y) / 2;
 
       segments.add(
-        FlashStaticBody(
+        FStaticBody(
           name: 'Segment_$i',
           position: v.Vector3(cx, cy, 0),
           rotation: v.Vector3(0, 0, angle),

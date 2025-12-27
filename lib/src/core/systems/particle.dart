@@ -7,7 +7,7 @@ import '../graph/node.dart';
 import '../native/particles_ffi.dart';
 
 /// Individual particle data
-class FlashParticle {
+class FParticle {
   Vector3 position;
   Vector3 velocity;
   double life; // Remaining life (0-1)
@@ -18,7 +18,7 @@ class FlashParticle {
   Color color;
   Color endColor;
 
-  FlashParticle({
+  FParticle({
     required this.position,
     required this.velocity,
     required this.maxLife,
@@ -382,7 +382,7 @@ class ParticleEmitterConfig {
 // ... (FlashParticle class can remain if used for high-level callbacks, but we'll focus on the emitter)
 
 /// Particle emitter node (High Performance Native Version)
-class FlashParticleEmitter extends FlashNode {
+class FParticleEmitter extends FNode {
   late final Pointer<ParticleEmitter> _nativeEmitter;
   final int maxParticles;
   final Random _random = Random();
@@ -391,7 +391,7 @@ class FlashParticleEmitter extends FlashNode {
   bool emitting;
   double _emissionAccumulator = 0;
 
-  FlashParticleEmitter({ParticleEmitterConfig? config, this.emitting = true, super.name = 'ParticleEmitter'})
+  FParticleEmitter({ParticleEmitterConfig? config, this.emitting = true, super.name = 'ParticleEmitter'})
     : config = config ?? ParticleEmitterConfig(),
       maxParticles = config?.maxParticles ?? 1000 {
     // Ensure native core is initialized

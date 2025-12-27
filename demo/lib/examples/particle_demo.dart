@@ -39,14 +39,14 @@ class _ParticleDemoExampleState extends State<ParticleDemoExample> {
       backgroundColor: const Color(0xFF0d1b2a),
       appBar: AppBar(title: const Text('Particle System Demo'), backgroundColor: Colors.transparent, elevation: 0),
       extendBodyBehindAppBar: true,
-      body: Flash(
+      body: FView(
         child: Stack(
           children: [
             // Camera
-            FlashCamera(position: v.Vector3(0, 0, 500), fov: 60),
+            FCamera(position: v.Vector3(0, 0, 500), fov: 60),
 
             // Particle Emitter at center
-            FlashParticles(
+            FParticles(
               key: ValueKey(_selectedPreset), // Force rebuild on change
               initialPosition: v.Vector3(0, -50, 0),
               config: _presets[_selectedPreset],

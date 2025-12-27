@@ -40,18 +40,18 @@ class _JointsDemoExampleState extends State<JointsDemoExample> {
           const SizedBox(width: 16),
         ],
       ),
-      body: Flash(
+      body: FView(
         child: Stack(
           children: [
-            FlashCamera(position: v.Vector3(0, 0, 800)),
+            FCamera(position: v.Vector3(0, 0, 800)),
 
             // Ground
-            FlashStaticBody(
+            FStaticBody(
               name: 'Ground',
               position: v.Vector3(0, -350, 0),
               width: 1000,
               height: 40,
-              child: FlashBox(width: 1000, height: 40, color: Colors.grey[900]!),
+              child: FBox(width: 1000, height: 40, color: Colors.grey[900]!),
             ),
 
             // Demo content based on selection
@@ -77,40 +77,40 @@ class _JointsDemoExampleState extends State<JointsDemoExample> {
 
     return [
       // Left anchor
-      FlashStaticBody(
+      FStaticBody(
         name: 'LeftAnchor',
         position: v.Vector3(-200, 100, 0),
         width: 20,
         height: 20,
-        child: FlashBox(width: 20, height: 20, color: Colors.brown),
+        child: FBox(width: 20, height: 20, color: Colors.brown),
       ),
 
       // Right anchor
-      FlashStaticBody(
+      FStaticBody(
         name: 'RightAnchor',
         position: v.Vector3(200, 100, 0),
         width: 20,
         height: 20,
-        child: FlashBox(width: 20, height: 20, color: Colors.brown),
+        child: FBox(width: 20, height: 20, color: Colors.brown),
       ),
 
       // Rope segments
       for (int i = 0; i < segmentCount; i++)
-        FlashRigidBody.square(
+        FRigidBody.square(
           key: ValueKey('rope_segment_$i'),
           name: 'RopeSegment$i',
           position: v.Vector3(-200 + spacing * (i + 1), 100, 0),
           size: segmentSize,
-          child: FlashBox(width: segmentSize, height: segmentSize, color: Colors.orange.withValues(alpha: 0.8)),
+          child: FBox(width: segmentSize, height: segmentSize, color: Colors.orange.withValues(alpha: 0.8)),
         ),
 
       // Heavy weight in the middle
-      FlashRigidBody.circle(
+      FRigidBody.circle(
         key: const ValueKey('weight'),
         name: 'Weight',
         position: v.Vector3(0, 150, 0),
         radius: 40,
-        child: FlashCircle(radius: 40, color: Colors.red),
+        child: FCircle(radius: 40, color: Colors.red),
       ),
     ];
   }
@@ -119,25 +119,25 @@ class _JointsDemoExampleState extends State<JointsDemoExample> {
   List<Widget> _buildPendulum() {
     return [
       // Ceiling anchor
-      FlashStaticBody(
+      FStaticBody(
         name: 'Ceiling',
         position: v.Vector3(0, 200, 0),
         width: 60,
         height: 20,
-        child: FlashBox(width: 60, height: 20, color: Colors.grey[800]!),
+        child: FBox(width: 60, height: 20, color: Colors.grey[800]!),
       ),
 
       // Pendulum bob
-      FlashRigidBody.circle(
+      FRigidBody.circle(
         key: const ValueKey('pendulum_bob'),
         name: 'PendulumBob',
         position: v.Vector3(150, 0, 0),
         radius: 50,
-        child: FlashCircle(radius: 50, color: Colors.blue),
+        child: FCircle(radius: 50, color: Colors.blue),
       ),
 
       // Motorized wheel
-      FlashRigidBody.circle(
+      FRigidBody.circle(
         key: const ValueKey('motor_wheel'),
         name: 'MotorWheel',
         position: v.Vector3(-150, 100, 0),
@@ -155,12 +155,12 @@ class _JointsDemoExampleState extends State<JointsDemoExample> {
       ),
 
       // Motor anchor
-      FlashStaticBody(
+      FStaticBody(
         name: 'MotorAnchor',
         position: v.Vector3(-150, 100, 0),
         width: 10,
         height: 10,
-        child: FlashBox(width: 10, height: 10, color: Colors.yellow),
+        child: FBox(width: 10, height: 10, color: Colors.yellow),
       ),
     ];
   }
@@ -169,7 +169,7 @@ class _JointsDemoExampleState extends State<JointsDemoExample> {
   List<Widget> _buildPiston() {
     return [
       // Piston cylinder (static)
-      FlashStaticBody(
+      FStaticBody(
         name: 'Cylinder',
         position: v.Vector3(0, 0, 0),
         width: 200,
@@ -186,7 +186,7 @@ class _JointsDemoExampleState extends State<JointsDemoExample> {
       ),
 
       // Piston head (moves)
-      FlashRigidBody.square(
+      FRigidBody.square(
         key: const ValueKey('piston_head'),
         name: 'PistonHead',
         position: v.Vector3(0, 0, 0),
@@ -204,7 +204,7 @@ class _JointsDemoExampleState extends State<JointsDemoExample> {
       ),
 
       // Elevator platform
-      FlashRigidBody(
+      FRigidBody(
         key: const ValueKey('elevator'),
         name: 'Elevator',
         position: v.Vector3(200, 100, 0),
@@ -221,12 +221,12 @@ class _JointsDemoExampleState extends State<JointsDemoExample> {
       ),
 
       // Elevator rail (static)
-      FlashStaticBody(
+      FStaticBody(
         name: 'Rail',
         position: v.Vector3(200, 0, 0),
         width: 10,
         height: 400,
-        child: FlashBox(width: 10, height: 400, color: Colors.grey[600]!.withValues(alpha: 0.5)),
+        child: FBox(width: 10, height: 400, color: Colors.grey[600]!.withValues(alpha: 0.5)),
       ),
     ];
   }
@@ -235,7 +235,7 @@ class _JointsDemoExampleState extends State<JointsDemoExample> {
   List<Widget> _buildRagdoll() {
     return [
       // Head
-      FlashRigidBody.circle(
+      FRigidBody.circle(
         key: const ValueKey('head'),
         name: 'Head',
         position: v.Vector3(0, 150, 0),
@@ -253,7 +253,7 @@ class _JointsDemoExampleState extends State<JointsDemoExample> {
       ),
 
       // Torso
-      FlashRigidBody(
+      FRigidBody(
         key: const ValueKey('torso'),
         name: 'Torso',
         position: v.Vector3(0, 80, 0),
@@ -271,43 +271,43 @@ class _JointsDemoExampleState extends State<JointsDemoExample> {
       ),
 
       // Left arm
-      FlashRigidBody(
+      FRigidBody(
         key: const ValueKey('left_arm'),
         name: 'LeftArm',
         position: v.Vector3(-50, 100, 0),
         width: 15,
         height: 60,
-        child: FlashBox(width: 15, height: 60, color: Colors.pink[300]!),
+        child: FBox(width: 15, height: 60, color: Colors.pink[300]!),
       ),
 
       // Right arm
-      FlashRigidBody(
+      FRigidBody(
         key: const ValueKey('right_arm'),
         name: 'RightArm',
         position: v.Vector3(50, 100, 0),
         width: 15,
         height: 60,
-        child: FlashBox(width: 15, height: 60, color: Colors.pink[300]!),
+        child: FBox(width: 15, height: 60, color: Colors.pink[300]!),
       ),
 
       // Left leg
-      FlashRigidBody(
+      FRigidBody(
         key: const ValueKey('left_leg'),
         name: 'LeftLeg',
         position: v.Vector3(-20, 0, 0),
         width: 20,
         height: 70,
-        child: FlashBox(width: 20, height: 70, color: Colors.blue[700]!),
+        child: FBox(width: 20, height: 70, color: Colors.blue[700]!),
       ),
 
       // Right leg
-      FlashRigidBody(
+      FRigidBody(
         key: const ValueKey('right_leg'),
         name: 'RightLeg',
         position: v.Vector3(20, 0, 0),
         width: 20,
         height: 70,
-        child: FlashBox(width: 20, height: 70, color: Colors.blue[700]!),
+        child: FBox(width: 20, height: 70, color: Colors.blue[700]!),
       ),
     ];
   }
@@ -316,31 +316,31 @@ class _JointsDemoExampleState extends State<JointsDemoExample> {
   List<Widget> _buildAllJoints() {
     return [
       // Distance joint example (chain)
-      FlashStaticBody(
+      FStaticBody(
         name: 'ChainAnchor',
         position: v.Vector3(-300, 200, 0),
         width: 20,
         height: 20,
-        child: FlashBox(width: 20, height: 20, color: Colors.brown),
+        child: FBox(width: 20, height: 20, color: Colors.brown),
       ),
       for (int i = 0; i < 3; i++)
-        FlashRigidBody.circle(
+        FRigidBody.circle(
           key: ValueKey('chain_$i'),
           name: 'Chain$i',
           position: v.Vector3(-300, 150 - i * 40, 0),
           radius: 15,
-          child: FlashCircle(radius: 15, color: Colors.grey),
+          child: FCircle(radius: 15, color: Colors.grey),
         ),
 
       // Revolute joint example (spinning wheel)
-      FlashStaticBody(
+      FStaticBody(
         name: 'WheelAnchor',
         position: v.Vector3(-100, 100, 0),
         width: 10,
         height: 10,
-        child: FlashBox(width: 10, height: 10, color: Colors.red),
+        child: FBox(width: 10, height: 10, color: Colors.red),
       ),
-      FlashRigidBody.circle(
+      FRigidBody.circle(
         key: const ValueKey('wheel'),
         name: 'Wheel',
         position: v.Vector3(-100, 100, 0),
@@ -357,28 +357,28 @@ class _JointsDemoExampleState extends State<JointsDemoExample> {
       ),
 
       // Prismatic joint example (slider)
-      FlashRigidBody.square(
+      FRigidBody.square(
         key: const ValueKey('slider'),
         name: 'Slider',
         position: v.Vector3(100, 100, 0),
         size: 40,
-        child: FlashBox(width: 40, height: 40, color: Colors.orange),
+        child: FBox(width: 40, height: 40, color: Colors.orange),
       ),
 
       // Weld joint example (connected boxes)
-      FlashRigidBody.square(
+      FRigidBody.square(
         key: const ValueKey('weld1'),
         name: 'Weld1',
         position: v.Vector3(250, 100, 0),
         size: 30,
-        child: FlashBox(width: 30, height: 30, color: Colors.purple),
+        child: FBox(width: 30, height: 30, color: Colors.purple),
       ),
-      FlashRigidBody.square(
+      FRigidBody.square(
         key: const ValueKey('weld2'),
         name: 'Weld2',
         position: v.Vector3(290, 100, 0),
         size: 30,
-        child: FlashBox(width: 30, height: 30, color: Colors.pink),
+        child: FBox(width: 30, height: 30, color: Colors.pink),
       ),
     ];
   }

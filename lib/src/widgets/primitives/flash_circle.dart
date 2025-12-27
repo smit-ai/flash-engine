@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import '../../core/graph/node.dart';
 import '../framework.dart';
 
-class FlashCircle extends FlashNodeWidget {
+class FCircle extends FNodeWidget {
   final double radius;
   final Color color;
 
-  const FlashCircle({
+  const FCircle({
     super.key,
     super.position,
     super.rotation,
@@ -19,22 +19,22 @@ class FlashCircle extends FlashNodeWidget {
   });
 
   @override
-  State<FlashCircle> createState() => _FlashCircleState();
+  State<FCircle> createState() => _FCircleState();
 }
 
-class _FlashCircleState extends FlashNodeWidgetState<FlashCircle, _CircleNode> {
+class _FCircleState extends FNodeWidgetState<FCircle, _CircleNode> {
   @override
   _CircleNode createNode() => _CircleNode(radius: widget.radius, color: widget.color);
 
   @override
-  void applyProperties([FlashCircle? oldWidget]) {
+  void applyProperties([FCircle? oldWidget]) {
     super.applyProperties(oldWidget);
     node.color = widget.color;
     node.radius = widget.radius;
   }
 }
 
-class _CircleNode extends FlashNode {
+class _CircleNode extends FNode {
   double radius;
   Color color;
 

@@ -5,6 +5,20 @@
     *   **Simulator Priority**: Functionality MUST work on iOS Simulator (`x86_64` / `arm64`). Native libraries must be compiled specifically for it (`libflash_core_sim.dylib`).
     *   **Performance**: Use FFI and native memory (Vectors) where possible to avoid GC pressure. This is a primary design constraint.
 
+## Master References & Design Philosophy
+1.  **Godot Engine (Primary Inspiration)**:
+    *   **Role**: The absolute master reference for engine structure, naming conventions, and node-based architecture.
+    *   **Goal**: Create a **declarative**, node-based game engine in Flutter that mirrors Godot's developer experience (`Node`, `Scene`, `Signals`).
+    *   **Difference**: Unlike Flame (imperative), Flash MUST be declarative and "Flutter-like".
+2.  **Physics Masters**:
+    *   **Box2D & JoltPhysics**: These are the sources of truth for physics implementation. All physics logic, naming, and structures should mirror these C++ engines.
+3.  **Flame Engine (Secondary Resource)**:
+    *   **Role**: Reference for **UI rendering optimizations** and Flutter-specific game loop mechanics.
+    *   **Note**: Do not copy Flame's imperative component system. Use it only to understand how to optimize rendering in the Flutter context.
+
+> [!NOTE]
+> **Reference Access**: The source code for these master references (Godot, Box2D, JoltPhysics, Flame) is maintained in the `other_repo/` directory within this workspace. Always consult these local copies when in doubt.
+
 ## Coordinate System & Physics
 1.  **Y-Up System**: The `FlashPainter` rendering engine inverts the Y-axis (`scale(1, -1)`).
     *   `+Y` is UP (Top of screen).

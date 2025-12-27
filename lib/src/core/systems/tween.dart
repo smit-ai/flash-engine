@@ -6,7 +6,7 @@ import '../graph/node.dart';
 typedef EasingFunction = double Function(double t);
 
 /// Common easing functions
-class FlashEasing {
+class FEasing {
   // Linear
   static double linear(double t) => t;
 
@@ -111,7 +111,7 @@ class FlashEasing {
 enum TweenState { idle, running, paused, completed }
 
 /// Base tween class for animating values
-abstract class FlashTween<T> {
+abstract class FTween<T> {
   final T from;
   final T to;
   final double duration; // seconds
@@ -131,11 +131,11 @@ abstract class FlashTween<T> {
   void Function()? onComplete;
   void Function()? onRepeat;
 
-  FlashTween({
+  FTween({
     required this.from,
     required this.to,
     required this.duration,
-    this.easing = FlashEasing.easeOutQuad,
+    this.easing = FEasing.easeOutQuad,
     this.delay = 0,
     this.repeatCount = 0,
     this.yoyo = false,
@@ -232,8 +232,8 @@ abstract class FlashTween<T> {
 }
 
 /// Double tween
-class FlashDoubleTween extends FlashTween<double> {
-  FlashDoubleTween({
+class FDoubleTween extends FTween<double> {
+  FDoubleTween({
     required super.from,
     required super.to,
     required super.duration,
@@ -251,8 +251,8 @@ class FlashDoubleTween extends FlashTween<double> {
 }
 
 /// Vector3 tween
-class FlashVector3Tween extends FlashTween<Vector3> {
-  FlashVector3Tween({
+class FVector3Tween extends FTween<Vector3> {
+  FVector3Tween({
     required super.from,
     required super.to,
     required super.duration,
@@ -272,8 +272,8 @@ class FlashVector3Tween extends FlashTween<Vector3> {
 }
 
 /// Color tween (using int ARGB)
-class FlashColorTween extends FlashTween<int> {
-  FlashColorTween({
+class FColorTween extends FTween<int> {
+  FColorTween({
     required super.from,
     required super.to,
     required super.duration,
@@ -308,17 +308,17 @@ class FlashColorTween extends FlashTween<int> {
 }
 
 /// Tween manager for handling multiple tweens
-class FlashTweenManager {
-  final List<FlashTween> _tweens = [];
+class FTweenManager {
+  final List<FTween> _tweens = [];
 
   /// Add a tween
-  void add(FlashTween tween) {
+  void add(FTween tween) {
     _tweens.add(tween);
     tween.start();
   }
 
   /// Remove a tween
-  void remove(FlashTween tween) {
+  void remove(FTween tween) {
     _tweens.remove(tween);
   }
 
@@ -342,18 +342,18 @@ class FlashTweenManager {
 }
 
 /// Extension methods for easy node animation
-extension FlashNodeTweenExtension on FlashNode {
+extension FNodeTweenExtension on FNode {
   /// Animate position to target
-  FlashVector3Tween tweenPosition({
+  FVector3Tween tweenPosition({
     required Vector3 to,
     required double duration,
-    EasingFunction easing = FlashEasing.easeOutQuad,
+    EasingFunction easing = FEasing.easeOutQuad,
     double delay = 0,
     int repeatCount = 0,
     bool yoyo = false,
     void Function()? onComplete,
   }) {
-    final tween = FlashVector3Tween(
+    final tween = FVector3Tween(
       from: transform.position.clone(),
       to: to,
       duration: duration,
@@ -369,16 +369,16 @@ extension FlashNodeTweenExtension on FlashNode {
   }
 
   /// Animate rotation to target
-  FlashVector3Tween tweenRotation({
+  FVector3Tween tweenRotation({
     required Vector3 to,
     required double duration,
-    EasingFunction easing = FlashEasing.easeOutQuad,
+    EasingFunction easing = FEasing.easeOutQuad,
     double delay = 0,
     int repeatCount = 0,
     bool yoyo = false,
     void Function()? onComplete,
   }) {
-    final tween = FlashVector3Tween(
+    final tween = FVector3Tween(
       from: transform.rotation.clone(),
       to: to,
       duration: duration,
@@ -394,16 +394,16 @@ extension FlashNodeTweenExtension on FlashNode {
   }
 
   /// Animate scale to target
-  FlashVector3Tween tweenScale({
+  FVector3Tween tweenScale({
     required Vector3 to,
     required double duration,
-    EasingFunction easing = FlashEasing.easeOutQuad,
+    EasingFunction easing = FEasing.easeOutQuad,
     double delay = 0,
     int repeatCount = 0,
     bool yoyo = false,
     void Function()? onComplete,
   }) {
-    final tween = FlashVector3Tween(
+    final tween = FVector3Tween(
       from: transform.scale.clone(),
       to: to,
       duration: duration,

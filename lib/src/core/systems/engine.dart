@@ -1,8 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:vector_math/vector_math_64.dart' as v;
-import '../graph/scene.dart';
+
 import '../graph/node.dart';
+import '../graph/tree.dart';
 import '../rendering/camera.dart';
 import '../rendering/light.dart';
 import '../systems/physics.dart';
@@ -13,25 +14,27 @@ import 'input.dart';
 import 'scene_manager.dart';
 import 'tween.dart';
 
-class FlashEngine extends ChangeNotifier {
-  final FlashScene scene = FlashScene();
-  final FlashAudioSystem audio = FlashAudioSystem();
-  final FlashInputSystem input = FlashInputSystem();
-  final FlashSceneManager sceneManager = FlashSceneManager();
-  final FlashTweenManager tweenManager = FlashTweenManager();
+class FEngine extends ChangeNotifier {
+  final FSceneTree tree = FSceneTree();
+  FNode get scene => tree.root;
+
+  final FAudioSystem audio = FAudioSystem();
+  final FInputSystem input = FInputSystem();
+  final FSceneManager sceneManager = FSceneManager();
+  final FTweenManager tweenManager = FTweenManager();
 
   /// Current viewport size in pixels
   v.Vector2 viewportSize = v.Vector2(0, 0);
 
-  FlashCameraNode? activeCamera;
-  FlashPhysicsSystem? physicsWorld;
-  FlashCameraNode? _defaultCamera;
-  final Set<FlashCameraNode> _activeCameras = {};
+  FCameraNode? activeCamera;
+  FPhysicsSystem? physicsWorld;
+  FCameraNode? _defaultCamera;
+  final Set<FCameraNode> _activeCameras = {};
 
   // cached render lists to avoid allocation
-  final List<FlashNode> renderNodes = [];
-  final List<FlashLightNode> lights = [];
-  final List<FlashParticleEmitter> emitters = [];
+  final List<FNode> renderNodes = [];
+  final List<FLightNode> lights = [];
+  final List<FParticleEmitter> emitters = [];
 
   late final Ticker _ticker;
 
@@ -42,7 +45,7 @@ class FlashEngine extends ChangeNotifier {
   int _frameCount = 0;
   double _fpsLastMeasureTime = 0.0;
 
-  FlashEngine() {
+  FEngine() {
     // Ensure native libraries are loaded
     try {
       FlashNativeParticles.init();
@@ -53,12 +56,12 @@ class FlashEngine extends ChangeNotifier {
   }
 
   /// Register a camera when it's added to the scene
-  void registerCamera(FlashCameraNode camera) {
+  void registerCamera(FCameraNode camera) {
     _activeCameras.add(camera);
   }
 
   /// Unregister a camera when it's removed from the scene
-  void unregisterCamera(FlashCameraNode camera) {
+  void unregisterCamera(FCameraNode camera) {
     _activeCameras.remove(camera);
   }
 
@@ -102,7 +105,9 @@ class FlashEngine extends ChangeNotifier {
       _fpsLastMeasureTime = currentTime;
     }
 
-    scene.update(dt);
+    // Process the SceneTree (lifecycle updates)
+    tree.process(dt);
+
     physicsWorld?.update(dt);
     sceneManager.update(dt);
     tweenManager.update(dt);
@@ -111,7 +116,7 @@ class FlashEngine extends ChangeNotifier {
     activeCamera = _activeCameras.firstWhere(
       (cam) => cam.visible,
       orElse: () {
-        _defaultCamera ??= FlashCameraNode(name: 'DefaultCamera');
+        _defaultCamera ??= FCameraNode(name: 'DefaultCamera');
         return _defaultCamera!;
       },
     );
@@ -135,13 +140,13 @@ class FlashEngine extends ChangeNotifier {
     _collectNodes(scene);
   }
 
-  void _collectNodes(FlashNode node) {
+  void _collectNodes(FNode node) {
     if (node != scene) {
       if (!node.visible) return; // Basic visibility culling at collection time
 
-      if (node is FlashLightNode) {
+      if (node is FLightNode) {
         lights.add(node);
-      } else if (node is FlashParticleEmitter) {
+      } else if (node is FParticleEmitter) {
         emitters.add(node);
       } else {
         renderNodes.add(node);

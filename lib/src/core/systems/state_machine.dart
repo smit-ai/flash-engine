@@ -1,12 +1,12 @@
 import 'package:flutter/widgets.dart';
 
 /// Base class for states in a state machine
-abstract class FlashState<T> {
+abstract class FState<T> {
   /// Unique name/identifier for this state
   String get name;
 
   /// Reference to the state machine owning this state
-  FlashStateController<T>? machine;
+  FStateController<T>? machine;
 
   /// Called when entering this state
   void onEnter(T? previousState) {}
@@ -22,7 +22,7 @@ abstract class FlashState<T> {
 }
 
 /// Simple state implementation using callbacks
-class FlashSimpleState<T> extends FlashState<T> {
+class FSimpleState<T> extends FState<T> {
   @override
   final String name;
 
@@ -31,7 +31,7 @@ class FlashSimpleState<T> extends FlashState<T> {
   final void Function(double dt)? update;
   final bool Function(T state)? canTransition;
 
-  FlashSimpleState({required this.name, this.enter, this.exit, this.update, this.canTransition});
+  FSimpleState({required this.name, this.enter, this.exit, this.update, this.canTransition});
 
   @override
   void onEnter(T? previousState) => enter?.call(previousState);
@@ -47,10 +47,10 @@ class FlashSimpleState<T> extends FlashState<T> {
 }
 
 /// State machine for managing game states with transitions
-class FlashStateController<T> extends ChangeNotifier {
-  final Map<T, FlashState<T>> _states = {};
-  FlashState<T>? _currentState;
-  FlashState<T>? _previousState;
+class FStateController<T> extends ChangeNotifier {
+  final Map<T, FState<T>> _states = {};
+  FState<T>? _currentState;
+  FState<T>? _previousState;
 
   /// History of state transitions
   final List<T> _history = [];
@@ -60,10 +60,10 @@ class FlashStateController<T> extends ChangeNotifier {
   bool _locked = false;
 
   /// Current state
-  FlashState<T>? get currentState => _currentState;
+  FState<T>? get currentState => _currentState;
 
   /// Previous state
-  FlashState<T>? get previousState => _previousState;
+  FState<T>? get previousState => _previousState;
 
   /// Current state identifier
   T? get current => _currentState != null ? _findKeyForState(_currentState!) : null;
@@ -74,16 +74,16 @@ class FlashStateController<T> extends ChangeNotifier {
   /// State history
   List<T> get history => List.unmodifiable(_history);
 
-  FlashStateController({this.maxHistorySize = 10});
+  FStateController({this.maxHistorySize = 10});
 
   /// Register a state
-  void addState(T key, FlashState<T> state) {
+  void addState(T key, FState<T> state) {
     state.machine = this;
     _states[key] = state;
   }
 
   /// Register multiple states
-  void addStates(Map<T, FlashState<T>> states) {
+  void addStates(Map<T, FState<T>> states) {
     states.forEach(addState);
   }
 
@@ -169,7 +169,7 @@ class FlashStateController<T> extends ChangeNotifier {
     transitionTo(initialState);
   }
 
-  T? _findKeyForState(FlashState<T> state) {
+  T? _findKeyForState(FState<T> state) {
     for (final entry in _states.entries) {
       if (entry.value == state) return entry.key;
     }
@@ -178,11 +178,11 @@ class FlashStateController<T> extends ChangeNotifier {
 }
 
 /// Widget that provides a state machine to its children and rebuilds on state changes
-class FlashStateMachine<T> extends StatelessWidget {
-  final FlashStateController<T> machine;
+class FStateMachine<T> extends StatelessWidget {
+  final FStateController<T> machine;
   final Widget Function(BuildContext context, T? state) builder;
 
-  const FlashStateMachine({super.key, required this.machine, required this.builder});
+  const FStateMachine({super.key, required this.machine, required this.builder});
 
   @override
   Widget build(BuildContext context) {

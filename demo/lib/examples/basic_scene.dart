@@ -49,14 +49,14 @@ class _BasicSceneExampleState extends State<BasicSceneExample> with SingleTicker
       extendBodyBehindAppBar: true,
       body: Container(
         color: const Color(0xFF1A1A1A),
-        child: Flash(
+        child: FView(
           child: AnimatedBuilder(
             animation: _controller,
             builder: (context, _) {
               return Stack(
                 children: [
                   for (final shape in shapes)
-                    FlashBox(
+                    FBox(
                       position: shape.position,
                       rotation: v.Vector3(
                         0,

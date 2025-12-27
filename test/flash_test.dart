@@ -3,8 +3,8 @@ import 'package:flash/flash.dart';
 
 void main() {
   test('FlashNode hierarchy test', () {
-    final root = FlashNode(name: 'root');
-    final child = FlashNode(name: 'child');
+    final root = FNode(name: 'root');
+    final child = FNode(name: 'child');
     root.addChild(child);
     expect(root.children.length, 1);
     expect(child.parent, root);

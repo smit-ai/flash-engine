@@ -2,13 +2,13 @@ import 'package:vector_math/vector_math_64.dart';
 import '../graph/node.dart';
 
 /// Base class for physics joints
-abstract class FlashVerletJoint {
-  final FlashNode? nodeA;
-  final FlashNode? nodeB;
+abstract class FVerletJoint {
+  final FNode? nodeA;
+  final FNode? nodeB;
   final Vector3? anchorA; // Fixed anchor if nodeA is null
   final Vector3? anchorB; // Fixed anchor if nodeB is null
 
-  FlashVerletJoint({this.nodeA, this.nodeB, this.anchorA, this.anchorB});
+  FVerletJoint({this.nodeA, this.nodeB, this.anchorA, this.anchorB});
 
   Vector3 get positionA => nodeA?.worldPosition ?? anchorA ?? Vector3.zero();
   Vector3 get positionB => nodeB?.worldPosition ?? anchorB ?? Vector3.zero();
@@ -18,7 +18,7 @@ abstract class FlashVerletJoint {
 }
 
 /// Spring joint - connects two points with spring physics
-class FlashVerletSpringJoint extends FlashVerletJoint {
+class FVerletSpringJoint extends FVerletJoint {
   final double restLength;
   final double stiffness;
   final double damping;
@@ -26,7 +26,7 @@ class FlashVerletSpringJoint extends FlashVerletJoint {
   Vector3 velocityA = Vector3.zero();
   Vector3 velocityB = Vector3.zero();
 
-  FlashVerletSpringJoint({
+  FVerletSpringJoint({
     super.nodeA,
     super.nodeB,
     super.anchorA,
@@ -76,14 +76,14 @@ class RopePoint {
 }
 
 /// Rope joint using Verlet integration
-class FlashVerletRopeJoint extends FlashVerletJoint {
+class FVerletRopeJoint extends FVerletJoint {
   final List<RopePoint> points;
   final double segmentLength;
   final Vector3 gravity;
   final double damping;
   final int constraintIterations;
 
-  FlashVerletRopeJoint({
+  FVerletRopeJoint({
     super.anchorA,
     super.anchorB,
     int segments = 10,
@@ -189,10 +189,10 @@ class FlashVerletRopeJoint extends FlashVerletJoint {
 }
 
 /// Distance joint - maintains fixed distance between two nodes
-class FlashVerletDistanceJoint extends FlashVerletJoint {
+class FVerletDistanceJoint extends FVerletJoint {
   final double distance;
 
-  FlashVerletDistanceJoint({super.nodeA, super.nodeB, super.anchorA, super.anchorB, this.distance = 100});
+  FVerletDistanceJoint({super.nodeA, super.nodeB, super.anchorA, super.anchorB, this.distance = 100});
 
   @override
   void update(double dt) {
@@ -214,12 +214,11 @@ class FlashVerletDistanceJoint extends FlashVerletJoint {
 }
 
 /// Pin joint - keeps a node at a fixed position
-class FlashVerletPinJoint extends FlashVerletJoint {
+class FVerletPinJoint extends FVerletJoint {
   final Vector3 pinPosition;
   final double strength;
 
-  FlashVerletPinJoint({required super.nodeA, required this.pinPosition, this.strength = 1.0})
-    : super(anchorA: pinPosition);
+  FVerletPinJoint({required super.nodeA, required this.pinPosition, this.strength = 1.0}) : super(anchorA: pinPosition);
 
   @override
   void update(double dt) {
@@ -231,14 +230,14 @@ class FlashVerletPinJoint extends FlashVerletJoint {
 }
 
 /// Joint manager for handling multiple joints
-class FlashVerletJointManager {
-  final List<FlashVerletJoint> _joints = [];
+class FVerletJointManager {
+  final List<FVerletJoint> _joints = [];
 
-  void add(FlashVerletJoint joint) {
+  void add(FVerletJoint joint) {
     _joints.add(joint);
   }
 
-  void remove(FlashVerletJoint joint) {
+  void remove(FVerletJoint joint) {
     _joints.remove(joint);
   }
 
@@ -254,5 +253,5 @@ class FlashVerletJointManager {
 
   int get count => _joints.length;
 
-  List<FlashVerletJoint> get joints => List.unmodifiable(_joints);
+  List<FVerletJoint> get joints => List.unmodifiable(_joints);
 }

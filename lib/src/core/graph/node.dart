@@ -2,18 +2,28 @@ import 'package:flutter/widgets.dart';
 import 'package:vector_math/vector_math_64.dart';
 import '../math/transform.dart';
 import '../rendering/light.dart';
+import 'tree.dart';
 
-class FlashNode {
+enum ProcessMode { inherit, always, paused, disabled }
+
+class FNode {
   String name;
-  final FlashTransform transform = FlashTransform();
-  FlashNode? parent;
-  final List<FlashNode> children = [];
+  final FTransform transform = FTransform();
+  FNode? parent;
+  final List<FNode> children = [];
   bool visible = true;
   bool billboard = false;
 
+  // -- Lifecycle --
+  FSceneTree? _tree;
+  FSceneTree? get tree => _tree;
+  bool get isInsideTree => _tree != null;
+
+  ProcessMode processMode = ProcessMode.inherit;
+
   /// Current lighting for this node (available during draw)
-  List<FlashLightNode> _currentLights = [];
-  List<FlashLightNode> get lights => _currentLights;
+  List<FLightNode> _currentLights = [];
+  List<FLightNode> get lights => _currentLights;
 
   bool _worldDirty = true;
   final Matrix4 _cachedWorldMatrix = Matrix4.identity();
@@ -23,8 +33,68 @@ class FlashNode {
   /// Subclasses should override this for performance.
   Rect? get bounds => null;
 
-  FlashNode({this.name = 'FlashNode'}) {
+  FNode({this.name = 'FNode'}) {
     transform.onChanged = setWorldDirty;
+  }
+
+  // -- Lifecycle Virtual Methods (Godot Style) --
+
+  /// Called when the node enters the SceneTree.
+  void enterTree() {}
+
+  /// Called when the node is "ready", i.e. when all children have entered the tree.
+  void ready() {}
+
+  /// Called when the node is about to exit the SceneTree.
+  void exitTree() {}
+
+  /// Called every frame if processing is enabled.
+  void process(double dt) {}
+
+  // -- Internal Lifecycle --
+
+  /// Internal: Propagates enterTree notification
+  void propagateEnterTree(FSceneTree gameTree) {
+    if (_tree != null) return; // Already in tree
+    _tree = gameTree;
+
+    enterTree();
+
+    for (final child in children) {
+      child.propagateEnterTree(gameTree);
+    }
+
+    // Ready is called post-order (children first, then parent)
+    // BUT Godot calls _enter_tree pre-order and _ready post-order.
+    // For simplicity locally, separate pass or simple queue?
+    // In Godot: enter_tree (top-down), ready (bottom-up).
+
+    // We can do ready here if we want immediate synchronous,
+    // but better to let the tree orchestrate "ready" callback if possible,
+    // or just do it recursively here for now.
+    propagateReady();
+  }
+
+  void propagateReady() {
+    // Children are already processed via propagateEnterTree recursion which calls ready()
+    // strictly speaking Godot does post-order ready.
+    // Our propagateEnterTree does: 1. set tree 2. enterTree 3. recurse children 4. ready
+    // So ready() is called after children are entered.
+
+    // logic is in propagateEnterTree, so this method might be redundant or just a hook.
+    // For now, keep it empty or remove loop.
+    ready();
+  }
+
+  void propagateExitTree() {
+    if (_tree == null) return;
+
+    exitTree();
+
+    for (final child in children) {
+      child.propagateExitTree();
+    }
+    _tree = null;
   }
 
   void dispose() {
@@ -33,17 +103,24 @@ class FlashNode {
     }
   }
 
-  void addChild(FlashNode child) {
+  void addChild(FNode child) {
     if (child.parent != null) {
       child.parent!.removeChild(child);
     }
     child.parent = this;
     children.add(child);
     child.setWorldDirty();
+
+    if (isInsideTree) {
+      child.propagateEnterTree(_tree!);
+    }
   }
 
-  void removeChild(FlashNode child) {
+  void removeChild(FNode child) {
     if (children.remove(child)) {
+      if (child.isInsideTree) {
+        child.propagateExitTree();
+      }
       child.parent = null;
       child.setWorldDirty();
     }
@@ -59,10 +136,33 @@ class FlashNode {
     }
   }
 
+  void queueFree() {
+    if (parent != null) {
+      parent!.removeChild(this);
+    }
+  }
+
   void update(double dt) {
+    if (!_canProcess()) return;
+
+    process(dt);
+
     for (final child in children) {
       child.update(dt);
     }
+  }
+
+  bool _canProcess() {
+    if (processMode == ProcessMode.disabled) return false;
+    if (processMode == ProcessMode.always) return true;
+    if (processMode == ProcessMode.inherit) {
+      if (parent != null) return parent!._canProcess();
+      return true; // Root defaults to true
+    }
+
+    // Manage Paused state via Tree (TODO)
+    // if (tree?.paused == true && processMode == ProcessMode.paused) ...
+    return true;
   }
 
   void render(Canvas canvas, Matrix4 globalTransform) {
@@ -81,7 +181,7 @@ class FlashNode {
   }
 
   /// Render only this node using its pre-calculated world matrix
-  void renderSelf(Canvas canvas, Matrix4 viewportProjectionMatrix, List<FlashLightNode> activeLights) {
+  void renderSelf(Canvas canvas, Matrix4 viewportProjectionMatrix, List<FLightNode> activeLights) {
     if (!visible) return;
 
     // Frustum Culling check
@@ -128,10 +228,10 @@ class FlashNode {
 
   Matrix4 get worldMatrix {
     if (_worldDirty || transform.isDirty) {
-      if (parent == null || parent is! FlashNode) {
+      if (parent == null || parent is! FNode) {
         _cachedWorldMatrix.setFrom(transform.matrix);
       } else {
-        _cachedWorldMatrix.setFrom((parent as FlashNode).worldMatrix * transform.matrix);
+        _cachedWorldMatrix.setFrom((parent as FNode).worldMatrix * transform.matrix);
       }
       _worldDirty = false;
     }

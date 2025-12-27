@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 
 /// Base class for all events
-abstract class FlashEvent {
+abstract class FEvent {
   final DateTime timestamp = DateTime.now();
 
   /// Event name for debugging
@@ -10,27 +10,27 @@ abstract class FlashEvent {
 }
 
 /// Typed event with payload
-class FlashDataEvent<T> extends FlashEvent {
+class FDataEvent<T> extends FEvent {
   final T data;
 
-  FlashDataEvent(this.data);
+  FDataEvent(this.data);
 
   @override
-  String get name => 'FlashDataEvent<${T.runtimeType}>($data)';
+  String get name => 'FDataEvent<${T.runtimeType}>($data)';
 }
 
 /// Simple string event
-class FlashSignal extends FlashEvent {
+class FSignalEvent extends FEvent {
   final String signal;
 
-  FlashSignal(this.signal);
+  FSignalEvent(this.signal);
 
   @override
   String get name => signal;
 }
 
 /// Event subscription holder
-class _Subscription<T extends FlashEvent> {
+class _Subscription<T extends FEvent> {
   final void Function(T event) handler;
   final bool once;
   bool cancelled = false;
@@ -45,51 +45,51 @@ class _Subscription<T extends FlashEvent> {
 }
 
 /// Subscription handle for unsubscribing
-class FlashEventSubscription {
+class FEventSubscription {
   final VoidCallback _unsubscribe;
 
-  FlashEventSubscription(this._unsubscribe);
+  FEventSubscription(this._unsubscribe);
 
   void cancel() => _unsubscribe();
 }
 
 /// Global event bus for game-wide communication
-class FlashEventBus {
-  static final FlashEventBus _instance = FlashEventBus._internal();
-  static FlashEventBus get instance => _instance;
+class FEventBus {
+  static final FEventBus _instance = FEventBus._internal();
+  static FEventBus get instance => _instance;
 
-  factory FlashEventBus() => _instance;
+  factory FEventBus() => _instance;
 
-  FlashEventBus._internal();
+  FEventBus._internal();
 
   final Map<Type, List<_Subscription>> _handlers = {};
-  final List<FlashEvent> _eventHistory = [];
+  final List<FEvent> _eventHistory = [];
   final int maxHistorySize = 50;
 
   /// Stream controller for reactive listening
-  final StreamController<FlashEvent> _streamController = StreamController.broadcast();
+  final StreamController<FEvent> _streamController = StreamController.broadcast();
 
   /// Stream of all events
-  Stream<FlashEvent> get stream => _streamController.stream;
+  Stream<FEvent> get stream => _streamController.stream;
 
   /// Event history
-  List<FlashEvent> get history => List.unmodifiable(_eventHistory);
+  List<FEvent> get history => List.unmodifiable(_eventHistory);
 
   /// Subscribe to events of a specific type
-  FlashEventSubscription on<T extends FlashEvent>(void Function(T event) handler) {
+  FEventSubscription on<T extends FEvent>(void Function(T event) handler) {
     _handlers.putIfAbsent(T, () => []);
     final sub = _Subscription<T>(handler);
     _handlers[T]!.add(sub);
 
-    return FlashEventSubscription(() {
+    return FEventSubscription(() {
       sub.cancel();
       _handlers[T]?.remove(sub);
     });
   }
 
   /// Subscribe to an event type, but only fire once
-  FlashEventSubscription once<T extends FlashEvent>(void Function(T event) handler) {
-    late FlashEventSubscription subscription;
+  FEventSubscription once<T extends FEvent>(void Function(T event) handler) {
+    late FEventSubscription subscription;
     subscription = on<T>((event) {
       handler(event);
       subscription.cancel();
@@ -98,7 +98,7 @@ class FlashEventBus {
   }
 
   /// Emit an event to all subscribers
-  void emit<T extends FlashEvent>(T event) {
+  void emit<T extends FEvent>(T event) {
     // Add to history
     _eventHistory.add(event);
     if (_eventHistory.length > 50) {
@@ -121,13 +121,13 @@ class FlashEventBus {
       handlers.removeWhere((h) => h.cancelled);
     }
 
-    // Also notify handlers for parent types (FlashEvent catches all)
-    if (T != FlashEvent) {
-      final baseHandlers = _handlers[FlashEvent];
+    // Also notify handlers for parent types (FEvent catches all)
+    if (T != FEvent) {
+      final baseHandlers = _handlers[FEvent];
       if (baseHandlers != null) {
         for (final handler in List.from(baseHandlers)) {
           if (!handler.cancelled) {
-            (handler as _Subscription<FlashEvent>).call(event);
+            (handler as _Subscription<FEvent>).call(event);
           }
         }
       }
@@ -135,10 +135,10 @@ class FlashEventBus {
   }
 
   /// Emit a simple signal
-  void signal(String name) => emit(FlashSignal(name));
+  void signal(String name) => emit(FSignalEvent(name));
 
   /// Emit a data event
-  void data<T>(T payload) => emit(FlashDataEvent<T>(payload));
+  void data<T>(T payload) => emit(FDataEvent<T>(payload));
 
   /// Clear all handlers
   void clear() {
@@ -147,7 +147,7 @@ class FlashEventBus {
   }
 
   /// Remove all handlers for a specific type
-  void clearType<T extends FlashEvent>() {
+  void clearType<T extends FEvent>() {
     _handlers.remove(T);
   }
 
@@ -158,24 +158,24 @@ class FlashEventBus {
 }
 
 /// Widget that listens to events and rebuilds
-class FlashEventListener<T extends FlashEvent> extends StatefulWidget {
+class FEventListener<T extends FEvent> extends StatefulWidget {
   final Widget Function(BuildContext context, T? lastEvent) builder;
   final void Function(T event)? onEvent;
 
-  const FlashEventListener({super.key, required this.builder, this.onEvent});
+  const FEventListener({super.key, required this.builder, this.onEvent});
 
   @override
-  State<FlashEventListener<T>> createState() => _FlashEventListenerState<T>();
+  State<FEventListener<T>> createState() => _FEventListenerState<T>();
 }
 
-class _FlashEventListenerState<T extends FlashEvent> extends State<FlashEventListener<T>> {
-  FlashEventSubscription? _subscription;
+class _FEventListenerState<T extends FEvent> extends State<FEventListener<T>> {
+  FEventSubscription? _subscription;
   T? _lastEvent;
 
   @override
   void initState() {
     super.initState();
-    _subscription = FlashEventBus.instance.on<T>((event) {
+    _subscription = FEventBus.instance.on<T>((event) {
       widget.onEvent?.call(event);
       if (mounted) setState(() => _lastEvent = event);
     });
@@ -192,22 +192,22 @@ class _FlashEventListenerState<T extends FlashEvent> extends State<FlashEventLis
 }
 
 /// Mixin for widgets that need to subscribe to events
-mixin FlashEventMixin<T extends StatefulWidget> on State<T> {
-  final List<FlashEventSubscription> _subscriptions = [];
+mixin FEventMixin<T extends StatefulWidget> on State<T> {
+  final List<FEventSubscription> _subscriptions = [];
 
   /// Subscribe to an event type
-  void subscribe<E extends FlashEvent>(void Function(E event) handler) {
-    _subscriptions.add(FlashEventBus.instance.on<E>(handler));
+  void subscribe<E extends FEvent>(void Function(E event) handler) {
+    _subscriptions.add(FEventBus.instance.on<E>(handler));
   }
 
   /// Emit an event
-  void emit<E extends FlashEvent>(E event) {
-    FlashEventBus.instance.emit(event);
+  void emit<E extends FEvent>(E event) {
+    FEventBus.instance.emit(event);
   }
 
   /// Emit a signal
   void signal(String name) {
-    FlashEventBus.instance.signal(name);
+    FEventBus.instance.signal(name);
   }
 
   @override
@@ -222,7 +222,7 @@ mixin FlashEventMixin<T extends StatefulWidget> on State<T> {
 // --- Common Game Events ---
 
 /// Player took damage
-class PlayerDamageEvent extends FlashEvent {
+class PlayerDamageEvent extends FEvent {
   final int damage;
   final int remainingHealth;
 
@@ -230,10 +230,10 @@ class PlayerDamageEvent extends FlashEvent {
 }
 
 /// Player died
-class PlayerDeathEvent extends FlashEvent {}
+class PlayerDeathEvent extends FEvent {}
 
 /// Score changed
-class ScoreChangedEvent extends FlashEvent {
+class ScoreChangedEvent extends FEvent {
   final int oldScore;
   final int newScore;
 
@@ -243,7 +243,7 @@ class ScoreChangedEvent extends FlashEvent {
 }
 
 /// Level completed
-class LevelCompleteEvent extends FlashEvent {
+class LevelCompleteEvent extends FEvent {
   final int level;
   final int stars;
 
@@ -251,14 +251,14 @@ class LevelCompleteEvent extends FlashEvent {
 }
 
 /// Game paused/resumed
-class GamePauseEvent extends FlashEvent {
+class GamePauseEvent extends FEvent {
   final bool paused;
 
   GamePauseEvent(this.paused);
 }
 
 /// Collectible collected
-class CollectEvent extends FlashEvent {
+class CollectEvent extends FEvent {
   final String itemType;
   final int value;
 

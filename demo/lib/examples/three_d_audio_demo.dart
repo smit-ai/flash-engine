@@ -18,11 +18,11 @@ class _ThreeDAudioDemoState extends State<ThreeDAudioDemo> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(title: const Text('3D Audio Demo'), backgroundColor: Colors.transparent, elevation: 0),
-      body: Flash(
+      body: FView(
         autoUpdate: true,
         child: Builder(
           builder: (context) {
-            final engineWidget = context.dependOnInheritedWidgetOfExactType<InheritedFlashNode>();
+            final engineWidget = context.dependOnInheritedWidgetOfExactType<InheritedFNode>();
             final engine = engineWidget?.engine;
 
             if (engine != null) {
@@ -39,10 +39,10 @@ class _ThreeDAudioDemoState extends State<ThreeDAudioDemo> {
 
             return Stack(
               children: [
-                FlashCamera(position: v.Vector3(cameraX, cameraY, cameraZ + 400), fov: 60),
+                FCamera(position: v.Vector3(cameraX, cameraY, cameraZ + 400), fov: 60),
 
                 // Center marker
-                FlashSphere(position: v.Vector3(0, 0, 0), radius: 10, color: Colors.white),
+                FSphere(position: v.Vector3(0, 0, 0), radius: 10, color: Colors.white),
 
                 // Audio sources at different positions
                 // Front
@@ -100,10 +100,10 @@ class _ThreeDAudioDemoState extends State<ThreeDAudioDemo> {
   Widget _buildAudioSource(v.Vector3 position, Color color, String label) {
     return Stack(
       children: [
-        FlashSphere(position: position, radius: 20, color: color),
+        FSphere(position: position, radius: 20, color: color),
         // Add audio player
         Positioned.fill(
-          child: FlashAudioPlayer(
+          child: FAudioPlayer(
             assetPath: 'asset/demo.mp3',
             autoplay: true,
             loop: true,

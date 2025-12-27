@@ -31,7 +31,7 @@ class _DepthDioramaExampleState extends State<DepthDioramaExample> with SingleTi
       backgroundColor: const Color(0xFF0d1b2a),
       appBar: AppBar(title: const Text('2.5D Diorama Scene'), backgroundColor: Colors.transparent, elevation: 0),
       extendBodyBehindAppBar: true,
-      body: Flash(
+      body: FView(
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
@@ -40,18 +40,18 @@ class _DepthDioramaExampleState extends State<DepthDioramaExample> with SingleTi
             return Stack(
               children: [
                 // Camera
-                FlashCamera(position: v.Vector3(0, 0, 800), fov: 60),
+                FCamera(position: v.Vector3(0, 0, 800), fov: 60),
 
                 // Lighting - Key light
-                FlashLight(position: v.Vector3(300, 400, 600), color: Colors.white, intensity: 1.2),
+                FLight(position: v.Vector3(300, 400, 600), color: Colors.white, intensity: 1.2),
 
                 // Lighting - Fill light
-                FlashLight(position: v.Vector3(-300, 200, 400), color: Colors.blueAccent, intensity: 0.6),
+                FLight(position: v.Vector3(-300, 200, 400), color: Colors.blueAccent, intensity: 0.6),
 
                 // --- Sky/Background Layer (Z: -800 to -500) ---
                 // Stars
                 for (int i = 0; i < 30; i++)
-                  FlashBox(
+                  FBox(
                     position: v.Vector3(
                       (Random(i).nextDouble() - 0.5) * 2000,
                       (Random(i + 100).nextDouble() - 0.5) * 1000,
@@ -65,7 +65,7 @@ class _DepthDioramaExampleState extends State<DepthDioramaExample> with SingleTi
                 // --- Far Background Layer (Z: -400 to -200) ---
                 // Distant mountains (triangles)
                 for (int i = 0; i < 6; i++)
-                  FlashTriangle(
+                  FTriangle(
                     position: v.Vector3((i - 2.5) * 350, -100, -350),
                     size: 400,
                     color: const Color(0xFF1a3c5a),
@@ -78,7 +78,7 @@ class _DepthDioramaExampleState extends State<DepthDioramaExample> with SingleTi
 
                 // --- Mid-Foreground Layer (Z: 50 to 300) ---
                 // Animated character orbiting
-                FlashSphere(
+                FSphere(
                   position: v.Vector3(sin(t) * 350, cos(t * 0.8) * 100 - 50, cos(t * 0.7) * 250 + 150),
                   radius: 25,
                   color: Colors.cyanAccent,
@@ -86,7 +86,7 @@ class _DepthDioramaExampleState extends State<DepthDioramaExample> with SingleTi
 
                 // Floating cubes
                 for (int i = 0; i < 5; i++)
-                  FlashBox(
+                  FBox(
                     position: v.Vector3(sin(t + i) * 300, cos(t * 0.5 + i) * 80, 100 + i * 40.0),
                     width: 30,
                     height: 30,
@@ -101,7 +101,7 @@ class _DepthDioramaExampleState extends State<DepthDioramaExample> with SingleTi
 
                 // Ground rocks
                 for (int i = 0; i < 12; i++)
-                  FlashBox(
+                  FBox(
                     position: v.Vector3((i - 5.5) * 130, -230, 500 + (Random(i + 500).nextDouble() - 0.5) * 100),
                     width: 40 + Random(i + 600).nextDouble() * 30,
                     height: 30 + Random(i + 700).nextDouble() * 20,
@@ -117,18 +117,18 @@ class _DepthDioramaExampleState extends State<DepthDioramaExample> with SingleTi
   }
 
   Widget _buildTree(v.Vector3 position, Color color, double height) {
-    return FlashNodes(
+    return FNodes(
       position: position,
       children: [
         // Trunk
-        FlashBox(
+        FBox(
           position: v.Vector3(0, -height * 0.3, 0),
           width: height * 0.15,
           height: height * 0.6,
           color: const Color(0xFF3d2817),
         ),
         // Foliage (triangle)
-        FlashTriangle(position: v.Vector3(0, height * 0.2, 0), size: height * 0.8, color: color),
+        FTriangle(position: v.Vector3(0, height * 0.2, 0), size: height * 0.8, color: color),
       ],
     );
   }

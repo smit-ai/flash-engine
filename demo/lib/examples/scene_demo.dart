@@ -24,29 +24,21 @@ class _SceneManagerDemoExampleState extends State<SceneManagerDemoExample> {
     SceneTransition.rotate,
   ];
 
-  void _initScenes(FlashSceneManager sceneManager) {
+  void _initScenes(FSceneManager sceneManager) {
     if (_initialized) return;
     _initialized = true;
 
     // Register scenes with engine.sceneManager
     sceneManager.registerScene(
-      FlashSceneWrapper(
-        name: 'menu',
-        onEnter: () => debugPrint('Menu entered'),
-        onExit: () => debugPrint('Menu exited'),
-      ),
+      FSceneWrapper(name: 'menu', onEnter: () => debugPrint('Menu entered'), onExit: () => debugPrint('Menu exited')),
     );
 
     sceneManager.registerScene(
-      FlashSceneWrapper(
-        name: 'game',
-        onEnter: () => debugPrint('Game entered'),
-        onExit: () => debugPrint('Game exited'),
-      ),
+      FSceneWrapper(name: 'game', onEnter: () => debugPrint('Game entered'), onExit: () => debugPrint('Game exited')),
     );
 
     sceneManager.registerScene(
-      FlashSceneWrapper(
+      FSceneWrapper(
         name: 'settings',
         onEnter: () => debugPrint('Settings entered'),
         onExit: () => debugPrint('Settings exited'),
@@ -63,10 +55,10 @@ class _SceneManagerDemoExampleState extends State<SceneManagerDemoExample> {
       backgroundColor: const Color(0xFF0f0f23),
       appBar: AppBar(title: const Text('Scene Manager Demo'), backgroundColor: Colors.transparent, elevation: 0),
       extendBodyBehindAppBar: true,
-      body: Flash(
+      body: FView(
         child: Builder(
           builder: (context) {
-            final inherited = context.dependOnInheritedWidgetOfExactType<InheritedFlashNode>();
+            final inherited = context.dependOnInheritedWidgetOfExactType<InheritedFNode>();
             final engine = inherited?.engine;
 
             if (engine == null) {
@@ -84,10 +76,10 @@ class _SceneManagerDemoExampleState extends State<SceneManagerDemoExample> {
             return Stack(
               children: [
                 // Camera
-                FlashCamera(position: v.Vector3(0, 0, 500), fov: 60),
+                FCamera(position: v.Vector3(0, 0, 500), fov: 60),
 
                 // Scene content with transitions
-                FlashSceneTransitionWidget(
+                FSceneTransitionWidget(
                   sceneManager: engine.sceneManager, // Use engine's sceneManager
                   builder: (scene) => _buildSceneContent(scene.name),
                 ),
@@ -166,7 +158,7 @@ class _SceneManagerDemoExampleState extends State<SceneManagerDemoExample> {
     );
   }
 
-  Widget _buildSceneButton(FlashSceneManager sm, String name, IconData icon, Color color) {
+  Widget _buildSceneButton(FSceneManager sm, String name, IconData icon, Color color) {
     final isActive = sm.currentScene?.name == name;
     return GestureDetector(
       onTap: () {

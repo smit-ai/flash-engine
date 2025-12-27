@@ -11,21 +11,21 @@ class TweenDemoExample extends StatefulWidget {
 
 class _TweenDemoExampleState extends State<TweenDemoExample> {
   String _selectedEasing = 'easeOutQuad';
-  final List<FlashTween> _activeTweens = [];
+  final List<FTween> _activeTweens = [];
 
   final Map<String, EasingFunction> _easings = {
-    'linear': FlashEasing.linear,
-    'easeInQuad': FlashEasing.easeInQuad,
-    'easeOutQuad': FlashEasing.easeOutQuad,
-    'easeInOutQuad': FlashEasing.easeInOutQuad,
-    'easeInCubic': FlashEasing.easeInCubic,
-    'easeOutCubic': FlashEasing.easeOutCubic,
-    'easeInOutCubic': FlashEasing.easeInOutCubic,
-    'easeInBack': FlashEasing.easeInBack,
-    'easeOutBack': FlashEasing.easeOutBack,
-    'easeInOutBack': FlashEasing.easeInOutBack,
-    'easeOutElastic': FlashEasing.easeOutElastic,
-    'easeOutBounce': FlashEasing.easeOutBounce,
+    'linear': FEasing.linear,
+    'easeInQuad': FEasing.easeInQuad,
+    'easeOutQuad': FEasing.easeOutQuad,
+    'easeInOutQuad': FEasing.easeInOutQuad,
+    'easeInCubic': FEasing.easeInCubic,
+    'easeOutCubic': FEasing.easeOutCubic,
+    'easeInOutCubic': FEasing.easeInOutCubic,
+    'easeInBack': FEasing.easeInBack,
+    'easeOutBack': FEasing.easeOutBack,
+    'easeInOutBack': FEasing.easeInOutBack,
+    'easeOutElastic': FEasing.easeOutElastic,
+    'easeOutBounce': FEasing.easeOutBounce,
   };
 
   double _activeWallX = 150.0;
@@ -39,7 +39,7 @@ class _TweenDemoExampleState extends State<TweenDemoExample> {
       backgroundColor: const Color(0xFF0A0A12),
       appBar: AppBar(title: const Text('Tween Animation Demo'), backgroundColor: Colors.transparent, elevation: 0),
       extendBodyBehindAppBar: true,
-      body: Flash(
+      body: FView(
         autoUpdate: true,
         onUpdate: () {
           final dt = 1 / 60.0;
@@ -52,13 +52,13 @@ class _TweenDemoExampleState extends State<TweenDemoExample> {
         },
         child: Builder(
           builder: (context) {
-            final engineWidget = context.dependOnInheritedWidgetOfExactType<InheritedFlashNode>();
+            final engineWidget = context.dependOnInheritedWidgetOfExactType<InheritedFNode>();
             final engine = engineWidget?.engine;
 
             return Stack(
               children: [
                 // Camera
-                FlashCamera(position: v.Vector3(0, 0, 800), fov: 60),
+                FCamera(position: v.Vector3(0, 0, 800), fov: 60),
 
                 // Responsive range calculator
                 ListenableBuilder(
@@ -74,7 +74,7 @@ class _TweenDemoExampleState extends State<TweenDemoExample> {
                 ),
 
                 // Animated box
-                FlashCube(
+                FCube(
                   position: _boxPosition,
                   scale: _boxScale,
                   rotation: v.Vector3(0, _boxRotation, 0),
@@ -177,7 +177,7 @@ class _TweenDemoExampleState extends State<TweenDemoExample> {
 
   void _animateMove() {
     final targetX = _boxPosition.x < 0 ? _activeWallX : -_activeWallX;
-    final tween = FlashVector3Tween(
+    final tween = FVector3Tween(
       from: _boxPosition.clone(),
       to: v.Vector3(targetX, 0, 0),
       duration: 1.0,
@@ -190,7 +190,7 @@ class _TweenDemoExampleState extends State<TweenDemoExample> {
 
   void _animateScale() {
     final targetScale = _boxScale.x > 1.5 ? 1.0 : 2.0;
-    final tween = FlashVector3Tween(
+    final tween = FVector3Tween(
       from: _boxScale.clone(),
       to: v.Vector3(targetScale, targetScale, targetScale),
       duration: 0.8,
@@ -202,7 +202,7 @@ class _TweenDemoExampleState extends State<TweenDemoExample> {
   }
 
   void _animateRotate() {
-    final tween = FlashDoubleTween(
+    final tween = FDoubleTween(
       from: _boxRotation,
       to: _boxRotation + 3.14159,
       duration: 1.0,
@@ -215,7 +215,7 @@ class _TweenDemoExampleState extends State<TweenDemoExample> {
 
   void _animateCombo() {
     // Move
-    final moveTween = FlashVector3Tween(
+    final moveTween = FVector3Tween(
       from: _boxPosition.clone(),
       to: v.Vector3(_boxPosition.x < 0 ? _activeWallX : -_activeWallX, 50, 0),
       duration: 1.5,
@@ -228,7 +228,7 @@ class _TweenDemoExampleState extends State<TweenDemoExample> {
     _activeTweens.add(moveTween);
 
     // Scale
-    final scaleTween = FlashVector3Tween(
+    final scaleTween = FVector3Tween(
       from: _boxScale.clone(),
       to: v.Vector3(1.5, 1.5, 1.5),
       duration: 0.75,
@@ -241,11 +241,11 @@ class _TweenDemoExampleState extends State<TweenDemoExample> {
     _activeTweens.add(scaleTween);
 
     // Rotate
-    final rotateTween = FlashDoubleTween(
+    final rotateTween = FDoubleTween(
       from: _boxRotation,
       to: _boxRotation + 6.28318,
       duration: 1.5,
-      easing: FlashEasing.linear,
+      easing: FEasing.linear,
       onUpdate: (v) => _boxRotation = v,
     );
     rotateTween.start();

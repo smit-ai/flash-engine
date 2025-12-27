@@ -4,22 +4,22 @@ import '../../core/systems/particle.dart';
 import '../framework.dart';
 
 /// Declarative widget for particle effects
-class FlashParticles extends FlashNodeWidget {
+class FParticles extends FNodeWidget {
   final ParticleEmitterConfig? config;
   final bool emitting;
   final v.Vector3? initialPosition;
 
   // Can't be const because ParticleEmitterConfig constructor isn't const
-  const FlashParticles({super.key, this.config, this.emitting = true, this.initialPosition, super.child});
+  const FParticles({super.key, this.config, this.emitting = true, this.initialPosition, super.child});
 
   @override
-  State<FlashParticles> createState() => _FlashParticlesState();
+  State<FParticles> createState() => _FParticlesState();
 }
 
-class _FlashParticlesState extends FlashNodeWidgetState<FlashParticles, FlashParticleEmitter> {
+class _FParticlesState extends FNodeWidgetState<FParticles, FParticleEmitter> {
   @override
-  FlashParticleEmitter createNode() {
-    final emitter = FlashParticleEmitter(config: widget.config ?? ParticleEmitterConfig(), emitting: widget.emitting);
+  FParticleEmitter createNode() {
+    final emitter = FParticleEmitter(config: widget.config ?? ParticleEmitterConfig(), emitting: widget.emitting);
     if (widget.initialPosition != null) {
       emitter.transform.position = widget.initialPosition!;
     }
@@ -27,7 +27,7 @@ class _FlashParticlesState extends FlashNodeWidgetState<FlashParticles, FlashPar
   }
 
   @override
-  void applyProperties([FlashParticles? oldWidget]) {
+  void applyProperties([FParticles? oldWidget]) {
     super.applyProperties(oldWidget);
     if (widget.config != null) {
       node.config = widget.config!;
@@ -37,15 +37,15 @@ class _FlashParticlesState extends FlashNodeWidgetState<FlashParticles, FlashPar
 }
 
 /// Fire effect preset widget
-class FlashFire extends StatelessWidget {
+class FFire extends StatelessWidget {
   final v.Vector3 position;
   final double scale;
 
-  const FlashFire({super.key, required this.position, this.scale = 1.0});
+  const FFire({super.key, required this.position, this.scale = 1.0});
 
   @override
   Widget build(BuildContext context) {
-    return FlashParticles(
+    return FParticles(
       initialPosition: position,
       config: ParticleEmitterConfig(
         emissionRate: 80 * scale,
@@ -65,15 +65,15 @@ class FlashFire extends StatelessWidget {
 }
 
 /// Smoke effect preset widget
-class FlashSmoke extends StatelessWidget {
+class FSmoke extends StatelessWidget {
   final v.Vector3 position;
   final double scale;
 
-  const FlashSmoke({super.key, required this.position, this.scale = 1.0});
+  const FSmoke({super.key, required this.position, this.scale = 1.0});
 
   @override
   Widget build(BuildContext context) {
-    return FlashParticles(
+    return FParticles(
       initialPosition: position,
       config: ParticleEmitterConfig(
         emissionRate: 30 * scale,
@@ -93,15 +93,15 @@ class FlashSmoke extends StatelessWidget {
 }
 
 /// Sparkle effect preset widget
-class FlashSparkle extends StatelessWidget {
+class FSparkle extends StatelessWidget {
   final v.Vector3 position;
   final double scale;
 
-  const FlashSparkle({super.key, required this.position, this.scale = 1.0});
+  const FSparkle({super.key, required this.position, this.scale = 1.0});
 
   @override
   Widget build(BuildContext context) {
-    return FlashParticles(
+    return FParticles(
       initialPosition: position,
       config: ParticleEmitterConfig(
         emissionRate: 100 * scale,

@@ -2,10 +2,10 @@ import 'package:flutter/widgets.dart';
 import '../../core/graph/audio_node.dart';
 import '../framework.dart';
 
-class FlashAudioController {
-  _FlashAudioPlayerState? _state;
+class FAudioController {
+  _FAudioPlayerState? _state;
 
-  void _attach(_FlashAudioPlayerState state) => _state = state;
+  void _attach(_FAudioPlayerState state) => _state = state;
   void _detach() => _state = null;
 
   void play() => _state?.play();
@@ -13,7 +13,7 @@ class FlashAudioController {
   bool get isPlaying => _state?.isPlaying ?? false;
 }
 
-class FlashAudioPlayer extends FlashNodeWidget {
+class FAudioPlayer extends FNodeWidget {
   final String assetPath;
   final bool autoplay;
   final bool loop;
@@ -21,9 +21,9 @@ class FlashAudioPlayer extends FlashNodeWidget {
   final double volume;
   final double minDistance;
   final double maxDistance;
-  final FlashAudioController? controller;
+  final FAudioController? controller;
 
-  const FlashAudioPlayer({
+  const FAudioPlayer({
     super.key,
     required this.assetPath,
     this.autoplay = true,
@@ -38,12 +38,12 @@ class FlashAudioPlayer extends FlashNodeWidget {
   });
 
   @override
-  State<FlashAudioPlayer> createState() => _FlashAudioPlayerState();
+  State<FAudioPlayer> createState() => _FAudioPlayerState();
 }
 
-class _FlashAudioPlayerState extends FlashNodeWidgetState<FlashAudioPlayer, FlashAudioNode> {
+class _FAudioPlayerState extends FNodeWidgetState<FAudioPlayer, FAudioNode> {
   @override
-  FlashAudioNode createNode() => FlashAudioNode(
+  FAudioNode createNode() => FAudioNode(
     assetPath: widget.assetPath,
     autoplay: widget.autoplay,
     loop: widget.loop,
@@ -73,7 +73,7 @@ class _FlashAudioPlayerState extends FlashNodeWidgetState<FlashAudioPlayer, Flas
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Get engine to initialize audio node
-    final engine = context.dependOnInheritedWidgetOfExactType<InheritedFlashNode>()?.engine;
+    final engine = context.dependOnInheritedWidgetOfExactType<InheritedFNode>()?.engine;
     if (engine != null) {
       // Initialize handles waiting for system readiness
       node.initialize(engine.audio);

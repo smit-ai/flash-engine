@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import '../../core/graph/node.dart';
 import '../framework.dart';
 
-class FlashBox extends FlashNodeWidget {
+class FBox extends FNodeWidget {
   final double width;
   final double height;
   final Color color;
 
-  const FlashBox({
+  const FBox({
     super.key,
     super.position,
     super.rotation,
@@ -21,15 +21,15 @@ class FlashBox extends FlashNodeWidget {
   });
 
   @override
-  State<FlashBox> createState() => _FlashBoxState();
+  State<FBox> createState() => _FBoxState();
 }
 
-class _FlashBoxState extends FlashNodeWidgetState<FlashBox, _BoxNode> {
+class _FBoxState extends FNodeWidgetState<FBox, _BoxNode> {
   @override
   _BoxNode createNode() => _BoxNode(width: widget.width, height: widget.height, color: widget.color);
 
   @override
-  void applyProperties([FlashBox? oldWidget]) {
+  void applyProperties([FBox? oldWidget]) {
     super.applyProperties(oldWidget);
     node.width = widget.width;
     node.height = widget.height;
@@ -37,7 +37,7 @@ class _FlashBoxState extends FlashNodeWidgetState<FlashBox, _BoxNode> {
   }
 }
 
-class _BoxNode extends FlashNode {
+class _BoxNode extends FNode {
   double width;
   double height;
   Color color;

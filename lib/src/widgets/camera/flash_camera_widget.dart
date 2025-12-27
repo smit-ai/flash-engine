@@ -3,12 +3,12 @@ import '../../core/rendering/camera.dart';
 import '../../core/systems/engine.dart';
 import '../framework.dart';
 
-class FlashCamera extends FlashNodeWidget {
+class FCamera extends FNodeWidget {
   final double fov;
   final double near;
   final double far;
 
-  const FlashCamera({
+  const FCamera({
     super.key,
     super.position,
     super.rotation,
@@ -21,14 +21,14 @@ class FlashCamera extends FlashNodeWidget {
   });
 
   @override
-  State<FlashCamera> createState() => _FlashCameraState();
+  State<FCamera> createState() => _FCameraState();
 }
 
-class _FlashCameraState extends FlashNodeWidgetState<FlashCamera, FlashCameraNode> {
-  FlashEngine? _engine; // Cache engine reference for safe disposal
+class _FCameraState extends FNodeWidgetState<FCamera, FCameraNode> {
+  FEngine? _engine; // Cache engine reference for safe disposal
 
   @override
-  FlashCameraNode createNode() => FlashCameraNode()
+  FCameraNode createNode() => FCameraNode()
     ..fov = widget.fov
     ..near = widget.near
     ..far = widget.far;
@@ -37,7 +37,7 @@ class _FlashCameraState extends FlashNodeWidgetState<FlashCamera, FlashCameraNod
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Cache engine reference and register camera
-    _engine = context.dependOnInheritedWidgetOfExactType<InheritedFlashNode>()?.engine;
+    _engine = context.dependOnInheritedWidgetOfExactType<InheritedFNode>()?.engine;
     _engine?.registerCamera(node);
   }
 
@@ -49,7 +49,7 @@ class _FlashCameraState extends FlashNodeWidgetState<FlashCamera, FlashCameraNod
   }
 
   @override
-  void applyProperties([FlashCamera? oldWidget]) {
+  void applyProperties([FCamera? oldWidget]) {
     super.applyProperties(oldWidget);
     node.fov = widget.fov;
     node.near = widget.near;

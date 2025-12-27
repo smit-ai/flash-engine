@@ -1,9 +1,9 @@
 import 'package:flutter/widgets.dart';
 import '../graph/node.dart';
 
-class FlashLightNode extends FlashNode {
+class FLightNode extends FNode {
   Color color;
   double intensity;
 
-  FlashLightNode({super.name = 'FlashLight', this.color = const Color(0xFFFFFFFF), this.intensity = 1.0});
+  FLightNode({super.name = 'Light', this.color = const Color(0xFFFFFFFF), this.intensity = 1.0});
 }

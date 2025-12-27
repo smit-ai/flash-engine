@@ -1,5 +1,5 @@
 import 'node.dart';
 
-class FlashScene extends FlashNode {
-  FlashScene({super.name = 'Scene'});
+class FScene extends FNode {
+  FScene({super.name = 'Scene'});
 }

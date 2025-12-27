@@ -19,7 +19,7 @@ class AudioSource {
   AudioSource(this.path);
 }
 
-class FlashAudioSystem {
+class FAudioSystem {
   static int _nextHandleId = 1;
   final Map<SoundHandle, AudioPlayer> _activePlayers = {};
 
@@ -57,7 +57,7 @@ class FlashAudioSystem {
     return AudioSource(path);
   }
 
-  void updateListener(FlashCameraNode camera) {
+  void updateListener(FCameraNode camera) {
     _listenerPosition = camera.worldPosition;
   }
 

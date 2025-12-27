@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flash/flash.dart';
-import 'package:flash/src/core/systems/joints.dart';
 import 'package:vector_math/vector_math_64.dart' as v;
 
 class SimpleJointsDemo extends StatefulWidget {
@@ -12,13 +11,13 @@ class SimpleJointsDemo extends StatefulWidget {
 
 class _SimpleJointsDemoState extends State<SimpleJointsDemo> {
   // References to bodies
-  FlashPhysicsBody? _leftAnchor;
-  FlashPhysicsBody? _rightAnchor;
-  final Map<int, FlashPhysicsBody> _ropeSegments = {};
-  FlashPhysicsBody? _ball;
+  FPhysicsBody? _leftAnchor;
+  FPhysicsBody? _rightAnchor;
+  final Map<int, FPhysicsBody> _ropeSegments = {};
+  FPhysicsBody? _ball;
 
-  FlashPhysicsBody? _pendulumAnchor;
-  FlashPhysicsBody? _pendulumBob;
+  FPhysicsBody? _pendulumAnchor;
+  FPhysicsBody? _pendulumBob;
 
   bool _ropeCreated = false;
   bool _pendulumCreated = false;
@@ -35,34 +34,22 @@ class _SimpleJointsDemoState extends State<SimpleJointsDemo> {
     print('🔗 Creating Rope Bridge...');
 
     // Create chain
-    FlashPhysicsBody? prevBody = _leftAnchor;
+    FPhysicsBody? prevBody = _leftAnchor;
 
     // Left anchor to first segment
     for (int i = 0; i < 8; i++) {
       final currentBody = _ropeSegments[i]!;
-      final joint = FlashDistanceJoint(
-        bodyA: prevBody!,
-        bodyB: currentBody,
-        length: 50,
-        frequency: 10,
-        dampingRatio: 0.5,
-      );
+      final joint = FDistanceJoint(bodyA: prevBody!, bodyB: currentBody, length: 50, frequency: 10, dampingRatio: 0.5);
       joint.create(prevBody.world);
       prevBody = currentBody;
     }
 
     // Last segment to right anchor
-    final joint = FlashDistanceJoint(
-      bodyA: prevBody!,
-      bodyB: _rightAnchor!,
-      length: 50,
-      frequency: 10,
-      dampingRatio: 0.5,
-    );
+    final joint = FDistanceJoint(bodyA: prevBody!, bodyB: _rightAnchor!, length: 50, frequency: 10, dampingRatio: 0.5);
     joint.create(prevBody.world);
 
     // Connect Ball to middle segment (index 3)
-    final ballJoint = FlashDistanceJoint(
+    final ballJoint = FDistanceJoint(
       bodyA: _ropeSegments[3]!,
       bodyB: _ball!,
       length: 80,
@@ -81,7 +68,7 @@ class _SimpleJointsDemoState extends State<SimpleJointsDemo> {
 
     print('🔄 Creating Pendulum...');
 
-    final joint = FlashRevoluteJoint(bodyA: _pendulumAnchor!, bodyB: _pendulumBob!, anchor: v.Vector2(-300, 200));
+    final joint = FRevoluteJoint(bodyA: _pendulumAnchor!, bodyB: _pendulumBob!, anchor: v.Vector2(-300, 200));
     joint.create(_pendulumAnchor!.world);
 
     _pendulumCreated = true;
@@ -92,7 +79,7 @@ class _SimpleJointsDemoState extends State<SimpleJointsDemo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Simple Joints Demo'), backgroundColor: Colors.black87),
-      body: Flash(
+      body: FView(
         autoUpdate: false, // Fix: Prevent full widget tree rebuild (flickering)
         onUpdate: () {
           // Sync custom painter with engine tick
@@ -101,7 +88,7 @@ class _SimpleJointsDemoState extends State<SimpleJointsDemo> {
         child: Stack(
           children: [
             // Camera
-            FlashCamera(position: v.Vector3(0, 0, 1000)),
+            FCamera(position: v.Vector3(0, 0, 1000)),
 
             // --- Joint Visualization Overlay ---
             // Draws lines for ropes and pendulums so they look interconnected
@@ -120,7 +107,7 @@ class _SimpleJointsDemoState extends State<SimpleJointsDemo> {
             ),
 
             // Ground
-            FlashStaticBody(
+            FStaticBody(
               name: 'Ground',
               position: v.Vector3(0, -350, 0),
               width: 1000,
@@ -131,7 +118,7 @@ class _SimpleJointsDemoState extends State<SimpleJointsDemo> {
 
             // --- Rope Bridge Setup ---
             // Left Anchor
-            FlashStaticBody(
+            FStaticBody(
               name: 'LeftAnchor',
               position: v.Vector3(-200, 100, 0),
               width: 20,
@@ -145,7 +132,7 @@ class _SimpleJointsDemoState extends State<SimpleJointsDemo> {
             ),
 
             // Right Anchor
-            FlashStaticBody(
+            FStaticBody(
               name: 'RightAnchor',
               position: v.Vector3(200, 100, 0),
               width: 20,
@@ -160,7 +147,7 @@ class _SimpleJointsDemoState extends State<SimpleJointsDemo> {
 
             // Rope Segments (8 segments)
             for (int i = 0; i < 8; i++)
-              FlashRigidBody.square(
+              FRigidBody.square(
                 key: ValueKey('rope_$i'),
                 name: 'RopeSeg_$i',
                 position: v.Vector3(-150.0 + (i * 40), 100, 0),
@@ -174,7 +161,7 @@ class _SimpleJointsDemoState extends State<SimpleJointsDemo> {
               ),
 
             // Ball attached to rope
-            FlashRigidBody.circle(
+            FRigidBody.circle(
               name: 'HeavyBall',
               position: v.Vector3(0, 50, 0),
               radius: 20,
@@ -187,7 +174,7 @@ class _SimpleJointsDemoState extends State<SimpleJointsDemo> {
             ),
 
             // --- Pendulum Setup ---
-            FlashStaticBody(
+            FStaticBody(
               name: 'PendulumAnchor',
               position: v.Vector3(-300, 200, 0),
               width: 20,
@@ -200,7 +187,7 @@ class _SimpleJointsDemoState extends State<SimpleJointsDemo> {
               },
             ),
 
-            FlashRigidBody.circle(
+            FRigidBody.circle(
               name: 'PendulumBob',
               position: v.Vector3(-200, 200, 0), // Start horizontally
               radius: 15,
@@ -283,12 +270,12 @@ class _SimpleJointsDemoState extends State<SimpleJointsDemo> {
 }
 
 class _JointPainter extends CustomPainter {
-  final FlashPhysicsBody? leftAnchor;
-  final FlashPhysicsBody? rightAnchor;
-  final Map<int, FlashPhysicsBody> ropeSegments;
-  final FlashPhysicsBody? ball;
-  final FlashPhysicsBody? pendulumAnchor;
-  final FlashPhysicsBody? pendulumBob;
+  final FPhysicsBody? leftAnchor;
+  final FPhysicsBody? rightAnchor;
+  final Map<int, FPhysicsBody> ropeSegments;
+  final FPhysicsBody? ball;
+  final FPhysicsBody? pendulumAnchor;
+  final FPhysicsBody? pendulumBob;
 
   _JointPainter({
     required Listenable repaint,

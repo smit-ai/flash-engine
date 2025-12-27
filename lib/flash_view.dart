@@ -6,9 +6,9 @@ import 'src/core/systems/physics.dart';
 import 'src/core/graph/node.dart';
 import 'src/widgets/framework.dart';
 
-class Flash extends StatefulWidget {
+class FView extends StatefulWidget {
   final Widget child;
-  final FlashPhysicsSystem? physicsWorld;
+  final FPhysicsSystem? physicsWorld;
   final bool showDebugOverlay;
 
   /// If false, Flash will not capture pointer/keyboard input,
@@ -22,7 +22,7 @@ class Flash extends StatefulWidget {
   /// without needing an AnimationController or setState manually.
   final bool autoUpdate;
 
-  const Flash({
+  const FView({
     super.key,
     required this.child,
     this.physicsWorld,
@@ -33,18 +33,18 @@ class Flash extends StatefulWidget {
   });
 
   @override
-  State<Flash> createState() => _FlashState();
+  State<FView> createState() => _FViewState();
 }
 
-class _FlashState extends State<Flash> {
-  late final FlashEngine engine;
+class _FViewState extends State<FView> {
+  late final FEngine engine;
   final ValueNotifier<String> _debugInfo = ValueNotifier('');
   double _lastDebugUpdate = 0;
 
   @override
   void initState() {
     super.initState();
-    engine = FlashEngine();
+    engine = FEngine();
     engine.physicsWorld = widget.physicsWorld;
     engine.onUpdate = () {
       widget.onUpdate?.call();
@@ -58,7 +58,7 @@ class _FlashState extends State<Flash> {
     engine.start();
   }
 
-  int _countNodes(FlashNode node) {
+  int _countNodes(FNode node) {
     int count = 1;
     for (final child in node.children) {
       count += _countNodes(child);
@@ -67,7 +67,7 @@ class _FlashState extends State<Flash> {
   }
 
   @override
-  void didUpdateWidget(Flash oldWidget) {
+  void didUpdateWidget(FView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.physicsWorld != oldWidget.physicsWorld) {
       engine.physicsWorld = widget.physicsWorld;
@@ -104,7 +104,7 @@ class _FlashState extends State<Flash> {
         SizedBox.expand(
           child: RepaintBoundary(
             child: CustomPaint(
-              painter: FlashPainter(engine: engine, camera: engine.activeCamera, repaint: engine),
+              painter: FPainter(engine: engine, camera: engine.activeCamera, repaint: engine),
               child: widget.child,
             ),
           ),
@@ -165,7 +165,7 @@ class _FlashState extends State<Flash> {
       );
     }
 
-    return InheritedFlashNode(node: engine.scene, engine: engine, child: content);
+    return InheritedFNode(node: engine.scene, engine: engine, child: content);
   }
 
   @override

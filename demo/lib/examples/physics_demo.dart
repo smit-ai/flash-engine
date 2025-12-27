@@ -58,14 +58,14 @@ class _PhysicsDemoExampleState extends State<PhysicsDemoExample> {
           ),
         ],
       ),
-      body: Flash(
+      body: FView(
         autoUpdate: false, // Fix: Prevent full widget tree rebuild every frame
         child: Stack(
           children: [
-            FlashCamera(position: v.Vector3(0, 0, 1000)),
+            FCamera(position: v.Vector3(0, 0, 1000)),
 
             // --- Static World Geometry ---
-            FlashStaticBody(
+            FStaticBody(
               name: 'Floor',
               position: v.Vector3(0, -400, 0),
               width: 800,
@@ -73,7 +73,7 @@ class _PhysicsDemoExampleState extends State<PhysicsDemoExample> {
               color: Colors.grey[800]!,
               debugDraw: true,
             ),
-            FlashStaticBody(
+            FStaticBody(
               name: 'LeftWall',
               position: v.Vector3(-380, 0, 0),
               width: 40,
@@ -81,7 +81,7 @@ class _PhysicsDemoExampleState extends State<PhysicsDemoExample> {
               color: Colors.grey[800]!,
               debugDraw: true,
             ),
-            FlashStaticBody(
+            FStaticBody(
               name: 'RightWall',
               position: v.Vector3(380, 0, 0),
               width: 40,
@@ -94,7 +94,7 @@ class _PhysicsDemoExampleState extends State<PhysicsDemoExample> {
             for (int row = 0; row < 6; row++)
               for (int col = -4; col <= 4; col++)
                 if ((row % 2 == 0 && col % 2 == 0) || (row % 2 != 0 && col % 2 != 0))
-                  FlashStaticBody.circle(
+                  FStaticBody.circle(
                     name: 'Peg_${row}_$col',
                     position: v.Vector3(col * 60.0, 200.0 - row * 70.0, 0),
                     radius: 10,
@@ -116,7 +116,7 @@ class _PhysicsDemoExampleState extends State<PhysicsDemoExample> {
             // --- Dynamic Bodies ---
             for (final body in _bodies)
               body.isCircle
-                  ? FlashRigidBody.circle(
+                  ? FRigidBody.circle(
                       key: body.key,
                       name: 'Body_${body.key}',
                       position: body.position,
@@ -124,7 +124,7 @@ class _PhysicsDemoExampleState extends State<PhysicsDemoExample> {
                       color: body.color,
                       debugDraw: true,
                     )
-                  : FlashRigidBody.square(
+                  : FRigidBody.square(
                       key: body.key,
                       name: 'Body_${body.key}',
                       position: body.position,
