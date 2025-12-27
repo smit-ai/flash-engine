@@ -20,18 +20,20 @@
 > **Reference Access**: The source code for these master references (Godot, Box2D, JoltPhysics, Flame) is maintained in the `other_repo/` directory within this workspace. Always consult these local copies when in doubt.
 
 ## Coordinate System & Physics
-1.  **Y-Up System**: The `FlashPainter` rendering engine inverts the Y-axis (`scale(1, -1)`).
+1.  **Y-Up System**: The `FPainter` rendering engine inverts the Y-axis (`scale(1, -1)`).
     *   `+Y` is UP (Top of screen).
     *   `-Y` is DOWN (Bottom of screen).
     *   **Gravity**: MUST be Negative (e.g., `-9.8`). Explicitly override C++ defaults if necessary.
 2.  **Native Integration**:
     *   **Struct Alignment**: Dart FFI structs (`particles_ffi.dart`) MUST exactly match C++ headers (`physics.h`).
     *   **Library Loading**: Always handle `Platform.isIOS` specifically to load the simulator-compatible dylib.
+3.  **Input Transformation**:
+    *   **Invert Y**: Mobile Input (Touch/Joystick) provides Screen Coordinates (Y-Down). Physics requires Y-Up. You MUST invert the Y-axis of any screen input before applying it to physics bodies (`dy = -input.y`).
 
 ## Development Workflow
 1.  **Hot Restart vs Cold Restart**: Native binary changes (`.dylib`) require a **Cold Restart** (Stop & Run). Hot Restart does not reload native code.
 2.  **Visual Debugging**:
-    *   `FlashPhysicsBody.debugDraw` defaults to `false` to prevent conflict with Flutter Widgets.
+    *   `FPhysicsBody.debugDraw` defaults to `false` to prevent conflict with Flutter Widgets.
     *   Enable it explicitly for pure physics demos (`SimpleJointsDemo`).
 
 ## Build Instructions
@@ -54,10 +56,10 @@
 ## Architecture & Memory (Vital)
 1.  **Memory Ownership**:
     *   **C++ Owns Physics**: The `PhysicsWorld` and `NativeBody` structs are allocated/freed in C++.
-    *   **Dart is a View**: Dart classes (`FlashPhysicsBody`) only hold *pointers*. Never try to `free()` a physics body from Dart manually; let the C++ world destruction handle it.
+    *   **Dart is a View**: Dart classes (`FPhysicsBody`) only hold *pointers*. Never try to `free()` a physics body from Dart manually; let the C++ world destruction handle it.
 2.  **State Synchronization**:
     *   **Native Truth**: The C++ simulation is the "Single Source of Truth" for position/rotation.
-    *   **One-Way Sync**: `FlashPhysicsBody._syncFromPhysics()` pulls data from C++ to Dart every frame. Never overwrite C++ positions from Dart update loops unless explicitly teleporting.
+    *   **One-Way Sync**: `FPhysicsBody._syncFromPhysics()` pulls data from C++ to Dart every frame. Never overwrite C++ positions from Dart update loops unless explicitly teleporting.
 3.  **Performance Limits**:
     *   **Particles**: Use Hardware Instancing (via `particles_ffi`) for counts > 10,000.
     *   **Rigid Bodies**: Keep active generic bodies under 500 for mobile 60fps.
@@ -67,10 +69,10 @@
     *   **Center is (0,0)**:Unlike Flutter (Top-Left), the Flash Engine (and most game engines) places `(0,0)` at the **center of the viewport**.
     *   **Dimensions**: Visible area depends on the viewport size. If `Scaffold` has an `AppBar`, the viewport height is reduced.
 2.  **Safe Areas**:
-    *   **Canvas Size != Screen Size**: Always respect the `size` passed to `FlashPainter`. Do not assume full screen (1920x1080).
+    *   **Canvas Size != Screen Size**: Always respect the `size` passed to `FPainter`. Do not assume full screen (1920x1080).
     *   **Padding**: Account for `AppBar` height (~56px) and Status Bar when calculating "Top" edge boundaries.
 3.  **Positioning Rule**:
-    *   **Don't Guess**: Use `FlashCamera.getWorldBounds()` (if available) or assume a Safe Zone (e.g., +/- 150px) rather than hardcoding large values like `y: -500` which might be off-screen.
+    *   **Don't Guess**: Use `FCamera.getWorldBounds()` (if available) or assume a Safe Zone (e.g., +/- 150px) rather than hardcoding large values like `y: -500` which might be off-screen.
 
 
 ### Native Development Rules
@@ -82,4 +84,4 @@
 - **Contact Hardness**: With 8x sub-stepping, use `contactHertz = 120.0` for rigid bodies. High stiffness prevents ALL sinking.
 - **Solver Iterations**: Use 4 Position and 4 Velocity iterations per SUB-STEP (Total 32/frame).
 - **Collision Shapes**: Prefer Circle-Circle collisions for high-speed or chaotic simulations (like Pachinko).
-- **Shared World**: All rigid bodies must share the same `FlashPhysicsSystem` instance from the engine context.
+- **Shared World**: All rigid bodies must share the same `FPhysicsSystem` instance from the engine context.

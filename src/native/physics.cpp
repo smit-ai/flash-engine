@@ -641,4 +641,155 @@ void get_body_position(PhysicsWorld* world, int32_t bodyId, float* x, float* y) 
     }
 }
 
+// --- RayCasting Implementation ---
+
+bool intersectRayCircle(float startX, float startY, float dx, float dy, 
+                       float cx, float cy, float r, 
+                       float& outFraction, float& outNx, float& outNy) {
+    float fx = startX - cx;
+    float fy = startY - cy;
+    
+    float a = dx * dx + dy * dy;
+    float b = 2.0f * (fx * dx + fy * dy);
+    float c = (fx * fx + fy * fy) - r * r;
+    
+    float discriminant = b * b - 4.0f * a * c;
+    if (discriminant < 0.0f) return false;
+    
+    discriminant = std::sqrt(discriminant);
+    float t1 = (-b - discriminant) / (2.0f * a);
+    
+    if (t1 >= 0.0f && t1 <= 1.0f) {
+        outFraction = t1;
+        float hitX = startX + dx * t1;
+        float hitY = startY + dy * t1;
+        
+        float dist = std::sqrt((hitX - cx)*(hitX - cx) + (hitY - cy)*(hitY - cy));
+        outNx = (hitX - cx) / dist;
+        outNy = (hitY - cy) / dist;
+        return true;
+    }
+    return false;
+}
+
+bool intersectRayAABB(float startX, float startY, float dx, float dy, 
+                      float minX, float minY, float maxX, float maxY,
+                      float& outFraction, float& outNx, float& outNy) {
+    float tMin = 0.0f;
+    float tMax = 1.0f;
+    
+    float nx = 0.0f, ny = 0.0f;
+    
+    // X Axis
+    if (std::abs(dx) < 1e-6f) {
+        if (startX < minX || startX > maxX) return false;
+    } else {
+        float invD = 1.0f / dx;
+        float t1 = (minX - startX) * invD;
+        float t2 = (maxX - startX) * invD;
+        float s = 1.0f;
+        
+        if (t1 > t2) { std::swap(t1, t2); s = -1.0f; }
+        
+        if (t1 > tMin) {
+            tMin = t1;
+            nx = -s; ny = 0.0f;
+        }
+        tMax = std::min(tMax, t2);
+        if (tMin > tMax) return false;
+    }
+    
+    // Y Axis
+    if (std::abs(dy) < 1e-6f) {
+        if (startY < minY || startY > maxY) return false;
+    } else {
+        float invD = 1.0f / dy;
+        float t1 = (minY - startY) * invD;
+        float t2 = (maxY - startY) * invD;
+        float s = 1.0f;
+        
+        if (t1 > t2) { std::swap(t1, t2); s = -1.0f; }
+        
+        if (t1 > tMin) {
+            tMin = t1;
+            nx = 0.0f; ny = -s;
+        }
+        tMax = std::min(tMax, t2);
+        if (tMin > tMax) return false;
+    }
+    
+    outFraction = tMin;
+    outNx = nx;
+    outNy = ny;
+    return true;
+}
+
+RayCastHit ray_cast(PhysicsWorld* world, float startX, float startY, float endX, float endY) {
+    RayCastHit closest;
+    closest.hit = 0;
+    closest.fraction = 1.0f;
+    closest.bodyId = -1;
+    
+    if (!world) return closest;
+    
+    float dx = endX - startX;
+    float dy = endY - startY;
+    
+    for (int i = 0; i < world->activeCount; ++i) {
+        NativeBody& b = world->bodies[i];
+        
+        float hitFraction = 1.0f;
+        float nx = 0, ny = 0;
+        bool hit = false;
+        
+        if (b.shapeType == SHAPE_CIRCLE) {
+             hit = intersectRayCircle(startX, startY, dx, dy, b.x, b.y, b.radius, hitFraction, nx, ny);
+        } else if (b.shapeType == SHAPE_BOX) {
+            // Transform Ray to Box Local Space
+            float c = std::cos(-b.rotation);
+            float s = std::sin(-b.rotation);
+            
+            float localStartX = (startX - b.x) * c - (startY - b.y) * s;
+            float localStartY = (startX - b.x) * s + (startY - b.y) * c;
+            
+            float localDx = dx * c - dy * s;
+            float localDy = dx * s + dy * c;
+            
+            float hw = b.width * 0.5f;
+            float hh = b.height * 0.5f;
+            
+            if (intersectRayAABB(localStartX, localStartY, localDx, localDy, 
+                                -hw, -hh, hw, hh, hitFraction, nx, ny)) {
+                
+                // Transform normal back to world space
+                float c_rot = std::cos(b.rotation); // Assuming previous c was cos(-rot) = cos(rot)
+                float s_rot = std::sin(b.rotation); // existing s was sin(-rot) = -sin(rot)
+                
+                // Manually recalculate C/S for clarity
+                c_rot = c;
+                s_rot = -s;
+                
+                float worldNx = nx * c_rot - ny * s_rot;
+                float worldNy = nx * s_rot + ny * c_rot;
+                                
+                nx = worldNx;
+                ny = worldNy;
+                hit = true;
+            }
+        }
+        
+        if (hit && hitFraction < closest.fraction) {
+            closest.fraction = hitFraction;
+            closest.hit = 1;
+            closest.bodyId = b.id;
+            closest.normalX = nx;
+            closest.normalY = ny;
+            closest.x = startX + dx * hitFraction;
+            closest.y = startY + dy * hitFraction;
+        }
+    }
+    
+    return closest;
+}
+
 }

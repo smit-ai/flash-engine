@@ -47,12 +47,17 @@ class FEngine extends ChangeNotifier {
 
   FEngine() {
     // Ensure native libraries are loaded
+    init();
+    _ticker = Ticker(_tick);
+  }
+
+  /// Manually initialize native libraries (if using components without FEngine instance)
+  static void init() {
     try {
       FlashNativeParticles.init();
     } catch (e) {
       print('Failed to initialize native particles: $e');
     }
-    _ticker = Ticker(_tick);
   }
 
   /// Register a camera when it's added to the scene
@@ -82,7 +87,8 @@ class FEngine extends ChangeNotifier {
 
   @override
   void dispose() {
-    physicsWorld?.dispose();
+    // physicsWorld is owned by the creator (e.g. FView widget or Game), not the Engine.
+    // Do not dispose it here to avoid double-free if the creator also disposes it.
     _ticker.dispose();
     audio.dispose();
     super.dispose();

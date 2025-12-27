@@ -151,6 +151,20 @@ class FPhysicsSystem {
   static int getCollisionCount(WorldId world, BodyId bodyId) {
     return _getBodyPtr(world, bodyId).ref.collisionCount;
   }
+
+  // --- RayCast ---
+  /// Cast a ray from `from` to `to` in world space.
+  /// Returns `RayCastHit` if hit, `null` otherwise.
+  static RayCastHit? rayCast(WorldId world, double fromX, double fromY, double toX, double toY) {
+    if (FlashNativeParticles.rayCast == null) return null;
+
+    final result = FlashNativeParticles.rayCast!(world, fromX, fromY, toX, toY);
+
+    if (result.hit != 0) {
+      return result;
+    }
+    return null;
+  }
 }
 
 class FPhysics {
@@ -209,20 +223,12 @@ class FPhysicsBody extends FNode {
     super.name = 'PhysicsBody',
     this.color = Colors.white,
     this.debugDraw = false,
-    double restitution = 0.5, // Increased default bounciness
-    double friction = 0.1, // Reduced default friction
-    void Function(FPhysicsBody)? onCollision, // Legacy support
-    void Function(FPhysicsBody)? onUpdate, // Legacy support
+    double restitution = 0.5,
+    double friction = 0.1,
   }) : _world = world,
        bodyId = FPhysicsSystem.createBody(world, type, shapeType, x, y, width, height, rotation) {
-    // Set initial material properties via FFI
     this.restitution = restitution;
     this.friction = friction;
-
-    // Connect legacy callbacks if provided
-    if (onCollision != null) collision.connect(onCollision);
-    if (onUpdate != null) physicsProcess.connect(onUpdate);
-
     _syncFromPhysics();
   }
 

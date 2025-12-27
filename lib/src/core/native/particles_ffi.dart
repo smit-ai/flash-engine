@@ -131,6 +131,24 @@ final class ParticleEmitter extends Struct {
   external double gravityZ;
 }
 
+// RayCast Struct (Must match C++ physics.h)
+final class RayCastHit extends Struct {
+  @Int32()
+  external int bodyId;
+  @Float()
+  external double x;
+  @Float()
+  external double y;
+  @Float()
+  external double normalX;
+  @Float()
+  external double normalY;
+  @Float()
+  external double fraction;
+  @Int32()
+  external int hit;
+}
+
 // Typedefs for the C functions
 typedef UpdateParticlesC = Void Function(Pointer<ParticleEmitter> emitter, Float dt);
 typedef UpdateParticlesDart = void Function(Pointer<ParticleEmitter> emitter, double dt);
@@ -198,12 +216,14 @@ class FlashNativeParticles {
   static void Function(Pointer<PhysicsWorld>, int, double, double)? setBodyVelocity;
   static void Function(Pointer<PhysicsWorld>, int, Pointer<Float>, Pointer<Float>)? getBodyPosition;
 
+  // RayCast
+  static RayCastHit Function(Pointer<PhysicsWorld>, double, double, double, double)? rayCast;
+
   static const String _libName = 'libflash_core.dylib';
 
   static void init() {
     if (_lib != null) return;
 
-    // Determine library path
     // Determine library path
     // iOS Simulator support: Load the custom-built simulator dylib via absolute path
     if (Platform.isIOS) {
@@ -267,6 +287,13 @@ class FlashNativeParticles {
           Void Function(Pointer<PhysicsWorld>, Int32, Pointer<Float>, Pointer<Float>),
           void Function(Pointer<PhysicsWorld>, int, Pointer<Float>, Pointer<Float>)
         >('get_body_position');
+
+    // RayCast Binding
+    rayCast = _lib!
+        .lookupFunction<
+          RayCastHit Function(Pointer<PhysicsWorld>, Float, Float, Float, Float),
+          RayCastHit Function(Pointer<PhysicsWorld>, double, double, double, double)
+        >('ray_cast');
 
     print('Native Core Library loaded successfully');
   }

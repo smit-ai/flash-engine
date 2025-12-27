@@ -18,6 +18,8 @@ import 'examples/three_d_audio_demo.dart';
 import 'examples/native_particle_demo.dart';
 import 'examples/joints_demo.dart';
 import 'examples/simple_joints_demo.dart';
+import 'examples/master_tech_demo.dart';
+import 'examples/raycast_demo.dart';
 
 void main() {
   runApp(const FlashDemoApp());
@@ -155,10 +157,22 @@ class ExampleMenu extends StatelessWidget {
         builder: (_) => const NativeParticleDemo(),
       ),
       _ExampleData(
-        title: 'Lines & Trails',
-        description: 'Path rendering.',
+        title: 'Rendering',
+        description: 'Path & trails.',
         icon: Icons.gesture_rounded,
         builder: (_) => const RenderingDemoExample(),
+      ),
+      _ExampleData(
+        title: 'Master Tech Demo',
+        description: 'Signals, Groups, Physics.',
+        icon: Icons.verified_rounded,
+        builder: (_) => const MasterTechDemo(),
+      ),
+      _ExampleData(
+        title: 'RayCast Demo',
+        description: 'Ray-based detection.',
+        icon: Icons.flash_on_rounded,
+        builder: (_) => const RayCastDemo(),
       ),
     ];
 

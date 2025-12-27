@@ -132,6 +132,19 @@ void apply_torque(PhysicsWorld* world, int32_t bodyId, float torque);
 void set_body_velocity(PhysicsWorld* world, int32_t bodyId, float vx, float vy);
 void get_body_position(PhysicsWorld* world, int32_t bodyId, float* x, float* y);
 
+// RayCasting
+struct RayCastHit {
+    int32_t bodyId;
+    float x;
+    float y;
+    float normalX;
+    float normalY;
+    float fraction; // 0.0 to 1.0 along the ray
+    int hit; // boolean flag
+};
+
+RayCastHit ray_cast(PhysicsWorld* world, float startX, float startY, float endX, float endY);
+
 }
 
 #endif

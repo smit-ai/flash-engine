@@ -59,7 +59,7 @@ class _DepthDioramaExampleState extends State<DepthDioramaExample> with SingleTi
                     ),
                     width: 3,
                     height: 3,
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                   ),
 
                 // --- Far Background Layer (Z: -400 to -200) ---
