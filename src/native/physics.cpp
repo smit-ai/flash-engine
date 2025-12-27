@@ -325,6 +325,12 @@ void step_physics(PhysicsWorld* world, float dt) {
         NativeBody& b = world->bodies[j];
         if (a.type == STATIC && b.type == STATIC) continue;
 
+        // Collision Filtering (Box2D-style)
+        // (a.maskBits & b.categoryBits) != 0 && (b.maskBits & a.categoryBits) != 0
+        if (!((a.maskBits & b.categoryBits) != 0 && (b.maskBits & a.categoryBits) != 0)) {
+            continue;
+        }
+
         // Detect collision
         CollisionManifold m = {{0,0}, 0, {{0,0}}, 0, false};
         if (a.shapeType == SHAPE_CIRCLE && b.shapeType == SHAPE_CIRCLE) m = detectCircleCircle(a, b);
@@ -576,9 +582,11 @@ void step_physics(PhysicsWorld* world, float dt) {
     solve_joint_position_constraints(world);
 }
 
-int32_t create_body(PhysicsWorld* world, int type, int shapeType, float x, float y, float w, float h, float rotation) {
-    if (!world || world->activeCount >= world->maxBodies) return -1;
+// Removed get_physics_version from here
 
+int32_t create_body(PhysicsWorld* world, int type, int shapeType, float x, float y, float w, float h, float rotation, uint32_t categoryBits, uint32_t maskBits) {
+    if (!world || world->activeCount >= world->maxBodies) return -1;
+    
     int32_t id = world->activeCount++;
     NativeBody& b = world->bodies[id];
     b.id = id;
@@ -610,6 +618,8 @@ int32_t create_body(PhysicsWorld* world, int type, int shapeType, float x, float
     b.isBullet = false;  // Default: no continuous collision
     b.sleepTime = 0.0f;  // Initialize sleep timer
     b.collision_count = 0;
+    b.categoryBits = categoryBits;
+    b.maskBits = maskBits;
 
     return id;
 }

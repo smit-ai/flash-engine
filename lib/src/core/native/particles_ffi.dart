@@ -112,6 +112,10 @@ final class NativeBody extends Struct {
   external int collisionCount;
   @Float()
   external double sleepTime; // Time body has been at rest
+  @Uint32()
+  external int categoryBits;
+  @Uint32()
+  external int maskBits;
 }
 
 final class ParticleEmitter extends Struct {
@@ -210,7 +214,7 @@ class FlashNativeParticles {
   static Pointer<PhysicsWorld> Function(int)? createPhysicsWorld;
   static void Function(Pointer<PhysicsWorld>)? destroyPhysicsWorld;
   static void Function(Pointer<PhysicsWorld>, double)? stepPhysics;
-  static int Function(Pointer<PhysicsWorld>, int, int, double, double, double, double, double)? createBody;
+  static int Function(Pointer<PhysicsWorld>, int, int, double, double, double, double, double, int, int)? createBody;
   static void Function(Pointer<PhysicsWorld>, int, double, double)? applyForce;
   static void Function(Pointer<PhysicsWorld>, int, double)? applyTorque;
   static void Function(Pointer<PhysicsWorld>, int, double, double)? setBodyVelocity;
@@ -264,8 +268,8 @@ class FlashNativeParticles {
         );
     createBody = _lib!
         .lookupFunction<
-          Int32 Function(Pointer<PhysicsWorld>, Int32, Int32, Float, Float, Float, Float, Float),
-          int Function(Pointer<PhysicsWorld>, int, int, double, double, double, double, double)
+          Int32 Function(Pointer<PhysicsWorld>, Int32, Int32, Float, Float, Float, Float, Float, Uint32, Uint32),
+          int Function(Pointer<PhysicsWorld>, int, int, double, double, double, double, double, int, int)
         >('create_body');
     applyForce = _lib!
         .lookupFunction<

@@ -21,7 +21,9 @@ clang++ -shared -fPIC \
     -isysroot "$SDK_PATH" \
     "$SOURCE_DIR/particles.cpp" \
     "$SOURCE_DIR/physics.cpp" \
-    -o "$OUTPUT_DIR/$LIB_NAME"
+    "$SOURCE_DIR/broadphase.cpp" \
+    "$SOURCE_DIR/joints.cpp" \
+    -o "$OUTPUT_DIR/libflash_core_sim.dylib"
 
 if [ $? -eq 0 ]; then
     echo "Successfully compiled to $OUTPUT_DIR/$LIB_NAME"

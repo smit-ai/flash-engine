@@ -44,6 +44,8 @@ class FRigidBody extends FNodeWidget {
   final bool debugDraw;
   final double restitution;
   final double friction;
+  final int? categoryBits;
+  final int? maskBits;
 
   const FRigidBody({
     super.key,
@@ -63,6 +65,8 @@ class FRigidBody extends FNodeWidget {
     this.debugDraw = false,
     this.restitution = 0.5,
     this.friction = 0.1,
+    this.categoryBits,
+    this.maskBits,
   });
 
   /// Shorthand constructor for squares/boxes
@@ -81,6 +85,8 @@ class FRigidBody extends FNodeWidget {
     this.debugDraw = false,
     this.restitution = 0.5,
     this.friction = 0.1,
+    this.categoryBits,
+    this.maskBits,
   }) : type = 2,
        shapeType = FPhysics.box,
        width = size,
@@ -102,6 +108,8 @@ class FRigidBody extends FNodeWidget {
     this.debugDraw = false,
     this.restitution = 0.5,
     this.friction = 0.1,
+    this.categoryBits,
+    this.maskBits,
   }) : type = 2,
        shapeType = FPhysics.circle,
        width = radius * 2,
@@ -143,6 +151,8 @@ class _FRigidBodyState extends FNodeWidgetState<FRigidBody, FPhysicsBody> {
       debugDraw: widget.debugDraw,
       restitution: widget.restitution,
       friction: widget.friction,
+      categoryBits: widget.categoryBits ?? 0x0001,
+      maskBits: widget.maskBits ?? 0xFFFF,
     );
 
     if (widget.initialVelocity != null) {

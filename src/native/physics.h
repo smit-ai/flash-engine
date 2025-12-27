@@ -64,6 +64,8 @@ struct NativeBody {
     int isBullet;        // Enable continuous collision detection
     int collision_count;
     float sleepTime;     // Time body has been at rest
+    uint32_t categoryBits;
+    uint32_t maskBits;
 };
 
 // Manifold for persistent contact tracking (Warm Starting)
@@ -126,7 +128,8 @@ struct PhysicsWorld {
 PhysicsWorld* create_physics_world(int maxBodies);
 void destroy_physics_world(PhysicsWorld* world);
 void step_physics(PhysicsWorld* world, float dt);
-int32_t create_body(PhysicsWorld* world, int type, int shapeType, float x, float y, float w, float h, float rotation);
+int32_t create_body(PhysicsWorld* world, int type, int shapeType, float x, float y, float w, float h, float rotation, uint32_t categoryBits, uint32_t maskBits);
+int32_t get_physics_version();
 void apply_force(PhysicsWorld* world, int32_t bodyId, float fx, float fy);
 void apply_torque(PhysicsWorld* world, int32_t bodyId, float torque);
 void set_body_velocity(PhysicsWorld* world, int32_t bodyId, float vx, float vy);

@@ -99,8 +99,21 @@ class FPhysicsSystem {
     double width,
     double height,
     double rotation,
+    int categoryBits,
+    int maskBits,
   ) {
-    return FlashNativeParticles.createBody!(world, type, shapeType, x, y, width, height, rotation);
+    return FlashNativeParticles.createBody!(
+      world,
+      type,
+      shapeType,
+      x,
+      y,
+      width,
+      height,
+      rotation,
+      categoryBits,
+      maskBits,
+    );
   }
 
   static void setBodyVelocity(WorldId world, BodyId bodyId, double vx, double vy) {
@@ -150,6 +163,22 @@ class FPhysicsSystem {
 
   static int getCollisionCount(WorldId world, BodyId bodyId) {
     return _getBodyPtr(world, bodyId).ref.collisionCount;
+  }
+
+  static void setCategoryBits(WorldId world, BodyId bodyId, int bits) {
+    _getBodyPtr(world, bodyId).ref.categoryBits = bits;
+  }
+
+  static int getCategoryBits(WorldId world, BodyId bodyId) {
+    return _getBodyPtr(world, bodyId).ref.categoryBits;
+  }
+
+  static void setMaskBits(WorldId world, BodyId bodyId, int bits) {
+    _getBodyPtr(world, bodyId).ref.maskBits = bits;
+  }
+
+  static int getMaskBits(WorldId world, BodyId bodyId) {
+    return _getBodyPtr(world, bodyId).ref.maskBits;
   }
 
   // --- RayCast ---
@@ -225,12 +254,33 @@ class FPhysicsBody extends FNode {
     this.debugDraw = false,
     double restitution = 0.5,
     double friction = 0.1,
+    int categoryBits = 0x0001,
+    int maskBits = 0xFFFF,
   }) : _world = world,
-       bodyId = FPhysicsSystem.createBody(world, type, shapeType, x, y, width, height, rotation) {
+       bodyId = FPhysicsSystem.createBody(
+         world,
+         type,
+         shapeType,
+         x,
+         y,
+         width,
+         height,
+         rotation,
+         categoryBits,
+         maskBits,
+       ) {
     this.restitution = restitution;
     this.friction = friction;
     _syncFromPhysics();
   }
+
+  /// Get/Set Collision Category Bits
+  int get categoryBits => FPhysicsSystem.getCategoryBits(_world, bodyId);
+  set categoryBits(int value) => FPhysicsSystem.setCategoryBits(_world, bodyId, value);
+
+  /// Get/Set Collision Mask Bits
+  int get maskBits => FPhysicsSystem.getMaskBits(_world, bodyId);
+  set maskBits(int value) => FPhysicsSystem.setMaskBits(_world, bodyId, value);
 
   /// Get/Set Restitution (Bounciness) directly on native body
   double get restitution => FPhysicsSystem.getRestitution(_world, bodyId);

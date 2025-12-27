@@ -12,6 +12,8 @@ class FStaticBody extends FNodeWidget {
   final bool debugDraw;
   final double restitution;
   final double friction;
+  final int? categoryBits;
+  final int? maskBits;
 
   const FStaticBody({
     super.key,
@@ -23,6 +25,8 @@ class FStaticBody extends FNodeWidget {
     this.debugDraw = false,
     this.restitution = 0.5,
     this.friction = 0.1,
+    this.categoryBits,
+    this.maskBits,
     super.position,
     super.rotation,
     super.scale,
@@ -40,6 +44,8 @@ class FStaticBody extends FNodeWidget {
     this.debugDraw = false,
     this.restitution = 0.5,
     this.friction = 0.1,
+    this.categoryBits,
+    this.maskBits,
     super.position,
     super.rotation,
     super.scale,
@@ -57,6 +63,8 @@ class FStaticBody extends FNodeWidget {
     this.debugDraw = false,
     this.restitution = 0.5,
     this.friction = 0.1,
+    this.categoryBits,
+    this.maskBits,
     super.position,
     super.rotation,
     super.scale,
@@ -100,6 +108,8 @@ class _FStaticBodyState extends FNodeWidgetState<FStaticBody, FPhysicsBody> {
       debugDraw: widget.debugDraw,
       restitution: widget.restitution,
       friction: widget.friction,
+      categoryBits: widget.categoryBits ?? 0x0001,
+      maskBits: widget.maskBits ?? 0xFFFF,
     );
 
     widget.onCreated?.call(node);
