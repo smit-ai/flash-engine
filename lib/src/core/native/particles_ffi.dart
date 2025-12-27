@@ -97,8 +97,30 @@ final class PhysicsWorld extends Struct {
   @Float()
   external double maxLinearVelocity;
 
-  // Note: Internal solver state (manifolds, constraints, joints) are pointers
-  // managed by C++ and not directly accessed from Dart
+  // Internal solver state (Must match order in physics.h)
+  external Pointer<Void> manifolds;
+  @Int32()
+  external int maxManifolds;
+  @Int32()
+  external int activeManifolds;
+
+  external Pointer<Void> constraints;
+  @Int32()
+  external int maxConstraints;
+  @Int32()
+  external int activeConstraints;
+
+  external Pointer<Void> joints;
+  @Int32()
+  external int maxJoints;
+  @Int32()
+  external int activeJoints;
+
+  external Pointer<Void> softBodies;
+  @Int32()
+  external int maxSoftBodies;
+  @Int32()
+  external int activeSoftBodies;
 }
 
 final class NativeBody extends Struct {
@@ -268,6 +290,11 @@ class FlashNativeParticles {
   static void Function(Pointer<PhysicsWorld>, int, double, double)? setBodyVelocity;
   static void Function(Pointer<PhysicsWorld>, int, Pointer<Float>, Pointer<Float>)? getBodyPosition;
 
+  // Soft Body Functions
+  static int Function(Pointer<PhysicsWorld>, int, Pointer<Float>, Pointer<Float>, double, double)? createSoftBody;
+  static void Function(Pointer<PhysicsWorld>, int, int, Pointer<Float>, Pointer<Float>)? getSoftBodyPoint;
+  static void Function(Pointer<PhysicsWorld>, int, int, double, double)? setSoftBodyPoint;
+
   // Scene/Node Functions
   static Pointer<NativeScene> Function(int)? createNativeScene;
   static void Function(Pointer<NativeScene>)? destroyNativeScene;
@@ -345,6 +372,24 @@ class FlashNativeParticles {
           Void Function(Pointer<PhysicsWorld>, Int32, Pointer<Float>, Pointer<Float>),
           void Function(Pointer<PhysicsWorld>, int, Pointer<Float>, Pointer<Float>)
         >('get_body_position');
+
+    createSoftBody = _lib!
+        .lookupFunction<
+          Int32 Function(Pointer<PhysicsWorld>, Int32, Pointer<Float>, Pointer<Float>, Float, Float),
+          int Function(Pointer<PhysicsWorld>, int, Pointer<Float>, Pointer<Float>, double, double)
+        >('create_soft_body');
+
+    getSoftBodyPoint = _lib!
+        .lookupFunction<
+          Void Function(Pointer<PhysicsWorld>, Int32, Int32, Pointer<Float>, Pointer<Float>),
+          void Function(Pointer<PhysicsWorld>, int, int, Pointer<Float>, Pointer<Float>)
+        >('get_soft_body_point');
+
+    setSoftBodyPoint = _lib!
+        .lookupFunction<
+          Void Function(Pointer<PhysicsWorld>, Int32, Int32, Float, Float),
+          void Function(Pointer<PhysicsWorld>, int, int, double, double)
+        >('set_soft_body_point');
 
     // RayCast Binding
     rayCast = _lib!

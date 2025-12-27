@@ -9,6 +9,8 @@ import '../native/particles_ffi.dart';
 import '../native/physics_joints_ffi.dart';
 import '../native/physics_ids.dart';
 
+export '../native/physics_ids.dart'; // Export ID types (WorldId, BodyId)
+
 class FPhysicsSystem {
   // Singleton instance of the native physics world
   final WorldId world;
@@ -51,11 +53,13 @@ class FPhysicsSystem {
   }
 
   static WorldId _createWorldSafe(int capacity) {
+    // Ensure native library is loaded
+    FlashNativeParticles.init();
+
     if (FlashNativeParticles.createPhysicsWorld == null) {
       throw UnsupportedError(
         'Native physics functions not initialized.\n'
-        'This usually happens when running on a platform without the native library linked (e.g. iOS Simulator).\n'
-        '👉 PLEASE RUN ON MACOS DESKTOP: flutter run -d macos',
+        'Please ensure the native library is properly integrated.',
       );
     }
     return FlashNativeParticles.createPhysicsWorld!(capacity);
@@ -182,17 +186,33 @@ class FPhysicsSystem {
   }
 
   // --- RayCast ---
-  /// Cast a ray from `from` to `to` in world space.
-  /// Returns `RayCastHit` if hit, `null` otherwise.
   static RayCastHit? rayCast(WorldId world, double fromX, double fromY, double toX, double toY) {
     if (FlashNativeParticles.rayCast == null) return null;
-
     final result = FlashNativeParticles.rayCast!(world, fromX, fromY, toX, toY);
-
-    if (result.hit != 0) {
-      return result;
-    }
+    if (result.hit != 0) return result;
     return null;
+  }
+
+  // --- Soft Body API ---
+
+  static int createSoftBody(
+    WorldId world,
+    int pointCount,
+    Pointer<Float> initialX,
+    Pointer<Float> initialY,
+    double pressure,
+    double stiffness,
+  ) {
+    if (FlashNativeParticles.createSoftBody == null) return -1;
+    return FlashNativeParticles.createSoftBody!(world, pointCount, initialX, initialY, pressure, stiffness);
+  }
+
+  static void getSoftBodyPoint(WorldId world, int sbId, int pointIdx, Pointer<Float> outX, Pointer<Float> outY) {
+    FlashNativeParticles.getSoftBodyPoint!(world, sbId, pointIdx, outX, outY);
+  }
+
+  static void setSoftBodyPoint(WorldId world, int sbId, int pointIdx, double x, double y) {
+    FlashNativeParticles.setSoftBodyPoint!(world, sbId, pointIdx, x, y);
   }
 }
 
@@ -352,6 +372,76 @@ class FPhysicsBody extends FNode {
   Rect? get bounds {
     // If shape is circle, we still return a square bounding box for culling.
     return Rect.fromCenter(center: Offset.zero, width: width, height: height);
+  }
+}
+
+class FSoftBody extends FNode {
+  final int id;
+  final WorldId world;
+  final int pointCount;
+  final List<Offset> points;
+
+  // Temp buffers for syncing
+  static final Pointer<Float> _pointX = calloc<Float>();
+  static final Pointer<Float> _pointY = calloc<Float>();
+
+  FSoftBody({
+    required this.world,
+    required List<Offset> initialPoints,
+    double pressure = 1.0,
+    double stiffness = 1.0,
+    super.name = 'SoftBody',
+  }) : pointCount = initialPoints.length,
+       points = List.from(initialPoints),
+       id = _createNative(world, initialPoints, pressure, stiffness);
+
+  static int _createNative(WorldId world, List<Offset> initialPoints, double pressure, double stiffness) {
+    final count = initialPoints.length;
+    final ptrX = calloc<Float>(count);
+    final ptrY = calloc<Float>(count);
+
+    for (int i = 0; i < count; i++) {
+      ptrX[i] = initialPoints[i].dx;
+      ptrY[i] = initialPoints[i].dy;
+    }
+
+    final id = FPhysicsSystem.createSoftBody(world, count, ptrX, ptrY, pressure, stiffness);
+
+    calloc.free(ptrX);
+    calloc.free(ptrY);
+    return id;
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    _syncFromNative();
+  }
+
+  void _syncFromNative() {
+    for (int i = 0; i < pointCount; i++) {
+      FPhysicsSystem.getSoftBodyPoint(world, id, i, _pointX, _pointY);
+      points[i] = Offset(_pointX.value, _pointY.value);
+    }
+  }
+
+  @override
+  void draw(Canvas canvas) {
+    // Basic debug draw
+    final paint = Paint()
+      ..color = Colors.cyanAccent.withOpacity(0.5)
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke;
+
+    final path = Path();
+    if (points.isNotEmpty) {
+      path.moveTo(points[0].dx, points[0].dy);
+      for (int i = 1; i < points.length; i++) {
+        path.lineTo(points[i].dx, points[i].dy);
+      }
+      path.close();
+    }
+    canvas.drawPath(path, paint);
   }
 }
 

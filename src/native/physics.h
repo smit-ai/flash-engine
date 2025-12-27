@@ -24,6 +24,33 @@ struct Softness {
     float impulseScale;  // Impulse scale for warm starting
 };
 
+struct SoftBodyPoint {
+    float x, y;
+    float oldX, oldY;
+    float vx, vy;
+    float ax, ay;
+    float mass;
+    float invMass;
+};
+
+struct SoftBodyConstraint {
+    int p1, p2;
+    float restLength;
+    float stiffness;
+};
+
+struct NativeSoftBody {
+    uint32_t id;
+    SoftBodyPoint* points;
+    int pointCount;
+    SoftBodyConstraint* constraints;
+    int constraintCount;
+    float pressure;
+    float targetArea;
+    float friction;
+    float restitution;
+};
+
 // Contact constraint point with accumulated impulses
 struct ContactConstraintPoint {
     float anchorAx, anchorAy;  // Contact point relative to body A
@@ -115,6 +142,10 @@ struct PhysicsWorld {
     NativeJoint* joints;
     int maxJoints;
     int activeJoints;
+
+    NativeSoftBody* softBodies;
+    int maxSoftBodies;
+    int activeSoftBodies;
     
     // Broadphase dynamic tree
     struct DynamicTree* tree;
@@ -137,6 +168,11 @@ void apply_force(PhysicsWorld* world, int32_t bodyId, float fx, float fy);
 void apply_torque(PhysicsWorld* world, int32_t bodyId, float torque);
 void set_body_velocity(PhysicsWorld* world, int32_t bodyId, float vx, float vy);
 void get_body_position(PhysicsWorld* world, int32_t bodyId, float* x, float* y);
+
+// Soft Body functions
+int32_t create_soft_body(PhysicsWorld* world, int pointCount, float* initialX, float* initialY, float pressure, float stiffness);
+void get_soft_body_point(PhysicsWorld* world, int32_t sbId, int pointIdx, float* x, float* y);
+void set_soft_body_point(PhysicsWorld* world, int32_t sbId, int pointIdx, float x, float y);
 
 // RayCasting
 struct RayCastHit {

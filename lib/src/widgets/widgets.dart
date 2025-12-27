@@ -24,6 +24,7 @@ export 'physics/flash_rigid_body.dart';
 export 'physics/flash_static_body.dart';
 export 'physics/flash_joint.dart';
 export 'physics/flash_area.dart';
+export 'physics/flash_soft_body_widget.dart';
 
 // Export Audio
 export 'audio/flash_audio_player.dart';

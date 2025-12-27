@@ -26,6 +26,18 @@ clang++ -shared -fPIC \
     "$SOURCE_DIR/nodes.cpp" \
     -o "$OUTPUT_DIR/libflash_core_sim.dylib"
 
+echo "Compiling native core library (Particles + Physics) for macOS Host..."
+# Compile for macOS (Host)
+clang++ -shared -fPIC \
+    $CPP_FLAGS \
+    -std=c++11 \
+    "$SOURCE_DIR/particles.cpp" \
+    "$SOURCE_DIR/physics.cpp" \
+    "$SOURCE_DIR/broadphase.cpp" \
+    "$SOURCE_DIR/joints.cpp" \
+    "$SOURCE_DIR/nodes.cpp" \
+    -o "$OUTPUT_DIR/libflash_core.dylib"
+
 if [ $? -eq 0 ]; then
     echo "Successfully compiled to $OUTPUT_DIR/$LIB_NAME"
 else

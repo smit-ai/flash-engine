@@ -66,6 +66,11 @@ PhysicsWorld* create_physics_world(int maxBodies) {
     world->restitutionThreshold = 1.0f * 100.0f; // 1 m/s in pixels
     world->maxLinearVelocity = 2000.0f * 100.0f;  // 2000 m/s in pixels (prevent clamping issues)
     
+    // Initialize soft bodies
+    world->maxSoftBodies = 32;
+    world->softBodies = new NativeSoftBody[world->maxSoftBodies];
+    world->activeSoftBodies = 0;
+
     // Create dynamic AABB tree for broadphase
     world->tree = create_dynamic_tree(maxBodies * 2);
     
@@ -84,6 +89,13 @@ void destroy_physics_world(PhysicsWorld* world) {
     delete[] world->constraints;
     destroy_dynamic_tree(world->tree);
     delete[] world->boxJoints;
+    
+    for (int i = 0; i < world->activeSoftBodies; ++i) {
+        delete[] world->softBodies[i].points;
+        delete[] world->softBodies[i].constraints;
+    }
+    delete[] world->softBodies;
+
     delete world;
 }
 
@@ -275,9 +287,15 @@ CollisionManifold detectCircleBox(NativeBody& circle, NativeBody& box) {
 
 // --- Solver ---
 
+void step_soft_body(PhysicsWorld* world, float dt);
 
 void step_physics(PhysicsWorld* world, float dt) {
-    if (!world || world->activeCount == 0 || dt <= 0) return;
+    if (!world || dt <= 0) return;
+
+    // Step Soft Bodies
+    step_soft_body(world, dt);
+
+    if (world->activeCount == 0) return;
 
     // Phase 1: Update Broadphase Tree
     for (int i = 0; i < world->activeCount; ++i) {
@@ -386,6 +404,57 @@ void step_physics(PhysicsWorld* world, float dt) {
 
     // Phase 3: Solve Velocity Constraints
     init_joint_velocity_constraints(world, dt);
+
+    ImpulseCache* cache = (ImpulseCache*)world->warmStartCache;
+    if (!cache) {
+        cache = new ImpulseCache();
+        world->warmStartCache = cache;
+    }
+    
+    // warm start
+    if (world->enableWarmStarting) {
+        for (int i = 0; i < world->activeConstraints; i++) {
+             ContactConstraint& c = world->constraints[i];
+             NativeBody& a = world->bodies[c.bodyA];
+             NativeBody& b = world->bodies[c.bodyB];
+             
+             for (int j = 0; j < c.pointCount; j++) {
+                 ContactConstraintPoint& cp = c.points[j];
+                 // Generate ID for this contact point (Pair ID + Index)
+                 // Typically manifolds persist but points might shift.
+                 // For now, assume point index stability (Box2D style requires feature IDs, we use simple index)
+                 uint64_t minId = std::min(c.bodyA, c.bodyB);
+                 uint64_t maxId = std::max(c.bodyA, c.bodyB);
+                 uint64_t key = (minId << 32) | (maxId << 4) | j; // Use 4 bits for index (up to 16 points)
+                 
+                 if (cache->count(key)) {
+                     CachedImpulse& imp = (*cache)[key];
+                     cp.normalImpulse = imp.normalImpulse;
+                     cp.tangentImpulse = imp.tangentImpulse;
+                     
+                     // Apply cached impulses for warm start
+                     Vec2 normal = {c.normalX, c.normalY}, tangent = {-c.normalY, c.normalX};
+                     Vec2 ra = {cp.anchorAx, cp.anchorAy}, rb = {cp.anchorBx, cp.anchorBy};
+                     
+                     Vec2 P = normal * cp.normalImpulse + tangent * cp.tangentImpulse;
+                     
+                     if (a.type != STATIC) { 
+                         a.vx -= P.x * a.inverseMass; 
+                         a.vy -= P.y * a.inverseMass; 
+                         a.angularVelocity -= ra.cross(P) * a.inverseInertia; 
+                     }
+                     if (b.type != STATIC) { 
+                         b.vx += P.x * b.inverseMass; 
+                         b.vy += P.y * b.inverseMass; 
+                         b.angularVelocity += rb.cross(P) * b.inverseInertia; 
+                     }
+                 } else {
+                     cp.normalImpulse = 0.0f;
+                     cp.tangentImpulse = 0.0f;
+                 }
+             }
+        }
+    }
     
     for (int iter = 0; iter < world->velocityIterations; ++iter) {
         for (int i = 0; i < world->activeConstraints; ++i) {
@@ -431,6 +500,21 @@ void step_physics(PhysicsWorld* world, float dt) {
             }
         }
         solve_joint_velocity_constraints(world);
+    }
+    
+    // Store impulses for next frame
+    if (world->enableWarmStarting) {
+         for (int i = 0; i < world->activeConstraints; ++i) {
+            ContactConstraint& c = world->constraints[i];
+            for (int j = 0; j < c.pointCount; ++j) {
+                 ContactConstraintPoint& cp = c.points[j];
+                 uint64_t minId = std::min(c.bodyA, c.bodyB);
+                 uint64_t maxId = std::max(c.bodyA, c.bodyB);
+                 uint64_t key = (minId << 32) | (maxId << 4) | j;
+                 
+                 (*cache)[key] = {cp.normalImpulse, cp.tangentImpulse};
+            }
+         }
     }
 
     // Phase 4: Integrate Positions
@@ -524,6 +608,282 @@ int32_t create_body(PhysicsWorld* world, int type, int shapeType, float x, float
     b.islandId = -1;
 
     return id;
+}
+
+int32_t create_soft_body(PhysicsWorld* world, int pointCount, float* initialX, float* initialY, float pressure, float stiffness) {
+    if (!world || world->activeSoftBodies >= world->maxSoftBodies) return -1;
+    
+    int id = world->activeSoftBodies++;
+    NativeSoftBody& sb = world->softBodies[id];
+    sb.id = id;
+    sb.pointCount = pointCount;
+    sb.points = new SoftBodyPoint[pointCount];
+    sb.pressure = pressure;
+    sb.friction = 0.4f;
+    sb.restitution = 0.2f;
+
+    float area = 0;
+    for (int i = 0; i < pointCount; i++) {
+        sb.points[i].x = initialX[i];
+        sb.points[i].y = initialY[i];
+        sb.points[i].oldX = initialX[i];
+        sb.points[i].oldY = initialY[i];
+        sb.points[i].vx = sb.points[i].vy = 0;
+        sb.points[i].ax = sb.points[i].ay = 0;
+        sb.points[i].mass = 1.0f;
+        sb.points[i].invMass = 1.0f;
+
+        // Area calculation for pressure (Shoelace formula)
+        int next = (i + 1) % pointCount;
+        area += (initialX[i] * initialY[next] - initialX[next] * initialY[i]);
+    }
+    sb.targetArea = std::abs(area) * 0.5f;
+
+    // Create neighbor constraints
+    sb.constraintCount = pointCount + (pointCount / 2); // Perimeter + some interior supports
+    sb.constraints = new SoftBodyConstraint[sb.constraintCount];
+    
+    int cIdx = 0;
+    for (int i = 0; i < pointCount; i++) {
+        // Perimeter
+        sb.constraints[cIdx].p1 = i;
+        sb.constraints[cIdx].p2 = (i + 1) % pointCount;
+        float dx = initialX[i] - initialX[(i + 1) % pointCount];
+        float dy = initialY[i] - initialY[(i + 1) % pointCount];
+        sb.constraints[cIdx].restLength = std::sqrt(dx * dx + dy * dy);
+        sb.constraints[cIdx].stiffness = stiffness;
+        cIdx++;
+    }
+
+    for (int i = 0; i < pointCount / 2; i++) {
+        // Cross supports
+        sb.constraints[cIdx].p1 = i;
+        sb.constraints[cIdx].p2 = (i + pointCount / 2) % pointCount;
+        float dx = initialX[i] - initialX[(i + pointCount / 2) % pointCount];
+        float dy = initialY[i] - initialY[(i + pointCount / 2) % pointCount];
+        sb.constraints[cIdx].restLength = std::sqrt(dx * dx + dy * dy);
+        sb.constraints[cIdx].stiffness = stiffness * 0.1f; // Interior is softer
+        cIdx++;
+    }
+
+    return id;
+}
+
+void get_soft_body_point(PhysicsWorld* world, int32_t sbId, int pointIdx, float* x, float* y) {
+    if (world && sbId >= 0 && sbId < world->activeSoftBodies) {
+        NativeSoftBody& sb = world->softBodies[sbId];
+        if (pointIdx >= 0 && pointIdx < sb.pointCount) {
+            *x = sb.points[pointIdx].x;
+            *y = sb.points[pointIdx].y;
+        }
+    }
+}
+
+void set_soft_body_point(PhysicsWorld* world, int32_t sbId, int pointIdx, float x, float y) {
+    if (!world || sbId < 0 || sbId >= world->activeSoftBodies) return;
+    if (pointIdx < 0 || pointIdx >= world->softBodies[sbId].pointCount) return;
+
+    NativeSoftBody& sb = world->softBodies[sbId];
+    sb.points[pointIdx].x = x;
+    sb.points[pointIdx].y = y;
+    
+    // Also reset velocity to zero to prevent explosions when dragging
+    sb.points[pointIdx].oldX = x;
+    sb.points[pointIdx].oldY = y;
+    sb.points[pointIdx].vx = 0;
+    sb.points[pointIdx].vy = 0;
+}
+
+// --- Soft Body Simulation ---
+
+void step_soft_body(PhysicsWorld* world, float dt) {
+    for (int i = 0; i < world->activeSoftBodies; i++) {
+        NativeSoftBody& sb = world->softBodies[i];
+        
+        // 1. Gravity & Integration
+        for (int pIdx = 0; pIdx < sb.pointCount; pIdx++) {
+            SoftBodyPoint& p = sb.points[pIdx];
+            
+            p.ax = world->gravityX;
+            p.ay = world->gravityY;
+
+            float vx = (p.x - p.oldX) * 0.99f; // Slight damping
+            float vy = (p.y - p.oldY) * 0.99f;
+            
+            p.oldX = p.x;
+            p.oldY = p.y;
+            
+            p.x += vx + p.ax * dt * dt;
+            p.y += vy + p.ay * dt * dt;
+        }
+
+        // 2. Constraints (multiple iterations for stiffness)
+        for (int iter = 0; iter < 10; iter++) {
+            for (int cIdx = 0; cIdx < sb.constraintCount; cIdx++) {
+                SoftBodyConstraint& c = sb.constraints[cIdx];
+                SoftBodyPoint& p1 = sb.points[c.p1];
+                SoftBodyPoint& p2 = sb.points[c.p2];
+                
+                float dx = p2.x - p1.x;
+                float dy = p2.y - p1.y;
+                float dist = std::sqrt(dx * dx + dy * dy);
+                if (dist < 0.0001f) continue;
+                
+                float diff = (dist - c.restLength) / dist;
+                float offX = dx * 0.5f * diff * c.stiffness;
+                float offY = dy * 0.5f * diff * c.stiffness;
+                
+                p1.x += offX;
+                p1.y += offY;
+                p2.x -= offX;
+                p2.y -= offY;
+            }
+
+            // 3. Pressure
+            float area = 0;
+            for (int pIdx = 0; pIdx < sb.pointCount; pIdx++) {
+                int next = (pIdx + 1) % sb.pointCount;
+                area += (sb.points[pIdx].x * sb.points[next].y - sb.points[next].x * sb.points[pIdx].y);
+            }
+            area = std::abs(area) * 0.5f;
+            float areaDiff = sb.targetArea - area;
+
+            for (int pIdx = 0; pIdx < sb.pointCount; pIdx++) {
+                int prev = (pIdx - 1 + sb.pointCount) % sb.pointCount;
+                int next = (pIdx + 1) % sb.pointCount;
+                
+                float nx = sb.points[next].y - sb.points[prev].y;
+                float ny = -(sb.points[next].x - sb.points[prev].x);
+                float nLen = std::sqrt(nx * nx + ny * ny);
+                if (nLen > 0.0001f) {
+                    nx /= nLen;
+                    ny /= nLen;
+                    
+                    // Force = AreaDiff * Pressure
+                    float force = areaDiff * sb.pressure * 0.00001f;
+                    sb.points[pIdx].x += nx * force;
+                    sb.points[pIdx].y += ny * force;
+                }
+            }
+        }
+
+        // 4. Collision with Rigid Bodies
+        // Debug print to see if we are even checking
+        fprintf(stderr, "Checking soft body %d against %d rigid bodies\n", i, world->activeCount);
+        
+        for (int bIdx = 0; bIdx < world->activeCount; bIdx++) {
+            NativeBody& b = world->bodies[bIdx];
+            fprintf(stderr, "  Checking Body %d: Type=%d Shape=%d W=%f H=%f Y=%f\n", b.id, b.type, b.shapeType, b.width, b.height, b.y);
+
+            if (b.type == 0 && b.shapeType == 1 && b.width > 1000) { 
+                // Optimization: For huge static ground, use simple plane check if possible?
+                // Actually, let's just do generic checks.
+            }
+
+            for (int pIdx = 0; pIdx < sb.pointCount; pIdx++) {
+                SoftBodyPoint& p = sb.points[pIdx];
+
+                if (b.shapeType == 0) { // Circle
+                    float dx = p.x - b.x;
+                    float dy = p.y - b.y;
+                    float distSq = dx * dx + dy * dy;
+                    float r = b.radius + 2.0f; // Add small radius to point
+                    if (distSq < r * r) {
+                        float dist = std::sqrt(distSq);
+                        float pen = r - dist;
+                        if (dist > 0.0001f) {
+                            float nx = dx / dist;
+                            float ny = dy / dist;
+                            
+                            // Push point out
+                            p.x += nx * pen;
+                            p.y += ny * pen;
+                            
+                            // Simple friction
+                            float vx = p.x - p.oldX;
+                            float vy = p.y - p.oldY;
+                            p.oldX += vx * 0.1f; // Friction
+                            p.oldY += vy * 0.1f;
+                        }
+                    }
+                } else if (b.shapeType == 1) { // Box
+                    // Transform point to box local space
+                    float c = std::cos(-b.rotation);
+                    float s = std::sin(-b.rotation);
+                    
+                    float dx = p.x - b.x;
+                    float dy = p.y - b.y;
+                    
+                    float localX = dx * c - dy * s;
+                    float localY = dx * s + dy * c;
+                    
+                    float hw = b.width * 0.5f;
+                    float hh = b.height * 0.5f;
+                    
+                    // AABB Check in local space (with small point radius)
+                    float pointRadius = 2.0f;
+                    if (localX > -hw - pointRadius && localX < hw + pointRadius &&
+                        localY > -hh - pointRadius && localY < hh + pointRadius) {
+                        
+                        // Find closest edge
+                        float dLeft = localX - (-hw - pointRadius);
+                        float dRight = (hw + pointRadius) - localX;
+                        float dBottom = localY - (-hh - pointRadius);
+                        float dTop = (hh + pointRadius) - localY;
+                        
+                        float minPen = std::min({dLeft, dRight, dBottom, dTop});
+                        
+                        float nLocalX = 0, nLocalY = 0;
+                        if (minPen == dLeft) nLocalX = -1; // Push left? No, towards positive. Wait. 
+                        // localX is > left edge. value is positive. so push RIGHT? No. 
+                        // If inside, we want to push towards the CLOSEST OUTSIDE.
+                        
+                        if (minPen == dLeft) nLocalX = -1; // Wrong sign logic often. Let's think.
+                        // inside box X = 0. left wall at -10. dist = 10. we want to push LEFT to get out? No, that's far.
+                        // We want to push to closest edge.
+                        
+                        if (minPen == dLeft) nLocalX = -1; // Actually, if we are just barely inside left wall, localX is approx -hw.
+                        // We want to push to -hw. So direction is NEGATIVE X?
+                        
+                        // Let's standardise:
+                        // Penetration is ALWAYS positive depth.
+                        // Normal points FROM box TO point.
+                        
+                        if (minPen == dLeft) nLocalX = -1; 
+                        else if (minPen == dRight) nLocalX = 1;
+                        else if (minPen == dBottom) nLocalY = -1;
+                        else if (minPen == dTop) nLocalY = 1;
+                        
+                        // Transform normal back to world
+                        float c_rot = std::cos(b.rotation);
+                        float s_rot = std::sin(b.rotation);
+                        
+                        float worldNx = nLocalX * c_rot - nLocalY * s_rot;
+                        float worldNy = nLocalX * s_rot + nLocalY * c_rot;
+                        
+                        // Push point
+                        p.x += worldNx * minPen;
+                        p.y += worldNy * minPen;
+                        
+                        // Friction/Velocity modification
+                        // Dampen tangential velocity
+                        // This is a naive friction model but works for "sticking"
+                        p.oldX = p.x - (p.x - p.oldX) * 0.5f; 
+                        p.oldY = p.y - (p.y - p.oldY) * 0.5f;
+                    }
+                }
+            }
+        }
+
+        // 5. Primitive World Bounds (Keep it inside a box for now)
+        for (int pIdx = 0; pIdx < sb.pointCount; pIdx++) {
+            SoftBodyPoint& p = sb.points[pIdx];
+            if (p.x < -1000) p.x = -1000;
+            if (p.x > 1000) p.x = 1000;
+            if (p.y < -1000) p.y = -1000;
+            if (p.y > 1000) p.y = 1000;
+        }
+    }
 }
 
 void apply_force(PhysicsWorld* world, int32_t bodyId, float fx, float fy) {

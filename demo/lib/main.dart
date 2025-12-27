@@ -23,6 +23,7 @@ import 'examples/timer_demo.dart';
 import 'examples/pendulum_demo.dart';
 import 'examples/soft_body_demo.dart';
 import 'examples/sandbox_demo.dart';
+import 'examples/native_soft_body_demo.dart';
 
 void main() {
   runApp(const FlashDemoApp());
@@ -88,8 +89,14 @@ class ExampleMenu extends StatelessWidget {
         builder: (_) => const PendulumDemoExample(),
       ),
       _ExampleData(
-        title: 'Neon Jelly',
-        description: 'Soft body physics blob.',
+        title: 'Native Jelly',
+        description: 'C++ Soft Body physics.',
+        icon: Icons.auto_fix_high_rounded,
+        builder: (_) => const NativeSoftBodyDemo(),
+      ),
+      _ExampleData(
+        title: 'Legacy Jelly',
+        description: 'Dart-based soft body.',
         icon: Icons.vignette_rounded,
         builder: (_) => const SoftBodyDemoExample(),
       ),
