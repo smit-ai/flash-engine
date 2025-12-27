@@ -45,6 +45,10 @@ class FEngine extends ChangeNotifier {
   int _frameCount = 0;
   double _fpsLastMeasureTime = 0.0;
 
+  /// Total elapsed time since engine started (in seconds).
+  /// Use this for time-based animations without setState.
+  double elapsed = 0.0;
+
   FEngine() {
     // Ensure native libraries are loaded
     init();
@@ -94,13 +98,14 @@ class FEngine extends ChangeNotifier {
     super.dispose();
   }
 
-  void _tick(Duration elapsed) {
+  void _tick(Duration elapsedDuration) {
     // Clear "justPressed/justReleased" states from previous frame
     input.beginFrame();
 
-    final currentTime = elapsed.inMicroseconds / Duration.microsecondsPerSecond;
+    final currentTime = elapsedDuration.inMicroseconds / Duration.microsecondsPerSecond;
     final dt = currentTime - _lastTime;
     _lastTime = currentTime;
+    elapsed = currentTime; // Expose total elapsed time
     tickerCount++;
     _frameCount++;
 

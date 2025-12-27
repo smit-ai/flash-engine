@@ -1,31 +1,42 @@
 import 'package:flutter/widgets.dart';
 import '../core/systems/engine.dart';
 import '../core/systems/physics.dart';
+import 'framework.dart';
 import '../../flash_view.dart';
 
 /// FScene - A clean separation between Flash 3D scene and Flutter UI overlay.
 ///
-/// The `scene` children are Flash widgets (FCamera, FCircle, FPhysicsBody, etc.)
-/// that are automatically Z-sorted by the engine.
+/// Use either `scene` (static) or `sceneBuilder` (dynamic with elapsed time).
 ///
 /// The `overlay` children are regular Flutter widgets (Positioned, Text, etc.)
 /// that render on top of the scene.
 ///
-/// Example:
+/// Example (static):
 /// ```dart
 /// FScene(
-///   scene: [
-///     FCamera(position: v.Vector3(0, 0, 500)),
-///     FCircle(position: v.Vector3(0, 0, 0)),
+///   scene: [FCamera(...), FCircle(...)],
+///   overlay: [Positioned(...)],
+/// )
+/// ```
+///
+/// Example (dynamic with elapsed):
+/// ```dart
+/// FScene(
+///   sceneBuilder: (context, elapsed) => [
+///     FCamera(...),
+///     FBox(rotation: v.Vector3(0, elapsed, 0)),
 ///   ],
-///   overlay: [
-///     Positioned(top: 20, left: 20, child: Text('Score: 100')),
-///   ],
+///   overlay: [Positioned(...)],
 /// )
 /// ```
 class FScene extends StatelessWidget {
-  /// Flash scene widgets (Z-sorted automatically).
-  final List<Widget> scene;
+  /// Static Flash scene widgets (Z-sorted automatically).
+  /// Use this OR [sceneBuilder], not both.
+  final List<Widget>? scene;
+
+  /// Dynamic scene builder with elapsed time (in seconds).
+  /// Use this OR [scene], not both.
+  final List<Widget> Function(BuildContext context, double elapsed)? sceneBuilder;
 
   /// Flutter UI overlay widgets (rendered on top).
   final List<Widget> overlay;
@@ -50,7 +61,8 @@ class FScene extends StatelessWidget {
 
   const FScene({
     super.key,
-    this.scene = const [],
+    this.scene,
+    this.sceneBuilder,
     this.overlay = const [],
     this.physicsWorld,
     this.autoUpdate = true,
@@ -58,7 +70,7 @@ class FScene extends StatelessWidget {
     this.enableInputCapture = true,
     this.onReady,
     this.onUpdate,
-  });
+  }) : assert(scene != null || sceneBuilder != null, 'Either scene or sceneBuilder must be provided');
 
   @override
   Widget build(BuildContext context) {
@@ -69,13 +81,23 @@ class FScene extends StatelessWidget {
       enableInputCapture: enableInputCapture,
       onReady: onReady,
       onUpdate: onUpdate,
-      child: Stack(
-        children: [
-          // Scene layer - Flash widgets with Z-sorting
-          ...scene,
-          // Overlay layer - Flutter UI on top
-          ...overlay,
-        ],
+      child: Builder(
+        builder: (innerContext) {
+          final engine = innerContext.flash;
+          final elapsed = engine?.elapsed ?? 0.0;
+
+          // Use sceneBuilder if provided, otherwise use static scene
+          final sceneWidgets = sceneBuilder != null ? sceneBuilder!(innerContext, elapsed) : (scene ?? const []);
+
+          return Stack(
+            children: [
+              // Scene layer - Flash widgets with Z-sorting
+              ...sceneWidgets,
+              // Overlay layer - Flutter UI on top
+              ...overlay,
+            ],
+          );
+        },
       ),
     );
   }

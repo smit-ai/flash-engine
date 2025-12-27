@@ -36,3 +36,4 @@ export 'effects/flash_rope_widget.dart';
 
 // Export Animation
 export 'animation/flash_tween_builder.dart';
+export 'animation/flash_animated.dart';
