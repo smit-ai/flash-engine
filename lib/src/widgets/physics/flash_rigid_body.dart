@@ -38,6 +38,8 @@ class FlashRigidBody extends FlashNodeWidget {
   final v.Vector2? initialVelocity;
   final void Function(FlashPhysicsBody)? onCollision;
   final void Function(FlashPhysicsBody)? onUpdate;
+  final void Function(FlashPhysicsBody)? onCreated;
+  final Color color;
 
   const FlashRigidBody({
     super.key,
@@ -48,6 +50,8 @@ class FlashRigidBody extends FlashNodeWidget {
     this.initialVelocity,
     this.onCollision,
     this.onUpdate,
+    this.onCreated,
+    this.color = Colors.blue,
     super.position,
     super.rotation,
     super.scale,
@@ -56,7 +60,7 @@ class FlashRigidBody extends FlashNodeWidget {
   });
 
   /// Shorthand constructor for squares/circles
-  FlashRigidBody.square({
+  const FlashRigidBody.square({
     super.key,
     this.type = 2,
     this.shapeType = FlashPhysics.box,
@@ -64,6 +68,8 @@ class FlashRigidBody extends FlashNodeWidget {
     this.initialVelocity,
     this.onCollision,
     this.onUpdate,
+    this.onCreated,
+    this.color = Colors.blue,
     super.position,
     super.rotation,
     super.scale,
@@ -73,7 +79,7 @@ class FlashRigidBody extends FlashNodeWidget {
        height = size;
 
   /// Shorthand constructor for circles
-  FlashRigidBody.circle({
+  const FlashRigidBody.circle({
     super.key,
     this.type = 2,
     this.shapeType = FlashPhysics.circle,
@@ -81,6 +87,8 @@ class FlashRigidBody extends FlashNodeWidget {
     this.initialVelocity,
     this.onCollision,
     this.onUpdate,
+    this.onCreated,
+    this.color = Colors.red,
     super.position,
     super.rotation,
     super.scale,
@@ -119,6 +127,7 @@ class _FlashRigidBodyState extends FlashNodeWidgetState<FlashRigidBody, FlashPhy
       height: widget.height,
       rotation: widget.rotation?.z ?? 0,
       name: widget.name ?? 'RigidBody',
+      color: widget.color,
     );
 
     node.onCollision = widget.onCollision;
@@ -127,6 +136,8 @@ class _FlashRigidBodyState extends FlashNodeWidgetState<FlashRigidBody, FlashPhy
     if (widget.initialVelocity != null) {
       node.setVelocity(widget.initialVelocity!.x, widget.initialVelocity!.y);
     }
+
+    widget.onCreated?.call(node);
 
     return node;
   }

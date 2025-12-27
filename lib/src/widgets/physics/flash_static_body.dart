@@ -7,12 +7,16 @@ class FlashStaticBody extends FlashNodeWidget {
   final int shapeType;
   final double width;
   final double height;
+  final void Function(FlashPhysicsBody)? onCreated;
+  final Color color;
 
   const FlashStaticBody({
     super.key,
     this.shapeType = FlashPhysics.box,
     this.width = 100,
     this.height = 100,
+    this.onCreated,
+    this.color = Colors.grey,
     super.position,
     super.rotation,
     super.scale,
@@ -21,10 +25,12 @@ class FlashStaticBody extends FlashNodeWidget {
   });
 
   /// Shorthand constructor for squares
-  FlashStaticBody.square({
+  const FlashStaticBody.square({
     super.key,
     this.shapeType = FlashPhysics.box,
     double size = 100,
+    this.onCreated,
+    this.color = Colors.grey,
     super.position,
     super.rotation,
     super.scale,
@@ -34,10 +40,12 @@ class FlashStaticBody extends FlashNodeWidget {
        height = size;
 
   /// Shorthand constructor for circles
-  FlashStaticBody.circle({
+  const FlashStaticBody.circle({
     super.key,
     this.shapeType = FlashPhysics.circle,
     double radius = 50,
+    this.onCreated,
+    this.color = Colors.grey,
     super.position,
     super.rotation,
     super.scale,
@@ -66,7 +74,7 @@ class _FlashStaticBodyState extends FlashNodeWidgetState<FlashStaticBody, FlashP
       throw Exception('FlashStaticBody: Failed to initialize physics world');
     }
 
-    return FlashPhysicsBody(
+    final node = FlashPhysicsBody(
       world: activeWorld.world,
       type: 0, // STATIC
       shapeType: widget.shapeType,
@@ -76,6 +84,11 @@ class _FlashStaticBodyState extends FlashNodeWidgetState<FlashStaticBody, FlashP
       height: widget.height,
       rotation: widget.rotation?.z ?? 0,
       name: widget.name ?? 'StaticBody',
+      color: widget.color,
     );
+
+    widget.onCreated?.call(node);
+
+    return node;
   }
 }

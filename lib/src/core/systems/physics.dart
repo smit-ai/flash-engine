@@ -1,85 +1,76 @@
 import 'dart:ffi';
 import 'package:ffi/ffi.dart';
-import '../graph/node.dart';
+import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart' as v;
+import '../graph/node.dart';
 import '../native/particles_ffi.dart';
-
-/// Core physics constants and utilities
-class FlashPhysics {
-  /// Default conversion factor: 100 pixels = 1 meter
-  static double pixelsPerMeter = 100.0;
-
-  /// Standard downward gravity in pixels/s^2 (multiplied by 100)
-  static v.Vector2 get standardGravity => v.Vector2(0, -981.0);
-
-  // Shape Types
-  static const int circle = 0;
-  static const int box = 1;
-}
+import '../native/physics_joints_ffi.dart';
 
 class FlashPhysicsSystem {
-  late final Pointer<PhysicsWorld> world;
-  final int maxBodies;
+  // Singleton instance of the native physics world
+  final Pointer<PhysicsWorld> world;
+  final v.Vector2 gravity;
 
-  FlashPhysicsSystem({v.Vector2? gravity, this.maxBodies = 1000}) {
-    // Ensure native core is initialized before creating the world
-    FlashNativeParticles.init();
+  // Static instance of Joints FFI
+  static PhysicsJointsFFI? _jointsFFI;
+  static PhysicsJointsFFI? get jointsFFI => _jointsFFI;
 
-    final createFunc = FlashNativeParticles.createPhysicsWorld;
-    if (createFunc == null) {
-      throw StateError('FlashPhysicsSystem: Failed to initialize native physics core.');
-    }
-    world = createFunc(maxBodies);
+  FlashPhysicsSystem({v.Vector2? gravity})
+    : gravity = gravity ?? FlashPhysics.standardGravity,
+      // Pass initial capacity (e.g. 1000 bodies) instead of gravity
+      world = FlashNativeParticles.createPhysicsWorld!(2048) {
+    // Set gravity on the world struct directly
+    world.ref.gravityX = this.gravity.x;
+    world.ref.gravityY = this.gravity.y;
 
-    if (gravity != null) {
-      world.ref.gravityX = gravity.x;
-      world.ref.gravityY = gravity.y;
+    // Initialize Joints FFI if not already done
+    if (_jointsFFI == null) {
+      final lib = PhysicsJointsFFI.loadLibrary();
+      _jointsFFI = PhysicsJointsFFI(lib);
     }
   }
 
   void update(double dt) {
-    final stepFunc = FlashNativeParticles.stepPhysics;
-    if (stepFunc != null) {
-      stepFunc(world, dt);
-    }
-  }
-
-  /// Enable or disable warm starting for faster convergence
-  void setWarmStarting(bool enabled) {
-    world.ref.enableWarmStarting = enabled ? 1 : 0;
-  }
-
-  /// Configure contact constraint softness
-  /// [hertz] - Contact frequency in Hz (default: 30)
-  /// [dampingRatio] - Damping ratio 0-1 (default: 0.8)
-  void setContactTuning(double hertz, double dampingRatio) {
-    world.ref.contactHertz = hertz;
-    world.ref.contactDampingRatio = dampingRatio;
-  }
-
-  /// Set maximum linear velocity for stability (in pixels/s)
-  void setMaxLinearVelocity(double maxVelocity) {
-    world.ref.maxLinearVelocity = maxVelocity;
-  }
-
-  /// Set restitution threshold (minimum velocity for bounce, in pixels/s)
-  void setRestitutionThreshold(double threshold) {
-    world.ref.restitutionThreshold = threshold;
+    // FIX: stepPhysics only takes (world, dt), removing extra args 8, 3
+    FlashNativeParticles.stepPhysics!(world, dt);
   }
 
   void dispose() {
-    final destroyFunc = FlashNativeParticles.destroyPhysicsWorld;
-    if (destroyFunc != null) {
-      destroyFunc(world);
-    }
+    FlashNativeParticles.destroyPhysicsWorld!(world);
+  }
+
+  void setWarmStarting(bool enable) {
+    // FlashNativeParticles.setWarmStarting!(world, enable ? 1 : 0);
   }
 }
 
-class FlashPhysicsBody extends FlashNode {
-  final Pointer<PhysicsWorld> _world;
-  final int bodyId;
+class FlashPhysics {
+  // Conversion constants
+  static const double pixelsToMeters = 1.0 / 50.0;
+  static const double metersToPixels = 50.0;
+  static final v.Vector2 standardGravity = v.Vector2(0, 9.8 * 100);
 
-  /// Callback when a collision occurs.
+  // Body Types
+  static const int staticBody = 0;
+  static const int kinematicBody = 1;
+  static const int dynamicBody = 2;
+
+  // Shapes
+  static const int circle = 0;
+  static const int box = 1;
+}
+
+class FlashPhysicsBody extends FlashNode {
+  final double width;
+  final double height;
+  final double rotation;
+  Color color;
+
+  // Internal body ID from native physics
+  final int bodyId;
+  final Pointer<PhysicsWorld> _world;
+
+  /// Callback when this body collides
   void Function(FlashPhysicsBody)? onCollision;
 
   /// Callback on every physics update.
@@ -95,13 +86,43 @@ class FlashPhysicsBody extends FlashNode {
     int shapeType = FlashPhysics.circle,
     double x = 0,
     double y = 0,
-    double width = 50,
-    double height = 50,
-    double rotation = 0,
+    this.width = 50,
+    this.height = 50,
+    this.rotation = 0,
     super.name = 'PhysicsBody',
+    this.color = Colors.white,
   }) : _world = world,
        bodyId = FlashNativeParticles.createBody!(world, type, shapeType, x, y, width, height, rotation) {
     _syncFromPhysics();
+  }
+
+  /// Get the native physics world pointer
+  Pointer<PhysicsWorld> get world => _world;
+
+  @override
+  void draw(Canvas canvas) {
+    final paint = Paint()..color = color;
+
+    // Detect shape from dimensions heuristic since we don't store shapeType yet.
+    // In our demo:
+    // - Balls are circles (width=height)
+    // - Anchors are circles (width=height)
+    // - Rope segments are squares (width=height)
+    // - Ground is a box (width!=height)
+
+    final isCircle =
+        (width == height) &&
+        (name.toLowerCase().contains('ball') ||
+            name.toLowerCase().contains('circle') ||
+            name.toLowerCase().contains('anchor') ||
+            name.toLowerCase().contains('pendulum'));
+
+    if (isCircle) {
+      canvas.drawCircle(Offset.zero, width / 2, paint);
+    } else {
+      final visibleRect = Rect.fromCenter(center: Offset.zero, width: width, height: height);
+      canvas.drawRect(visibleRect, paint);
+    }
   }
 
   @override
@@ -125,14 +146,16 @@ class FlashPhysicsBody extends FlashNode {
 
   /// Enable continuous collision detection for fast-moving bodies
   void setBullet(bool isBullet) {
-    final bodyPtr = _world.ref.bodies.elementAt(bodyId);
+    // FIX: Replaced elementAt with pointer arithmetic + to fix deprecation warning
+    final bodyPtr = _world.ref.bodies + bodyId;
     bodyPtr.ref.isBullet = isBullet ? 1 : 0;
   }
 
   void _syncFromPhysics() {
     FlashNativeParticles.getBodyPosition!(_world, bodyId, _posX, _posY);
 
-    final bodyPtr = _world.ref.bodies.elementAt(bodyId);
+    // FIX: Replaced elementAt with pointer arithmetic + to fix deprecation warning
+    final bodyPtr = _world.ref.bodies + bodyId;
     transform.position = v.Vector3(_posX.value, _posY.value, 0);
     transform.rotation = v.Vector3(0, 0, bodyPtr.ref.rotation);
 
@@ -149,7 +172,9 @@ class FlashCollisionLayer {
   static const int all = 0xFFFF;
   static int maskOf(List<int> layers) {
     int mask = 0;
-    for (final layer in layers) mask |= layer;
+    for (final layer in layers) {
+      mask |= (1 << layer);
+    }
     return mask;
   }
 }

@@ -16,6 +16,8 @@ import 'examples/state_machine_demo.dart';
 import 'examples/collision_layers_demo.dart';
 import 'examples/three_d_audio_demo.dart';
 import 'examples/native_particle_demo.dart';
+import 'examples/joints_demo.dart';
+import 'examples/simple_joints_demo.dart';
 
 void main() {
   runApp(const FlashDemoApp());
@@ -67,6 +69,18 @@ class ExampleMenu extends StatelessWidget {
         description: 'Native C++ world.',
         icon: Icons.architecture_rounded,
         builder: (_) => const PhysicsDemoExample(),
+      ),
+      _ExampleData(
+        title: 'Box2D Joints',
+        description: 'Distance, Revolute, Prismatic, Weld.',
+        icon: Icons.link_rounded,
+        builder: (_) => const JointsDemoExample(),
+      ),
+      _ExampleData(
+        title: 'Simple Joints',
+        description: 'Working rope & pendulum demo.',
+        icon: Icons.settings_ethernet_rounded,
+        builder: (_) => const SimpleJointsDemo(),
       ),
       _ExampleData(
         title: '2.5D Diorama',

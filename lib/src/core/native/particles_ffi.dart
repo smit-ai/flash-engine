@@ -204,11 +204,16 @@ class FlashNativeParticles {
     if (_lib != null) return;
 
     // Determine library path
+    if (Platform.isIOS) {
+      _lib = DynamicLibrary.process();
+      return;
+    }
+
     String libPath;
-    if (Platform.isMacOS || Platform.isIOS) {
+    if (Platform.isMacOS) {
       libPath = '/Users/mshn/Documents/flash/lib/src/core/native/bin/$_libName';
     } else if (Platform.isLinux || Platform.isAndroid) {
-      libPath = '/Users/mshn/Documents/flash/lib/src/core/native/bin/libflash_core.so';
+      libPath = '/Users/mshn/Documents/flash/lib/src/core/native/bin/user/libflash_core.so';
     } else if (Platform.isWindows) {
       libPath = 'C:\\Users\\mshn\\Documents\\flash\\lib\\src\\core\\native\\bin\\libflash_core.dll';
     } else {
