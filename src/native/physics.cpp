@@ -40,43 +40,47 @@ using ImpulseCache = std::map<uint64_t, CachedImpulse>;
 extern "C" {
 
 PhysicsWorld* create_physics_world(int maxBodies) {
-    PhysicsWorld* world = new PhysicsWorld();
-    world->bodies = new NativeBody[maxBodies];
+    fprintf(stderr, "DEBUG: create_physics_world entry. Max: %d\n", maxBodies);
+    // Use calloc to ensure all fields are zeroed (prevents uninitialized garbage)
+    PhysicsWorld* world = (PhysicsWorld*)calloc(1, sizeof(PhysicsWorld));
+    if (!world) return NULL;
+
+    world->bodies = (NativeBody*)calloc(maxBodies, sizeof(NativeBody));
     world->maxBodies = maxBodies;
     world->activeCount = 0;
     
-    world->maxManifolds = maxBodies * 2; // Conservative estimate
-    world->manifolds = new ContactManifold[world->maxManifolds];
+    world->maxManifolds = maxBodies * 2; 
+    world->manifolds = (ContactManifold*)calloc(world->maxManifolds, sizeof(ContactManifold));
     world->activeManifolds = 0;
     
     // Initialize contact constraints
     world->maxConstraints = maxBodies * 4;
-    world->constraints = new ContactConstraint[world->maxConstraints];
+    world->constraints = (ContactConstraint*)calloc(world->maxConstraints, sizeof(ContactConstraint));
     world->activeConstraints = 0;
     
     world->gravityX = 0;
-    world->gravityY = -9.81f * 100.0f; // Y-Up coordinate system: Gravity is negative 
+    world->gravityY = -9.81f * 100.0f;
     
     // Box2D-inspired solver configuration
-    world->velocityIterations = 8;  // Box2D default
-    world->positionIterations = 10;  // Stronger position correction (was 3)
-    world->enableWarmStarting = 1;  // Enable by default
-    world->contactHertz = 120.0f;    // 120 Hz for Rigid contacts (was 30.0f)
-    world->contactDampingRatio = 1.0f; // Critical damping (was 0.8f) to kill vibration
-    world->restitutionThreshold = 1.0f * 100.0f; // 1 m/s in pixels
-    world->maxLinearVelocity = 2000.0f * 100.0f;  // 2000 m/s in pixels (prevent clamping issues)
+    world->velocityIterations = 8;
+    world->positionIterations = 10;
+    world->enableWarmStarting = 1;
+    world->contactHertz = 120.0f;
+    world->contactDampingRatio = 1.0f;
+    world->restitutionThreshold = 1.0f * 100.0f;
+    world->maxLinearVelocity = 2000.0f * 100.0f;
     
     // Initialize soft bodies
-    world->maxSoftBodies = 32;
-    world->softBodies = new NativeSoftBody[world->maxSoftBodies];
+    world->maxSoftBodies = 64; // Increased capacity
+    world->softBodies = (NativeSoftBody*)calloc(world->maxSoftBodies, sizeof(NativeSoftBody));
     world->activeSoftBodies = 0;
 
     // Create dynamic AABB tree for broadphase
     world->tree = create_dynamic_tree(maxBodies * 2);
     
     // Initialize Box2D joints
-    world->maxBoxJoints = 100;  // Support up to 100 joints
-    world->boxJoints = new Joint[world->maxBoxJoints];
+    world->maxBoxJoints = 200;
+    world->boxJoints = (Joint*)calloc(world->maxBoxJoints, sizeof(Joint));
     world->activeBoxJoints = 0;
     
     return world;
@@ -613,11 +617,13 @@ int32_t create_body(PhysicsWorld* world, int type, int shapeType, float x, float
 int32_t create_soft_body(PhysicsWorld* world, int pointCount, float* initialX, float* initialY, float pressure, float stiffness) {
     if (!world || world->activeSoftBodies >= world->maxSoftBodies) return -1;
     
-    int id = world->activeSoftBodies++;
+    int32_t id = world->activeSoftBodies++;
     NativeSoftBody& sb = world->softBodies[id];
     sb.id = id;
     sb.pointCount = pointCount;
-    sb.points = new SoftBodyPoint[pointCount];
+    // Use calloc
+    sb.points = (SoftBodyPoint*)calloc(pointCount, sizeof(SoftBodyPoint));
+    if (!sb.points) return -1;
     sb.pressure = pressure;
     sb.friction = 0.4f;
     sb.restitution = 0.2f;
@@ -642,8 +648,8 @@ int32_t create_soft_body(PhysicsWorld* world, int pointCount, float* initialX, f
     // Create neighbor constraints
     sb.constraintCount = pointCount + (pointCount / 2); // Perimeter + some interior supports
     // Debug print
-    printf("DEBUG: creating soft body %d. Points: %d. Constraints: %d\n", id, pointCount, sb.constraintCount);
-    sb.constraints = new SoftBodyConstraint[sb.constraintCount];
+    fprintf(stderr, "DEBUG: creating soft body %d. Points: %d. Constraints: %d\n", id, pointCount, sb.constraintCount);
+    sb.constraints = (SoftBodyConstraint*)calloc(sb.constraintCount, sizeof(SoftBodyConstraint));
     
     int cIdx = 0;
     for (int i = 0; i < pointCount; i++) {

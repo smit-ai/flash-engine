@@ -25,7 +25,7 @@ class _NativeSoftBodyDemoState extends State<NativeSoftBodyDemo> {
     super.initState();
     _physics = FPhysicsSystem(gravity: v.Vector2(0, -900));
 
-    // Generate points once
+    // Create Physical Ground
     const int pointCount = 32;
     const double radius = 80.0;
     _initialPoints = List.generate(pointCount, (i) {
@@ -51,13 +51,11 @@ class _NativeSoftBodyDemoState extends State<NativeSoftBodyDemo> {
     double minDst = double.infinity;
     int closest = -1;
 
-    // Check points
+    // Check points using clean helper API
     const int count = 32;
     for (int i = 0; i < count; i++) {
       final point = FPhysicsSystem.getSoftBodyPointPos(_physics.world, 0, i);
-      final px = point.dx;
-      final py = point.dy;
-      final dist = (wx - px) * (wx - px) + (wy - py) * (wy - py);
+      final dist = (wx - point.dx) * (wx - point.dx) + (wy - point.dy) * (wy - point.dy);
 
       if (dist < minDst) {
         minDst = dist;

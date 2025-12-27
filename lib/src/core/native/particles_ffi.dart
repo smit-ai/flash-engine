@@ -392,11 +392,15 @@ class FlashNativeParticles {
           void Function(Pointer<PhysicsWorld>, int, int, double, double)
         >('set_soft_body_point');
 
-    setSoftBodyParams = _lib!
-        .lookupFunction<
-          Void Function(Pointer<PhysicsWorld>, Int32, Float, Float),
-          void Function(Pointer<PhysicsWorld>, int, double, double)
-        >('set_soft_body_params');
+    try {
+      setSoftBodyParams = _lib!
+          .lookupFunction<
+            Void Function(Pointer<PhysicsWorld>, Int32, Float, Float),
+            void Function(Pointer<PhysicsWorld>, int, double, double)
+          >('set_soft_body_params');
+    } catch (e) {
+      print('WARNING: set_soft_body_params symbol not found. FFI Binding failed: $e');
+    }
 
     // RayCast Binding
     rayCast = _lib!

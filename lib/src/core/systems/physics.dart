@@ -429,7 +429,6 @@ class FSoftBody extends FNode {
 
     calloc.free(ptrX);
     calloc.free(ptrY);
-    calloc.free(ptrY);
     return id;
   }
 
