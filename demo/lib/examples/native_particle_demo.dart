@@ -10,7 +10,6 @@ class NativeParticleDemo extends StatefulWidget {
 }
 
 class _NativeParticleDemoState extends State<NativeParticleDemo> {
-  bool initialized = false;
   int _currentShape = 0;
   final List<String> _shapeNames = ['Quad', 'Hexagon', 'Octagon', 'Round (12 sides)', 'Triangle (1M+)'];
 
@@ -37,67 +36,161 @@ class _NativeParticleDemoState extends State<NativeParticleDemo> {
     'Electric (Triangle)',
   ];
 
-  void _setupScene(FEngine engine) {
-    engine.scene.children.clear();
+  @override
+  Widget build(BuildContext context) {
+    // Current configuration based on selection
+    final config = _showPresets ? _presets[_activePresetIdx] : _getStressConfig();
 
-    if (_showPresets) {
-      final config = _presets[_activePresetIdx];
-      // Boost presets for visibility in the demo
-      final boostedConfig = ParticleEmitterConfig(
-        emissionRate: config.emissionRate * 10,
-        lifetimeMin: config.lifetimeMin,
-        lifetimeMax: config.lifetimeMax,
-        velocityMin: config.velocityMin,
-        velocityMax: config.velocityMax,
-        gravity: config.gravity,
-        sizeMin: config.sizeMin,
-        sizeMax: config.sizeMax,
-        startColor: config.startColor,
-        endColor: config.endColor,
-        spreadAngle: config.spreadAngle,
-        shapeType: config.shapeType,
-        maxParticles: 50000,
-      );
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: FScene(
+        sceneBuilder: (ctx, elapsed) {
+          // Slow zoom out animation (Starts at 400, ends at 1000 over 40 seconds)
+          final zoomZ = 400.0 + (elapsed * 15.0).clamp(0, 600);
 
-      final emitter = FParticleEmitter(config: boostedConfig, name: 'PresetEmitter');
-      engine.scene.addChild(emitter);
-    } else {
-      // Mega Stress Test
-      final isTriangleMode = _currentShape == 4;
-      final maxCount = isTriangleMode ? 1000000 : 500000;
-      final rate = isTriangleMode ? 250000 : 100000;
+          return [
+            FCamera(position: v.Vector3(0, 0, zoomZ), fov: 60),
 
-      final emitter = FParticleEmitter(
-        config: ParticleEmitterConfig(
-          maxParticles: maxCount,
-          emissionRate: rate.toDouble(),
-          lifetimeMin: 1.0,
-          lifetimeMax: 3.0,
-          velocityMin: v.Vector3(-300, -300, -300),
-          velocityMax: v.Vector3(300, 300, 300),
-          gravity: v.Vector3(0, 40, 0),
-          sizeMin: isTriangleMode ? 2.0 : 4.0,
-          sizeMax: isTriangleMode ? 4.0 : 8.0,
-          startColor: Colors.cyanAccent,
-          endColor: Colors.purpleAccent.withValues(alpha: 0),
-          spreadAngle: 3.14159,
-          shapeType: _currentShape,
-        ),
-        name: 'MegaEmitter',
-      );
-      engine.scene.addChild(emitter);
-    }
+            // Declarative Particle Widget
+            if (_showPresets)
+              FParticles(
+                key: ValueKey('preset_$_activePresetIdx'),
+                config: ParticleEmitterConfig(
+                  emissionRate: config.emissionRate * 10,
+                  lifetimeMin: config.lifetimeMin,
+                  lifetimeMax: config.lifetimeMax,
+                  velocityMin: config.velocityMin,
+                  velocityMax: config.velocityMax,
+                  gravity: config.gravity,
+                  sizeMin: config.sizeMin,
+                  sizeMax: config.sizeMax,
+                  startColor: config.startColor,
+                  endColor: config.endColor,
+                  spreadAngle: config.spreadAngle,
+                  shapeType: config.shapeType,
+                  maxParticles: 50000,
+                ),
+              )
+            else
+              FParticles(key: ValueKey('stress_$_currentShape'), config: _getStressConfig()),
+          ];
+        },
+        overlay: [
+          // Header UI
+          Positioned(
+            top: 60,
+            left: 20,
+            child: Builder(
+              builder: (context) {
+                final engine = context.flash;
+                if (engine == null) return const SizedBox.shrink();
+
+                // Wrap in ListenableBuilder to update count every frame
+                return ListenableBuilder(
+                  listenable: engine,
+                  builder: (context, _) {
+                    final activeCount = engine.emitters.isEmpty ? 0 : engine.emitters.first.activeCount;
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'AKTİF: ${activeCount.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}',
+                          style: TextStyle(
+                            color: _showPresets
+                                ? Colors.amberAccent
+                                : (_currentShape == 4 ? Colors.orangeAccent : Colors.cyanAccent),
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        GestureDetector(
+                          onTap: () => _cycleShape(),
+                          child: _buildButton(
+                            'Stress Mod: ${_shapeNames[_currentShape]}',
+                            !_showPresets ? Colors.cyanAccent : Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        GestureDetector(
+                          onTap: () => _cyclePreset(),
+                          child: _buildButton(
+                            'Preset: ${_showPresets ? _presetNames[_activePresetIdx] : "Showcase"}',
+                            _showPresets ? Colors.amberAccent : Colors.white24,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+
+          // Bottom Info
+          const Positioned(
+            bottom: 40,
+            right: 20,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  'FSCENE POWERED',
+                  style: TextStyle(color: Colors.white24, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 4),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Native Particle Demo',
+                  style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                Text('Declarative Scene Management', style: TextStyle(color: Colors.cyanAccent, fontSize: 14)),
+              ],
+            ),
+          ),
+
+          // Back Button
+          Positioned(
+            bottom: 40,
+            left: 20,
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white54),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  void _cycleShape(FEngine engine) {
+  ParticleEmitterConfig _getStressConfig() {
+    final isTriangleMode = _currentShape == 4;
+    return ParticleEmitterConfig(
+      maxParticles: isTriangleMode ? 1000000 : 500000,
+      emissionRate: isTriangleMode ? 500000 : 100000,
+      lifetimeMin: isTriangleMode ? 1.0 : 1.0,
+      lifetimeMax: isTriangleMode ? 5.0 : 3.0,
+      velocityMin: v.Vector3(-300, -300, -300),
+      velocityMax: v.Vector3(300, 300, 300),
+      gravity: v.Vector3(0, 40, 0),
+      sizeMin: isTriangleMode ? 2.0 : 4.0,
+      sizeMax: isTriangleMode ? 4.0 : 8.0,
+      startColor: Colors.cyanAccent,
+      endColor: Colors.purpleAccent.withOpacity(0),
+      spreadAngle: 3.14159,
+      shapeType: _currentShape,
+    );
+  }
+
+  void _cycleShape() {
     setState(() {
       _currentShape = (_currentShape + 1) % 5;
       _showPresets = false;
     });
-    _setupScene(engine);
   }
 
-  void _cyclePreset(FEngine engine) {
+  void _cyclePreset() {
     setState(() {
       if (!_showPresets) {
         _showPresets = true;
@@ -105,105 +198,23 @@ class _NativeParticleDemoState extends State<NativeParticleDemo> {
         _activePresetIdx = (_activePresetIdx + 1) % _presets.length;
       }
     });
-    _setupScene(engine);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: FView(
-        autoUpdate: true,
-        child: Stack(
-          children: [
-            Builder(
-              builder: (context) {
-                final engine = context.dependOnInheritedWidgetOfExactType<InheritedFNode>()?.engine;
-                if (engine != null && !initialized) {
-                  _setupScene(engine);
-                  initialized = true;
-                }
-                return Container();
-              },
-            ),
-            // UI Overlay
-            Positioned(
-              top: 50,
-              left: 20,
-              child: Builder(
-                builder: (context) {
-                  final engine = context.dependOnInheritedWidgetOfExactType<InheritedFNode>()?.engine;
-                  if (engine == null) return const SizedBox.shrink();
-
-                  final activeCount = engine.emitters.fold<int>(0, (sum, e) => sum + e.activeCount);
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'AKTİF: ${activeCount.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}',
-                        style: TextStyle(
-                          color: _showPresets
-                              ? Colors.amberAccent
-                              : (_currentShape == 4 ? Colors.orangeAccent : Colors.cyanAccent),
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      // Shape Selection
-                      GestureDetector(
-                        onTap: () => _cycleShape(engine),
-                        child: _buildButton(
-                          'Stress Mod: ${_shapeNames[_currentShape]}',
-                          !_showPresets ? Colors.cyanAccent : Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      // Preset Selection
-                      GestureDetector(
-                        onTap: () => _cyclePreset(engine),
-                        child: _buildButton(
-                          'Preset: ${_showPresets ? _presetNames[_activePresetIdx] : "Showcase"}',
-                          _showPresets ? Colors.amberAccent : Colors.white24,
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-            const Positioned(
-              bottom: 40,
-              right: 20,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    'Native Particle System',
-                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  Text('Optimized Per-Type Geometry', style: TextStyle(color: Colors.cyanAccent, fontSize: 14)),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Widget _buildButton(String label, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      width: 180,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        border: Border.all(color: color),
-        borderRadius: BorderRadius.circular(4),
+        color: color.withOpacity(0.1),
+        border: Border.all(color: color.withOpacity(0.5), width: 1.5),
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [BoxShadow(color: color.withOpacity(0.05), blurRadius: 10, spreadRadius: 1)],
       ),
-      child: Text(
-        label,
-        style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+      child: Center(
+        child: Text(
+          label,
+          style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
