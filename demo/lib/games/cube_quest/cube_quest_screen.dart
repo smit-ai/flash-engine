@@ -484,33 +484,8 @@ class _CubeQuestScreenState extends State<CubeQuestScreen> with TickerProviderSt
                     ),
                   ),
 
-                  // Collectibles
-                  ..._buildVisibleCollectibles(),
-
-                  // Power-ups
-                  ..._buildVisiblePowerUps(),
-
-                  // Portals
-                  ..._buildVisiblePortals(),
-
-                  // Obstacles
-                  ..._buildVisibleObstacles(),
-
-                  // Enemies
-                  ..._buildVisibleEnemies(),
-
-                  // Player Cube
-                  AnimatedBuilder(
-                    animation: _controller,
-                    builder: (context, child) {
-                      final worldToCamera = Matrix4.identity()..translateByVector3(Vector3(-_cameraX, 0, -_cameraZ));
-                      return Transform(
-                        alignment: Alignment.center,
-                        transform: Matrix4.copy(_cameraMatrix)..multiply(worldToCamera),
-                        child: _buildRollingCube(),
-                      );
-                    },
-                  ),
+                  // Sorted Game Objects (Collectibles, Enemies, Player, Obstacles)
+                  ..._buildSortedGameObjects(),
 
                   // HUD
                   HudOverlay(state: _gameState),
@@ -532,135 +507,213 @@ class _CubeQuestScreenState extends State<CubeQuestScreen> with TickerProviderSt
     );
   }
 
-  List<Widget> _buildVisibleCollectibles() {
-    final widgets = <Widget>[];
-    final centerX = (_cameraX / cubeSize).round();
-    final centerZ = (_cameraZ / cubeSize).round();
+  List<Widget> _buildSortedGameObjects() {
+    final entities = <_GameEntity>[];
 
-    for (int ix = centerX - 6; ix <= centerX + 6; ix++) {
-      for (int iz = centerZ - 6; iz <= centerZ + 6; iz++) {
-        final collectible = WorldGenerator.getCollectible(ix, iz, _gameState.collectedItems);
-        if (collectible != null) {
-          final worldPos = Vector3(ix * cubeSize, 0, iz * cubeSize);
-          final worldToCamera = Matrix4.identity()..translateByVector3(Vector3(-_cameraX, 0, -_cameraZ));
-          final fullMatrix = Matrix4.copy(_cameraMatrix)
-            ..multiply(worldToCamera)
-            ..translateByVector3(worldPos);
-
-          widgets.add(
-            Transform(
-              transform: fullMatrix,
-              alignment: Alignment.center,
-              child: CollectibleWidget(type: collectible.type),
-            ),
-          );
-        }
-      }
-    }
-    return widgets;
-  }
-
-  List<Widget> _buildVisiblePowerUps() {
-    final widgets = <Widget>[];
-    final centerX = (_cameraX / cubeSize).round();
-    final centerZ = (_cameraZ / cubeSize).round();
-
-    for (int ix = centerX - 6; ix <= centerX + 6; ix++) {
-      for (int iz = centerZ - 6; iz <= centerZ + 6; iz++) {
-        final powerUp = WorldGenerator.getPowerUp(ix, iz, _gameState.collectedItems);
-        if (powerUp != null) {
-          final worldPos = Vector3(ix * cubeSize, 0, iz * cubeSize);
-          final worldToCamera = Matrix4.identity()..translateByVector3(Vector3(-_cameraX, 0, -_cameraZ));
-          final fullMatrix = Matrix4.copy(_cameraMatrix)
-            ..multiply(worldToCamera)
-            ..translateByVector3(worldPos);
-
-          widgets.add(
-            Transform(
-              transform: fullMatrix,
-              alignment: Alignment.center,
-              child: PowerUpWidget(type: powerUp.type),
-            ),
-          );
-        }
-      }
-    }
-    return widgets;
-  }
-
-  List<Widget> _buildVisiblePortals() {
-    final widgets = <Widget>[];
-    final centerX = (_cameraX / cubeSize).round();
-    final centerZ = (_cameraZ / cubeSize).round();
-
-    for (int ix = centerX - 8; ix <= centerX + 8; ix++) {
-      for (int iz = centerZ - 8; iz <= centerZ + 8; iz++) {
-        final portal = WorldGenerator.getPortal(ix, iz);
-        if (portal != null) {
-          final worldPos = Vector3(ix * cubeSize, 0, iz * cubeSize);
-          final worldToCamera = Matrix4.identity()..translateByVector3(Vector3(-_cameraX, 0, -_cameraZ));
-          final fullMatrix = Matrix4.copy(_cameraMatrix)
-            ..multiply(worldToCamera)
-            ..translateByVector3(worldPos);
-
-          widgets.add(
-            Transform(
-              transform: fullMatrix,
-              alignment: Alignment.center,
-              child: PortalWidget(colorIndex: portal.colorIndex),
-            ),
-          );
-        }
-      }
-    }
-    return widgets;
-  }
-
-  List<Widget> _buildVisibleObstacles() {
-    final widgets = <Widget>[];
-    final centerX = (_cameraX / cubeSize).round();
-    final centerZ = (_cameraZ / cubeSize).round();
-
-    final worldToCamera = Matrix4.identity()..translateByVector3(Vector3(-_cameraX, 0, -_cameraZ));
-    final projection = Matrix4.copy(_cameraMatrix)..multiply(worldToCamera);
-
-    for (int ix = centerX - 8; ix <= centerX + 8; ix++) {
-      for (int iz = centerZ - 8; iz <= centerZ + 8; iz++) {
-        if (WorldGenerator.hasObstacle(ix, iz)) {
-          final translation = Vector3(ix * cubeSize, -halfCubeSize, iz * cubeSize);
-          widgets.add(
-            Transform(
-              alignment: Alignment.center,
-              transform: projection,
-              child: _renderCubeAt(translation, Matrix4.identity(), hue: 260, saturation: 0.3, lightness: 0.35),
-            ),
-          );
-        }
-      }
-    }
-    return widgets;
-  }
-
-  List<Widget> _buildVisibleEnemies() {
-    final widgets = <Widget>[];
+    // Camera Transform Helpers
     final worldToCamera = Matrix4.identity()..translateByVector3(Vector3(-_cameraX, 0, -_cameraZ));
 
-    for (final enemy in _enemies) {
-      final worldPos = Vector3(enemy.x * cubeSize, -halfCubeSize, enemy.z * cubeSize);
-      final fullMatrix = Matrix4.copy(_cameraMatrix)
+    // Helper to add entity
+    void addEntity(Vector3 worldPos, Widget widget) {
+      final viewMatrix = Matrix4.copy(_cameraMatrix)
         ..multiply(worldToCamera)
         ..translateByVector3(worldPos);
 
-      widgets.add(
-        Transform(
-          transform: fullMatrix,
-          alignment: Alignment.center,
-          child: EnemyWidget(type: enemy.type, cubeSize: cubeSize * 0.9),
+      final zDepth = viewMatrix.getTranslation().z;
+
+      entities.add(_GameEntity(zDepth, Transform(transform: viewMatrix, alignment: Alignment.center, child: widget)));
+    }
+
+    // 1. Collectibles, Powerups, Portals, Obstacles
+    final centerX = (_cameraX / cubeSize).round();
+    final centerZ = (_cameraZ / cubeSize).round();
+    const range = 8; // Visible range
+
+    for (int ix = centerX - range; ix <= centerX + range; ix++) {
+      for (int iz = centerZ - range; iz <= centerZ + range; iz++) {
+        // Collectibles
+        final collectible = WorldGenerator.getCollectible(ix, iz, _gameState.collectedItems);
+        if (collectible != null) {
+          addEntity(Vector3(ix * cubeSize, 0, iz * cubeSize), CollectibleWidget(type: collectible.type));
+        }
+
+        // PowerUps
+        final powerUp = WorldGenerator.getPowerUp(ix, iz, _gameState.collectedItems);
+        if (powerUp != null) {
+          addEntity(Vector3(ix * cubeSize, 0, iz * cubeSize), PowerUpWidget(type: powerUp.type));
+        }
+
+        // Portals
+        final portal = WorldGenerator.getPortal(ix, iz);
+        if (portal != null) {
+          addEntity(Vector3(ix * cubeSize, 0, iz * cubeSize), PortalWidget(colorIndex: portal.colorIndex));
+        }
+
+        // Obstacles
+        if (WorldGenerator.hasObstacle(ix, iz)) {
+          final translation = Vector3(ix * cubeSize, -halfCubeSize, iz * cubeSize);
+          // Special case for cubes as they generally use _renderCubeAt which expects absolute world pos
+          // checking _renderCubeAt implementation... relies on `cubeFullMatrix` which includes translation AND rotation.
+          // `addEntity` sets the `fullMatrix` as the Transform.
+          // _renderCubeAt does internal face sorting and returns a Stack.
+          // If we wrap _renderCubeAt result in addEntity's Transform, we apply transform twice if _renderCubeAt also applies it.
+          // _renderCubeAt takes `translation` and applies it.
+          // We need to decouple the widget creation from the transform for _renderCubeAt if we want to use addEntity?
+          // Actually _renderCubeAt returns a Transform(transform: cubeFullMatrix ...).
+          // So we should NOT use addEntity for Obstacles/Enemies if we use _renderCubeAt.
+
+          // Let's manually calculate Z for Obstacles and use existing _renderCubeAt but put it in list.
+          final cubeMatrix = Matrix4.identity()..translateByVector3(translation);
+          final viewMatrix = Matrix4.copy(_cameraMatrix)
+            ..multiply(worldToCamera)
+            ..multiply(cubeMatrix);
+
+          // Center of obstacle
+          final zDepth = viewMatrix.getTranslation().z;
+
+          // We must apply the camera projection to the obstacle, similar to how it was done before.
+          // _renderCubeAt returns a widget in World Space (via its own Transform).
+          // We need to transform World Space -> Camera/View Space.
+          final projection = Matrix4.copy(_cameraMatrix)..multiply(worldToCamera);
+
+          entities.add(
+            _GameEntity(
+              zDepth,
+              Transform(
+                alignment: Alignment.center,
+                transform: projection,
+                child: _renderCubeAt(translation, Matrix4.identity(), hue: 260, saturation: 0.3, lightness: 0.35),
+              ),
+            ),
+          );
+        }
+      }
+    }
+
+    // 2. Enemies
+    for (final enemy in _enemies) {
+      final worldPos = Vector3(enemy.x * cubeSize, -halfCubeSize, enemy.z * cubeSize);
+
+      // Calculate Z
+      final viewMatrix = Matrix4.copy(_cameraMatrix)
+        ..multiply(worldToCamera)
+        ..translateByVector3(worldPos);
+      final zDepth = viewMatrix.getTranslation().z;
+
+      // EnemyWidget is 2D/Sprite or 3D? Checked generic `EnemyWidget` usage previously...
+      // In previous code:
+      // widgets.add(Transform(transform: fullMatrix ... child: EnemyWidget...))
+      // So it expects external transform.
+      entities.add(
+        _GameEntity(
+          zDepth,
+          Transform(
+            transform: viewMatrix,
+            alignment: Alignment.center,
+            child: EnemyWidget(type: enemy.type, cubeSize: cubeSize * 0.9),
+          ),
         ),
       );
     }
-    return widgets;
+
+    // 3. Player
+    // Logic from _buildRollingCube
+    final startX = _gameState.playerX * cubeSize;
+    final startZ = _gameState.playerZ * cubeSize;
+    var playerTranslation = Vector3(startX, -halfCubeSize, startZ);
+    // Rotation is handled inside _buildRollingCube, we just need center for Z-sort
+
+    if (_controller.isAnimating && _rollingDirection != null) {
+      final animValue = _controller.value;
+      if (_isJumping) {
+        final jumpDistance = cubeSize * 2.0;
+        final jumpHeight = cubeSize * 1.2;
+        final progress = animValue;
+        final yOffset = -math.sin(math.pi * progress) * jumpHeight;
+
+        Vector3 dirVector = Vector3.zero();
+        switch (_rollingDirection) {
+          case 0:
+            dirVector = Vector3(1, 0, 0);
+            break;
+          case 1:
+            dirVector = Vector3(-1, 0, 0);
+            break;
+          case 2:
+            dirVector = Vector3(0, 0, 1);
+            break;
+          default:
+            dirVector = Vector3(0, 0, -1);
+            break;
+        }
+        playerTranslation =
+            Vector3(startX, -halfCubeSize, startZ) + (dirVector * (progress * jumpDistance)) + Vector3(0, yOffset, 0);
+      } else {
+        // Rolling logic - Pivot offset
+        Vector3 pivotOffset;
+        Vector3 axis;
+        double angle;
+        switch (_rollingDirection) {
+          case 0:
+            pivotOffset = Vector3(halfCubeSize, halfCubeSize, 0);
+            axis = Vector3(0, 0, 1);
+            angle = animValue * math.pi / 2;
+            break;
+          case 1:
+            pivotOffset = Vector3(-halfCubeSize, halfCubeSize, 0);
+            axis = Vector3(0, 0, 1);
+            angle = -animValue * math.pi / 2;
+            break;
+          case 2:
+            pivotOffset = Vector3(0, halfCubeSize, halfCubeSize);
+            axis = Vector3(1, 0, 0);
+            angle = -animValue * math.pi / 2;
+            break;
+          default:
+            pivotOffset = Vector3(0, halfCubeSize, -halfCubeSize);
+            axis = Vector3(1, 0, 0);
+            angle = animValue * math.pi / 2;
+            break;
+        }
+        final rotMat = Matrix4.identity()..rotate(axis, angle);
+        playerTranslation = Vector3(startX, -halfCubeSize, startZ) + pivotOffset + rotMat.transformed3(-pivotOffset);
+        // Rotation is handled inside _buildRollingCube, we just need center for Z-sort
+      }
+    }
+
+    final playerMatrix = Matrix4.identity()..translateByVector3(playerTranslation);
+    final playerViewMatrix = Matrix4.copy(_cameraMatrix)
+      ..multiply(worldToCamera)
+      ..multiply(playerMatrix);
+
+    final playerZ = playerViewMatrix.getTranslation().z;
+
+    // Add Player
+    // Note: _buildRollingCube returns the fully transformed widget
+    entities.add(
+      _GameEntity(
+        playerZ,
+        AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            final worldToCamera = Matrix4.identity()..translateByVector3(Vector3(-_cameraX, 0, -_cameraZ));
+            return Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.copy(_cameraMatrix)..multiply(worldToCamera),
+              child: _buildRollingCube(),
+            );
+          },
+        ),
+      ),
+    );
+
+    // Sort: Smallest Z (Farthest) first
+    entities.sort((a, b) => a.zDepth.compareTo(b.zDepth));
+
+    return entities.map((e) => e.widget).toList();
   }
+
+  // --- Removed old separate build methods ---
 
   Widget _buildRollingCube() {
     final startX = _gameState.playerX * cubeSize;
@@ -795,4 +848,11 @@ class _CubeQuestScreenState extends State<CubeQuestScreen> with TickerProviderSt
       ),
     );
   }
+}
+
+class _GameEntity {
+  final double zDepth;
+  final Widget widget;
+
+  _GameEntity(this.zDepth, this.widget);
 }
