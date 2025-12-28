@@ -19,3 +19,6 @@ export 'rendering/painter.dart';
 export 'graph/signal.dart';
 export 'graph/raycast_2d.dart';
 export 'graph/timer.dart';
+export 'grids/grids.dart';
+export 'projection/projection.dart';
+export 'rendering/grid_camera.dart';

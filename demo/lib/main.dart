@@ -24,6 +24,8 @@ import 'examples/pendulum_demo.dart';
 import 'examples/soft_body_demo.dart';
 import 'examples/sandbox_demo.dart';
 import 'examples/native_soft_body_demo.dart';
+import 'examples/grid_camera_demo.dart';
+import 'games/games_catalog.dart';
 
 void main() {
   runApp(const FlashDemoApp());
@@ -201,6 +203,18 @@ class ExampleMenu extends StatelessWidget {
         description: 'Godot-style timers.',
         icon: Icons.timer_rounded,
         builder: (_) => const TimerDemo(),
+      ),
+      _ExampleData(
+        title: 'Grid & Camera',
+        description: 'Modular grid+camera system.',
+        icon: Icons.grid_4x4_rounded,
+        builder: (_) => const GridCameraDemo(),
+      ),
+      _ExampleData(
+        title: '🎮 Games',
+        description: 'Play full games!',
+        icon: Icons.sports_esports_rounded,
+        builder: (_) => const GamesCatalog(),
       ),
     ];
 
