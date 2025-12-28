@@ -9,10 +9,15 @@ export 'primitives/flash_sphere.dart';
 export 'primitives/flash_triangle.dart';
 export 'primitives/flash_cube.dart';
 export 'primitives/flash_box.dart';
+export 'primitives/isometric_cube.dart';
 
 // Export UI components
 export 'ui/flash_label.dart';
 export 'ui/flash_sprite.dart';
+export 'ui/combo_display.dart';
+export 'ui/hud.dart';
+export 'ui/game_overlays.dart';
+export 'ui/grid_items.dart';
 export 'rendering/line_renderer.dart';
 export 'rendering/trail_renderer.dart';
 
